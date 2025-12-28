@@ -38,14 +38,14 @@ Este guia vai te ajudar a configurar todos os serviços necessários para rodar 
    - **anon public**: uma chave longa começando com `eyJ...`
 4. **ANOTE ESSAS DUAS INFORMAÇÕES** - você vai precisar delas!
 
-### 1.4 Criar as tabelas do banco de dados
+### 1.4 Criar as tabelas do banco de dados (SQL Consolidado)
 
 1. No menu lateral, clique em **SQL Editor**
 2. Clique em "New query"
-3. Cole o seguinte SQL:
+3. Cole o seguinte SQL (que já inclui Planos de Tratamento e Titulação):
 
 ```sql
--- Tabela de remédios
+-- 1. Tabela de medicamentos
 CREATE TABLE medicines (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
@@ -57,21 +57,34 @@ CREATE TABLE medicines (
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
 
--- Tabela de protocolos
+-- 2. Tabela de Planos de Tratamento (Agrupadores)
+CREATE TABLE treatment_plans (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  objective TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
+);
+
+-- 3. Tabela de protocolos
 CREATE TABLE protocols (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medicine_id UUID REFERENCES medicines(id) ON DELETE CASCADE,
+  treatment_plan_id UUID REFERENCES treatment_plans(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   frequency TEXT,
   time_schedule JSONB,
   dosage_per_intake NUMERIC,
+  target_dosage NUMERIC,        -- Novo campo para titulação
+  titration_status TEXT DEFAULT 'estável', -- 'estável', 'titulando', 'alvo_atingido'
   notes TEXT,
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
 
--- Tabela de estoque
+-- 4. Tabela de estoque
 CREATE TABLE stock (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medicine_id UUID REFERENCES medicines(id) ON DELETE CASCADE,
@@ -82,7 +95,7 @@ CREATE TABLE stock (
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
 
--- Tabela de logs de medicamentos tomados
+-- 5. Tabela de logs de medicamentos tomados
 CREATE TABLE medicine_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   protocol_id UUID REFERENCES protocols(id) ON DELETE SET NULL,
@@ -95,14 +108,15 @@ CREATE TABLE medicine_logs (
 
 -- Índices para melhor performance
 CREATE INDEX idx_protocols_medicine ON protocols(medicine_id);
+CREATE INDEX idx_protocols_plan ON protocols(treatment_plan_id);
 CREATE INDEX idx_stock_medicine ON stock(medicine_id);
 CREATE INDEX idx_logs_protocol ON medicine_logs(protocol_id);
 CREATE INDEX idx_logs_medicine ON medicine_logs(medicine_id);
 CREATE INDEX idx_logs_taken_at ON medicine_logs(taken_at DESC);
 ```
 
-4. Clique em "Run" (ou pressione Ctrl+Enter)
-5. Você deve ver "Success. No rows returned" - isso significa que funcionou!
+4. Clique em **Run** (ou pressione Ctrl+Enter)
+5. Você deve ver "Success. No rows returned". 🎉
 
 ---
 

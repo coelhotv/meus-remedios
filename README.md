@@ -2,27 +2,28 @@
 
 **Aplicativo de gerenciamento de medicamentos em português brasileiro**
 
-Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente.
+Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com suporte a **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/badge/version-0.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 🎯 Funcionalidades (MVP)
+## 🎯 Funcionalidades (V0.2.0)
 
-- ✅ **Cadastro de Medicamentos**: Registre remédios com nome, laboratório, princípio ativo, dosagem e preço
-- ✅ **Protocolos de Tratamento**: Crie protocolos com frequência e horários programados
-- ✅ **Controle de Estoque**: Gerencie a quantidade de comprimidos disponíveis
-- ✅ **Registro de Medicamentos Tomados**: Registre cada dose e veja o estoque diminuir automaticamente
-- ✅ **Interface Moderna**: Design neon com glass-morphism e tema escuro
+- ✅ **Cadastro de Medicamentos**: Registre remédios com nome, laboratório, princípio ativo, dosagem e preço.
+- ✅ **Planos de Tratamento (Grupos)**: Agrupe medicamentos em protocolos complexos (ex: "Quarteto Fantástico" para IC).
+- ✅ **Suporte à Titulação**: Defina doses alvo e acompanhe o status de ajuste medicamentoso (Titulando, Alvo Atingido).
+- ✅ **Controle de Estoque Inteligente**: Gerencie a quantidade com base no custo médio ponderado e validade.
+- ✅ **Registro em Lote ("Tomar Todas")**: Registre todas as doses de um plano de tratamento com um único clique.
+- ✅ **Interface Moderna**: Design neon com glass-morphism, tema escuro e visual premium.
 
 ## 🚀 Roadmap Futuro
 
-- 🔔 **Notificações**: Alertas para lembrar de tomar os medicamentos
-- 🤖 **Comparação de Preços com IA**: Busca automática de preços em farmácias online brasileiras
-- 🧠 **Sugestões de Protocolos com IA**: Recomendações baseadas em patologias identificadas
-- 🔒 **Conformidade LGPD**: Criptografia e proteção de dados de saúde
+- 🔔 **Notificações**: Alertas para lembrar de tomar os medicamentos.
+- 🤖 **IA Médico-Assistente**: Insights sobre os protocolos com base em diretrizes médicas.
+- 📊 **Relatórios de Titulação**: Gráficos de evolução da dosagem ao longo do tempo.
+- 🔒 **Backup Criptografado**: Exportação e importação de dados de forma segura.
 
 ---
 

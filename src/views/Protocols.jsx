@@ -6,6 +6,7 @@ import Modal from '../components/ui/Modal'
 import ProtocolForm from '../components/protocol/ProtocolForm'
 import ProtocolCard from '../components/protocol/ProtocolCard'
 import TreatmentPlanForm from '../components/protocol/TreatmentPlanForm'
+import Card from '../components/ui/Card'
 import './Protocols.css'
 
 export default function Protocols() {

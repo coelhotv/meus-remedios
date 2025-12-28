@@ -8,27 +8,16 @@
 - ✅ Git inicializado com commit inicial
 - ✅ Servidor de desenvolvimento rodando em http://localhost:5173
 
-### 2. Design System Completo
+### 2. Design System Premium
 - ✅ Tema neon com cores vibrantes (cyan, magenta, purple)
-- ✅ Suporte automático a dark/light mode
-- ✅ Glass-morphism effects
-- ✅ Animações e transições suaves
-- ✅ Design responsivo mobile-first
+- ✅ Glass-morphism effects e animações suaves
+- ✅ Responsivo mobile-first
 
-### 3. Componentes Base
-- ✅ Button (5 variantes: primary, secondary, outline, ghost, danger)
-- ✅ Card (com efeito glass-morphism)
-- ✅ Loading (spinner com anéis neon)
-
-### 4. Arquitetura Backend
-- ✅ API service layer completa (src/services/api.js)
-- ✅ CRUD para medicines, protocols, stock, logs
-- ✅ Lógica de decremento automático de estoque
-
-### 5. Documentação
-- ✅ README.md completo
-- ✅ SETUP.md com guia passo-a-passo
-- ✅ Estrutura de pastas organizada
+### 3. Features Ativas (V0.2.0)
+- ✅ **Planos de Tratamento**: Agrupamento de medicamentos complexos.
+- ✅ **Titulação de Dose**: Controle de Dose Alvo e Status.
+- ✅ **Ações em Lote**: Botão "Tomar Todas" para planos.
+- ✅ **Estoque Inteligente**: Cálculo de custo médio ponderado.
 
 ---
 
@@ -40,16 +29,11 @@
 
 1. Acesse https://supabase.com e crie uma conta (use sua conta do GitHub)
 2. Crie um novo projeto chamado "meu-remedio"
-3. Escolha a região "South America (São Paulo)"
-4. Aguarde ~2 minutos para o projeto ser criado
-
-#### Criar as tabelas do banco de dados:
-
-1. No Supabase, vá em **SQL Editor** → **New query**
-2. Cole o SQL abaixo e clique em **Run**:
+3. No Supabase, vá em **SQL Editor** → **New query**
+4. Cole o SQL consolidado abaixo e clique em **Run**:
 
 ```sql
--- Tabela de remédios
+-- 1. Medicamentos
 CREATE TABLE medicines (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
@@ -61,21 +45,34 @@ CREATE TABLE medicines (
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
 
--- Tabela de protocolos
+-- 2. Planos de Tratamento
+CREATE TABLE treatment_plans (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  objective TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
+);
+
+-- 3. Protocolos (com Titulação)
 CREATE TABLE protocols (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medicine_id UUID REFERENCES medicines(id) ON DELETE CASCADE,
+  treatment_plan_id UUID REFERENCES treatment_plans(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   frequency TEXT,
   time_schedule JSONB,
   dosage_per_intake NUMERIC,
+  target_dosage NUMERIC,
+  titration_status TEXT DEFAULT 'estável',
   notes TEXT,
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
 
--- Tabela de estoque
+-- 4. Estoque
 CREATE TABLE stock (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medicine_id UUID REFERENCES medicines(id) ON DELETE CASCADE,
@@ -86,7 +83,7 @@ CREATE TABLE stock (
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
 
--- Tabela de logs de medicamentos tomados
+-- 5. Logs
 CREATE TABLE medicine_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   protocol_id UUID REFERENCES protocols(id) ON DELETE SET NULL,
@@ -97,8 +94,9 @@ CREATE TABLE medicine_logs (
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
 
--- Índices para melhor performance
+-- Índices
 CREATE INDEX idx_protocols_medicine ON protocols(medicine_id);
+CREATE INDEX idx_protocols_plan ON protocols(treatment_plan_id);
 CREATE INDEX idx_stock_medicine ON stock(medicine_id);
 CREATE INDEX idx_logs_protocol ON medicine_logs(protocol_id);
 CREATE INDEX idx_logs_medicine ON medicine_logs(medicine_id);
