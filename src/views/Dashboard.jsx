@@ -14,6 +14,7 @@ export default function Dashboard({ onNavigate }) {
   const [treatmentPlans, setTreatmentPlans] = useState([])
   const [recentLogs, setRecentLogs] = useState([])
   const [stockSummary, setStockSummary] = useState([])
+  const [expandedPlans, setExpandedPlans] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -23,6 +24,13 @@ export default function Dashboard({ onNavigate }) {
     loadDashboardData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const togglePlan = (planId) => {
+    setExpandedPlans(prev => ({
+      ...prev,
+      [planId]: !prev[planId]
+    }))
+  }
 
   const loadDashboardData = async () => {
     try {
@@ -39,6 +47,13 @@ export default function Dashboard({ onNavigate }) {
       setActiveProtocols(protocols)
       setTreatmentPlans(plans)
       setRecentLogs(logs)
+      
+      // Initialize expandedPlans state (all false by default)
+      const initialExpandedState = {}
+      plans.forEach(plan => {
+        initialExpandedState[plan.id] = false
+      })
+      setExpandedPlans(initialExpandedState)
       
       // Carregar estoque para cada medicamento
       const stockPromises = medicines.map(async (medicine) => {
@@ -74,7 +89,8 @@ export default function Dashboard({ onNavigate }) {
     }
   }
 
-  const handleTakeAllFromPlan = async (plan) => {
+  const handleTakeAllFromPlan = async (e, plan) => {
+    e.stopPropagation() // Prevent toggling the card when clicking the button
     const activeProtocols = plan.protocols?.filter(p => p.active) || []
     if (activeProtocols.length === 0) return
 
@@ -137,38 +153,47 @@ export default function Dashboard({ onNavigate }) {
         {treatmentPlans.length > 0 && (
           <div className="treatment-plans-grid full-width">
             {treatmentPlans.map(plan => (
-              <Card key={plan.id} className="dashboard-card plan-card-dash">
-                <div className="card-header">
-                  <h3>📁 {plan.name}</h3>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Card 
+                key={plan.id} 
+                className={`dashboard-card plan-card-dash ${expandedPlans[plan.id] ? 'expanded' : 'collapsed'}`}
+              >
+                <div className="card-header plan-header-dash" onClick={() => togglePlan(plan.id)}>
+                  <div className="plan-title-area">
+                    <span className={`expand-icon ${expandedPlans[plan.id] ? 'open' : ''}`}>▶</span>
+                    <h3>📁 {plan.name}</h3>
+                  </div>
+                  <div className="plan-actions-dash">
                     <span className="plan-objective-dash">{plan.objective}</span>
                     <Button 
                       variant="primary" 
                       size="sm" 
-                      onClick={() => handleTakeAllFromPlan(plan)}
+                      onClick={(e) => handleTakeAllFromPlan(e, plan)}
                       disabled={!plan.protocols?.some(p => p.active)}
                     >
                       ✅ Tomar Todas
                     </Button>
                   </div>
                 </div>
-                <div className="plan-summary-dash">
-                  {plan.protocols?.filter(p => p.active).map(p => (
-                    <div key={p.id} className="plan-protocol-item-dash">
-                      <span>💊 {p.name}</span>
-                      <div className="protocol-meta-dash">
-                        <span className={`status-tag-dash ${p.titration_status}`}>
-                          {p.titration_status === 'titulando' ? '📈 Titulando' : '✅'}
-                        </span>
-                        <div className="plan-times-dash">
-                          {p.time_schedule?.map(t => (
-                            <span key={t} className={`time-mini-dash ${t <= getCurrentTime() ? 'past' : ''}`}>{t}</span>
-                          ))}
+                
+                {expandedPlans[plan.id] && (
+                  <div className="plan-summary-dash fade-in">
+                    {plan.protocols?.filter(p => p.active).map(p => (
+                      <div key={p.id} className="plan-protocol-item-dash">
+                        <span>💊 {p.name}</span>
+                        <div className="protocol-meta-dash">
+                          <span className={`status-tag-dash ${p.titration_status}`}>
+                            {p.titration_status === 'titulando' ? '📈 Titulando' : '✅'}
+                          </span>
+                          <div className="plan-times-dash">
+                            {p.time_schedule?.map(t => (
+                              <span key={t} className={`time-mini-dash ${t <= getCurrentTime() ? 'past' : ''}`}>{t}</span>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </Card>
             ))}
           </div>

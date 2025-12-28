@@ -188,6 +188,39 @@
   border-top: 3px solid var(--accent-secondary);
 }
 
+.plan-header-dash {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.plan-header-dash:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.plan-title-area {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.expand-icon {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.expand-icon.open {
+  transform: rotate(90deg);
+}
+
+.plan-actions-dash {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .plan-objective-dash {
   font-size: var(--font-size-xs);
   color: var(--accent-warning);
@@ -198,6 +231,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  padding-top: var(--space-2);
 }
 
 .plan-protocol-item-dash {
