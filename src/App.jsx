@@ -31,7 +31,7 @@ function App() {
         ← Voltar ao Dashboard
       </Button>
       <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--accent-primary)' }}>
-        Meu Remédio Piloto
+        Meus Remédios Piloto
       </div>
     </div>
   )
@@ -91,7 +91,7 @@ function App() {
         color: 'var(--text-tertiary)',
         fontSize: 'var(--font-size-sm)'
       }}>
-        <p>Meu Remédio v0.1.0 - Piloto</p>
+        <p>Meus Remédios v0.1.0 - Piloto</p>
         
         <span 
           onClick={() => setShowDebug(!showDebug)} 

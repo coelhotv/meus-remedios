@@ -1,4 +1,4 @@
-# Meu Remédio - Guia de Configuração
+# Meus Remédios - Guia de Configuração
 
 Este guia vai te ajudar a configurar todos os serviços necessários para rodar o projeto.
 

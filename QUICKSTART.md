@@ -1,4 +1,4 @@
-# 🎉 Meu Remédio - Início Rápido
+# 🎉 Meus Remédios - Início Rápido
 
 ## ✅ O que já está pronto
 

@@ -1,4 +1,4 @@
-# 💊 Meu Remédio
+# 💊 Meus Remédios
 
 **Aplicativo de gerenciamento de medicamentos em português brasileiro**
 
