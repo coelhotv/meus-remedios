@@ -4,6 +4,7 @@ import Button from './components/ui/Button'
 import Card from './components/ui/Card'
 import TestConnection from './components/TestConnection'
 import Medicines from './views/Medicines'
+import Stock from './views/Stock'
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard')
@@ -23,6 +24,24 @@ function App() {
           </Button>
         </div>
         <Medicines />
+      </div>
+    )
+  }
+
+  if (currentView === 'stock') {
+    return (
+      <div>
+        {/* Simple navigation */}
+        <div style={{ 
+          padding: 'var(--space-4)', 
+          borderBottom: '1px solid var(--border-color)',
+          marginBottom: 'var(--space-6)'
+        }}>
+          <Button variant="ghost" onClick={() => setCurrentView('dashboard')}>
+            ← Voltar ao Dashboard
+          </Button>
+        </div>
+        <Stock />
       </div>
     )
   }
@@ -78,8 +97,8 @@ function App() {
             Controle seu estoque de medicamentos
           </p>
           <div style={{ marginTop: 'var(--space-4)' }}>
-            <Button variant="outline" disabled>
-              Em Breve
+            <Button variant="outline" onClick={() => setCurrentView('stock')}>
+              Gerenciar Estoque
             </Button>
           </div>
         </Card>
