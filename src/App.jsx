@@ -5,6 +5,7 @@ import Card from './components/ui/Card'
 import TestConnection from './components/TestConnection'
 import Medicines from './views/Medicines'
 import Stock from './views/Stock'
+import Protocols from './views/Protocols'
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard')
@@ -42,6 +43,24 @@ function App() {
           </Button>
         </div>
         <Stock />
+      </div>
+    )
+  }
+
+  if (currentView === 'protocols') {
+    return (
+      <div>
+        {/* Simple navigation */}
+        <div style={{ 
+          padding: 'var(--space-4)', 
+          borderBottom: '1px solid var(--border-color)',
+          marginBottom: 'var(--space-6)'
+        }}>
+          <Button variant="ghost" onClick={() => setCurrentView('dashboard')}>
+            ← Voltar ao Dashboard
+          </Button>
+        </div>
+        <Protocols />
       </div>
     )
   }
@@ -85,8 +104,8 @@ function App() {
             Crie protocolos de tratamento
           </p>
           <div style={{ marginTop: 'var(--space-4)' }}>
-            <Button variant="secondary" disabled>
-              Em Breve
+            <Button variant="secondary" onClick={() => setCurrentView('protocols')}>
+              Gerenciar Protocolos
             </Button>
           </div>
         </Card>
