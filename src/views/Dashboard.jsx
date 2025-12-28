@@ -60,13 +60,32 @@ export default function Dashboard({ onNavigate }) {
 
   const handleLogMedicine = async (logData) => {
     try {
-      await logService.create(logData)
-      showSuccess('Medicamento registrado com sucesso! Estoque atualizado.')
+      if (Array.isArray(logData)) {
+        await logService.createBulk(logData)
+        showSuccess('Lote de medicamentos registrado com sucesso!')
+      } else {
+        await logService.create(logData)
+        showSuccess('Medicamento registrado com sucesso!')
+      }
       setIsModalOpen(false)
       await loadDashboardData()
     } catch (err) {
       throw new Error(err.message)
     }
+  }
+
+  const handleTakeAllFromPlan = async (plan) => {
+    const activeProtocols = plan.protocols?.filter(p => p.active) || []
+    if (activeProtocols.length === 0) return
+
+    const logs = activeProtocols.map(p => ({
+      protocol_id: p.id,
+      medicine_id: p.medicine_id,
+      quantity_taken: p.dosage_per_intake,
+      notes: `[Ação Rápida: ${plan.name}]`
+    }))
+
+    await handleLogMedicine(logs)
   }
 
   const showSuccess = (message) => {
@@ -121,7 +140,17 @@ export default function Dashboard({ onNavigate }) {
               <Card key={plan.id} className="dashboard-card plan-card-dash">
                 <div className="card-header">
                   <h3>📁 {plan.name}</h3>
-                  <span className="plan-objective-dash">{plan.objective}</span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span className="plan-objective-dash">{plan.objective}</span>
+                    <Button 
+                      variant="primary" 
+                      size="sm" 
+                      onClick={() => handleTakeAllFromPlan(plan)}
+                      disabled={!plan.protocols?.some(p => p.active)}
+                    >
+                      ✅ Tomar Todas
+                    </Button>
+                  </div>
                 </div>
                 <div className="plan-summary-dash">
                   {plan.protocols?.filter(p => p.active).map(p => (
@@ -262,6 +291,7 @@ export default function Dashboard({ onNavigate }) {
       >
         <LogForm
           protocols={activeProtocols}
+          treatmentPlans={treatmentPlans}
           onSave={handleLogMedicine}
           onCancel={() => setIsModalOpen(false)}
         />

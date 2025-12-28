@@ -456,6 +456,42 @@ export const logService = {
   },
 
   /**
+   * Create multiple log entries at once
+   */
+  async createBulk(logs) {
+    // 1. Create all logs
+    const logsWithUser = logs.map(log => ({ ...log, user_id: MOCK_USER_ID }))
+    const { data, error } = await supabase
+      .from('medicine_logs')
+      .insert(logsWithUser)
+      .select(`
+        *,
+        protocol:protocols(*),
+        medicine:medicines(*)
+      `)
+    
+    if (error) throw error
+    
+    // 2. Decrease stock for each
+    const errors = []
+    for (const log of logs) {
+      try {
+        await stockService.decrease(log.medicine_id, log.quantity_taken)
+      } catch (stockError) {
+        errors.push(`${log.medicine_id}: ${stockError.message}`)
+      }
+    }
+    
+    if (errors.length > 0) {
+      console.error('Erros ao decrementar estoque no lote:', errors)
+      // We don't throw here to avoid partial failure confusion, 
+      // but ideally we'd handle this better
+    }
+    
+    return data
+  },
+
+  /**
    * Delete a log entry
    * Note: This does NOT restore stock
    */
