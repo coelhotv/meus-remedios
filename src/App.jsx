@@ -2,11 +2,32 @@ import { useState } from 'react'
 import './styles/index.css'
 import Button from './components/ui/Button'
 import Card from './components/ui/Card'
-import Loading from './components/ui/Loading'
+import TestConnection from './components/TestConnection'
+import Medicines from './views/Medicines'
 
 function App() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [currentView, setCurrentView] = useState('dashboard')
 
+  // Render different views based on currentView state
+  if (currentView === 'medicines') {
+    return (
+      <div>
+        {/* Simple navigation */}
+        <div style={{ 
+          padding: 'var(--space-4)', 
+          borderBottom: '1px solid var(--border-color)',
+          marginBottom: 'var(--space-6)'
+        }}>
+          <Button variant="ghost" onClick={() => setCurrentView('dashboard')}>
+            ← Voltar ao Dashboard
+          </Button>
+        </div>
+        <Medicines />
+      </div>
+    )
+  }
+
+  // Dashboard view
   return (
     <div className="container" style={{ paddingTop: 'var(--space-8)' }}>
       <header style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
@@ -15,6 +36,11 @@ function App() {
           Gerencie seus medicamentos com facilidade
         </p>
       </header>
+
+      {/* Test Supabase Connection */}
+      <div style={{ marginBottom: 'var(--space-8)' }}>
+        <TestConnection />
+      </div>
 
       <div style={{ 
         display: 'grid', 
@@ -28,7 +54,9 @@ function App() {
             Cadastre e gerencie seus remédios
           </p>
           <div style={{ marginTop: 'var(--space-4)' }}>
-            <Button variant="primary">Adicionar Remédio</Button>
+            <Button variant="primary" onClick={() => setCurrentView('medicines')}>
+              Gerenciar Medicamentos
+            </Button>
           </div>
         </Card>
 
@@ -38,7 +66,9 @@ function App() {
             Crie protocolos de tratamento
           </p>
           <div style={{ marginTop: 'var(--space-4)' }}>
-            <Button variant="secondary">Criar Protocolo</Button>
+            <Button variant="secondary" disabled>
+              Em Breve
+            </Button>
           </div>
         </Card>
 
@@ -48,43 +78,12 @@ function App() {
             Controle seu estoque de medicamentos
           </p>
           <div style={{ marginTop: 'var(--space-4)' }}>
-            <Button variant="outline">Ver Estoque</Button>
+            <Button variant="outline" disabled>
+              Em Breve
+            </Button>
           </div>
         </Card>
       </div>
-
-      <Card style={{ textAlign: 'center' }}>
-        <h3>🎨 Teste de Componentes</h3>
-        <div style={{ 
-          display: 'flex', 
-          gap: 'var(--space-4)', 
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          marginTop: 'var(--space-4)'
-        }}>
-          <Button variant="primary">Primary</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="danger">Danger</Button>
-          <Button disabled>Disabled</Button>
-        </div>
-
-        <div style={{ marginTop: 'var(--space-6)' }}>
-          <Button 
-            variant="primary" 
-            onClick={() => setIsLoading(!isLoading)}
-          >
-            {isLoading ? 'Esconder' : 'Mostrar'} Loading
-          </Button>
-        </div>
-
-        {isLoading && (
-          <div style={{ marginTop: 'var(--space-6)' }}>
-            <Loading />
-          </div>
-        )}
-      </Card>
 
       <footer style={{ 
         textAlign: 'center', 
