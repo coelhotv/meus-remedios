@@ -2,13 +2,16 @@ import { useState } from 'react'
 import Button from '../ui/Button'
 import './ProtocolForm.css'
 
-export default function ProtocolForm({ medicines, protocol, onSave, onCancel }) {
+export default function ProtocolForm({ medicines, treatmentPlans = [], protocol, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     medicine_id: protocol?.medicine_id || '',
+    treatment_plan_id: protocol?.treatment_plan_id || '',
     name: protocol?.name || '',
     frequency: protocol?.frequency || '',
     time_schedule: protocol?.time_schedule || [],
     dosage_per_intake: protocol?.dosage_per_intake || '',
+    target_dosage: protocol?.target_dosage || '',
+    titration_status: protocol?.titration_status || 'estável',
     notes: protocol?.notes || '',
     active: protocol?.active !== undefined ? protocol.active : true
   })
@@ -74,6 +77,10 @@ export default function ProtocolForm({ medicines, protocol, onSave, onCancel }) 
       newErrors.dosage_per_intake = 'Dosagem deve ser maior que zero'
     }
     
+    if (formData.target_dosage && isNaN(formData.target_dosage)) {
+      newErrors.target_dosage = 'Deve ser um número'
+    }
+    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -88,10 +95,13 @@ export default function ProtocolForm({ medicines, protocol, onSave, onCancel }) 
     try {
       const dataToSave = {
         medicine_id: formData.medicine_id,
+        treatment_plan_id: formData.treatment_plan_id || null,
         name: formData.name.trim(),
         frequency: formData.frequency.trim(),
         time_schedule: formData.time_schedule,
         dosage_per_intake: parseFloat(formData.dosage_per_intake),
+        target_dosage: formData.target_dosage ? parseFloat(formData.target_dosage) : null,
+        titration_status: formData.titration_status,
         notes: formData.notes.trim() || null,
         active: formData.active
       }
@@ -132,6 +142,24 @@ export default function ProtocolForm({ medicines, protocol, onSave, onCancel }) 
       </div>
 
       <div className="form-group">
+        <label htmlFor="treatment_plan_id">Plano de Tratamento (Opcional)</label>
+        <select
+          id="treatment_plan_id"
+          name="treatment_plan_id"
+          value={formData.treatment_plan_id}
+          onChange={handleChange}
+        >
+          <option value="">Nenhum (Protocolo isolado)</option>
+          {treatmentPlans.map(plan => (
+            <option key={plan.id} value={plan.id}>{plan.name}</option>
+          ))}
+        </select>
+        <small style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>
+          Agrupe este remédio em um plano maior (ex: Quarteto Fantástico).
+        </small>
+      </div>
+
+      <div className="form-group">
         <label htmlFor="name">
           Nome do Protocolo <span className="required">*</span>
         </label>
@@ -167,7 +195,7 @@ export default function ProtocolForm({ medicines, protocol, onSave, onCancel }) 
 
         <div className="form-group">
           <label htmlFor="dosage_per_intake">
-            Comprimidos por Vez <span className="required">*</span>
+            Dose Atual (Comprimidos) <span className="required">*</span>
           </label>
           <input
             type="number"
@@ -181,6 +209,36 @@ export default function ProtocolForm({ medicines, protocol, onSave, onCancel }) 
             step="0.5"
           />
           {errors.dosage_per_intake && <span className="error-message">{errors.dosage_per_intake}</span>}
+        </div>
+      </div>
+
+      <div className="form-row" style={{ border: '1px solid var(--border-color)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', marginBottom: 'var(--space-4)' }}>
+        <div className="form-group">
+          <label htmlFor="target_dosage">Dose Alvo (mg)</label>
+          <input
+            type="number"
+            id="target_dosage"
+            name="target_dosage"
+            value={formData.target_dosage}
+            onChange={handleChange}
+            placeholder="Ex: 50"
+            step="0.5"
+          />
+          <small style={{ color: 'var(--text-tertiary)' }}>A dose que o médico quer atingir.</small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="titration_status">Status de Titulação</label>
+          <select
+            id="titration_status"
+            name="titration_status"
+            value={formData.titration_status}
+            onChange={handleChange}
+          >
+            <option value="estável">✅ Estável</option>
+            <option value="titulando">📈 Titulando (ajustando)</option>
+            <option value="alvo_atingido">🎯 Alvo Atingido</option>
+          </select>
         </div>
       </div>
 

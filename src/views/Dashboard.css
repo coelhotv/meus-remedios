@@ -171,3 +171,95 @@
     align-items: flex-start;
   }
 }
+
+/* Treatment Plans Dashboard */
+.treatment-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.treatment-plans-grid.full-width {
+  grid-column: 1 / -1;
+}
+
+.plan-card-dash {
+  border-top: 3px solid var(--accent-secondary);
+}
+
+.plan-objective-dash {
+  font-size: var(--font-size-xs);
+  color: var(--accent-warning);
+  font-weight: 500;
+}
+
+.plan-summary-dash {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.plan-protocol-item-dash {
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.plan-protocol-item-dash span {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.protocol-meta-dash {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-tag-dash {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-tag-dash.titulando {
+  background: rgba(255, 170, 0, 0.1);
+  color: var(--accent-warning);
+}
+
+.status-tag-dash.alvo_atingido,
+.status-tag-dash.estável {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--accent-success);
+}
+
+.plan-times-dash {
+  display: flex;
+  gap: 4px;
+}
+
+.time-mini-dash {
+  font-size: 10px;
+  background: var(--bg-secondary);
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.time-mini-dash.past {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+@media (max-width: 600px) {
+  .treatment-plans-grid {
+    grid-template-columns: 1fr;
+  }
+}

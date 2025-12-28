@@ -32,8 +32,19 @@ export default function ProtocolCard({ protocol, onEdit, onToggleActive, onDelet
           <span className="detail-label">💊 Dosagem:</span>
           <span className="detail-value">
             {protocol.dosage_per_intake} {protocol.dosage_per_intake === 1 ? 'comprimido' : 'comprimidos'}
+            {protocol.target_dosage && (
+              <span className="titration-progress"> (Alvo: {protocol.target_dosage}mg)</span>
+            )}
           </span>
         </div>
+
+        {protocol.titration_status && protocol.titration_status !== 'estável' && (
+          <div className="detail-item titration">
+            <span className={`titration-badge ${protocol.titration_status}`}>
+              {protocol.titration_status === 'titulando' ? '📈 Titulando' : '🎯 Alvo Atingido'}
+            </span>
+          </div>
+        )}
         
         {protocol.time_schedule && protocol.time_schedule.length > 0 && (
           <div className="detail-item schedule">

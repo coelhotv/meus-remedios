@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { protocolService, logService, stockService, medicineService } from '../services/api'
+import { protocolService, logService, stockService, medicineService, treatmentPlanService } from '../services/api'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Loading from '../components/ui/Loading'
@@ -11,6 +11,7 @@ import './Dashboard.css'
 
 export default function Dashboard({ onNavigate }) {
   const [activeProtocols, setActiveProtocols] = useState([])
+  const [treatmentPlans, setTreatmentPlans] = useState([])
   const [recentLogs, setRecentLogs] = useState([])
   const [stockSummary, setStockSummary] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -28,13 +29,15 @@ export default function Dashboard({ onNavigate }) {
       setIsLoading(true)
       setError(null)
       
-      const [protocols, logs, medicines] = await Promise.all([
+      const [protocols, plans, logs, medicines] = await Promise.all([
         protocolService.getActive(),
+        treatmentPlanService.getAll(),
         logService.getAll(10), // Últimos 10 registros
         medicineService.getAll()
       ])
       
       setActiveProtocols(protocols)
+      setTreatmentPlans(plans)
       setRecentLogs(logs)
       
       // Carregar estoque para cada medicamento
@@ -111,6 +114,37 @@ export default function Dashboard({ onNavigate }) {
 
 
       <div className="dashboard-grid">
+        {/* Planos de Tratamento (Destaque) */}
+        {treatmentPlans.length > 0 && (
+          <div className="treatment-plans-grid full-width">
+            {treatmentPlans.map(plan => (
+              <Card key={plan.id} className="dashboard-card plan-card-dash">
+                <div className="card-header">
+                  <h3>📁 {plan.name}</h3>
+                  <span className="plan-objective-dash">{plan.objective}</span>
+                </div>
+                <div className="plan-summary-dash">
+                  {plan.protocols?.filter(p => p.active).map(p => (
+                    <div key={p.id} className="plan-protocol-item-dash">
+                      <span>💊 {p.name}</span>
+                      <div className="protocol-meta-dash">
+                        <span className={`status-tag-dash ${p.titration_status}`}>
+                          {p.titration_status === 'titulando' ? '📈 Titulando' : '✅'}
+                        </span>
+                        <div className="plan-times-dash">
+                          {p.time_schedule?.map(t => (
+                            <span key={t} className={`time-mini-dash ${t <= getCurrentTime() ? 'past' : ''}`}>{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
         {/* Catálogo de Medicamentos */}
         <Card className="dashboard-card medicines-card">
           <div className="card-header">
@@ -124,30 +158,27 @@ export default function Dashboard({ onNavigate }) {
               Cadastre novos remédios e consulte o seu catálogo.
             </p>
             <Button variant="outline" size="sm" onClick={() => onNavigate('medicines')}>
-              Ver Medicamentos
+              Ver Catálogo
             </Button>
           </div>
         </Card>
 
-        {/* Protocolos Ativos */}
+        {/* Protocolos Isolados */}
         <Card className="dashboard-card protocols-card">
           <div className="card-header">
-            <h3>📋 Protocolos Ativos</h3>
+            <h3>📋 Protocolos {treatmentPlans.length > 0 ? 'Avulsos' : 'Ativos'}</h3>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('protocols')}>
               Ver todos
             </Button>
           </div>
           
-          {activeProtocols.length === 0 ? (
+          {activeProtocols.filter(p => !p.treatment_plan_id).length === 0 ? (
             <div className="empty-message">
-              <p>Nenhum protocolo ativo</p>
-              <Button variant="outline" size="sm" onClick={() => onNavigate('protocols')}>
-                Criar Protocolo
-              </Button>
+              <p>Nenhum protocolo avulso</p>
             </div>
           ) : (
             <div className="protocols-list">
-              {activeProtocols.slice(0, 3).map(protocol => (
+              {activeProtocols.filter(p => !p.treatment_plan_id).slice(0, 3).map(protocol => (
                 <div key={protocol.id} className="protocol-item">
                   <div className="protocol-info-dash">
                     <h4>{protocol.name}</h4>
