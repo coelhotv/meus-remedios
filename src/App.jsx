@@ -6,9 +6,11 @@ import Stock from './views/Stock'
 import Protocols from './views/Protocols'
 import Dashboard from './views/Dashboard'
 import History from './views/History'
+import TestConnection from './components/TestConnection'
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard')
+  const [showDebug, setShowDebug] = useState(false)
 
   // Shared navigation header for sub-views
   const renderNav = () => (
@@ -76,6 +78,12 @@ function App() {
     <div className="app-container">
       <Dashboard onNavigate={(view) => setCurrentView(view)} />
       
+      {showDebug && (
+        <div style={{ padding: '0 var(--space-6)', marginBottom: 'var(--space-8)' }}>
+          <TestConnection />
+        </div>
+      )}
+      
       <footer style={{ 
         textAlign: 'center', 
         marginTop: 'var(--space-8)',
@@ -84,6 +92,20 @@ function App() {
         fontSize: 'var(--font-size-sm)'
       }}>
         <p>Meu Remédio v0.1.0 - Piloto</p>
+        
+        <span 
+          onClick={() => setShowDebug(!showDebug)} 
+          style={{ 
+            cursor: 'pointer', 
+            opacity: 0.1, 
+            fontSize: '10px',
+            display: 'block',
+            margin: '4px 0'
+          }}
+        >
+          {showDebug ? '[-] hide debug' : '[+] check system'}
+        </span>
+
         <p style={{ marginTop: 'var(--space-2)' }}>
           ✨ Desenvolvido com React + Vite + Supabase
         </p>

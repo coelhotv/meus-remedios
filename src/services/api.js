@@ -10,12 +10,28 @@ export const medicineService = {
   async getAll() {
     const { data, error } = await supabase
       .from('medicines')
-      .select('*')
+      .select(`
+        *,
+        stock(*)
+      `)
       .eq('user_id', MOCK_USER_ID)
       .order('created_at', { ascending: false })
     
     if (error) throw error
-    return data
+    
+    // Calcula o custo médio ponderado baseado no estoque disponível
+    return data.map(medicine => {
+      const activeStock = (medicine.stock || []).filter(s => s.quantity > 0)
+      const totalQuantity = activeStock.reduce((sum, s) => sum + s.quantity, 0)
+      const totalValue = activeStock.reduce((sum, s) => sum + ((s.unit_price || 0) * s.quantity), 0)
+      
+      const avgPrice = totalQuantity > 0 ? totalValue / totalQuantity : null
+      
+      return { 
+        ...medicine, 
+        avg_price: avgPrice 
+      }
+    })
   },
 
   /**
@@ -24,13 +40,22 @@ export const medicineService = {
   async getById(id) {
     const { data, error } = await supabase
       .from('medicines')
-      .select('*')
+      .select(`
+        *,
+        stock(*)
+      `)
       .eq('id', id)
       .eq('user_id', MOCK_USER_ID)
       .single()
     
     if (error) throw error
-    return data
+
+    const activeStock = (data.stock || []).filter(s => s.quantity > 0)
+    const totalQuantity = activeStock.reduce((sum, s) => sum + s.quantity, 0)
+    const totalValue = activeStock.reduce((sum, s) => sum + ((s.unit_price || 0) * s.quantity), 0)
+    const avgPrice = totalQuantity > 0 ? totalValue / totalQuantity : null
+    
+    return { ...data, avg_price: avgPrice }
   },
 
   /**

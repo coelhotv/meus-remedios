@@ -109,7 +109,26 @@ export default function Dashboard({ onNavigate }) {
         </div>
       )}
 
+
       <div className="dashboard-grid">
+        {/* Catálogo de Medicamentos */}
+        <Card className="dashboard-card medicines-card">
+          <div className="card-header">
+            <h3>💊 Catálogo</h3>
+            <Button variant="ghost" size="sm" onClick={() => onNavigate('medicines')}>
+              Gerenciar
+            </Button>
+          </div>
+          <div className="medicines-summary">
+            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)' }}>
+              Cadastre novos remédios e consulte o seu catálogo.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => onNavigate('medicines')}>
+              Ver Medicamentos
+            </Button>
+          </div>
+        </Card>
+
         {/* Protocolos Ativos */}
         <Card className="dashboard-card protocols-card">
           <div className="card-header">

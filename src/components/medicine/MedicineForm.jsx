@@ -7,8 +7,7 @@ export default function MedicineForm({ medicine, onSave, onCancel }) {
     name: medicine?.name || '',
     laboratory: medicine?.laboratory || '',
     active_ingredient: medicine?.active_ingredient || '',
-    dosage_per_pill: medicine?.dosage_per_pill || '',
-    price_paid: medicine?.price_paid || ''
+    dosage_per_pill: medicine?.dosage_per_pill || ''
   })
   
   const [errors, setErrors] = useState({})
@@ -34,10 +33,6 @@ export default function MedicineForm({ medicine, onSave, onCancel }) {
       newErrors.dosage_per_pill = 'Deve ser um número'
     }
     
-    if (formData.price_paid && isNaN(formData.price_paid)) {
-      newErrors.price_paid = 'Deve ser um número'
-    }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -55,8 +50,7 @@ export default function MedicineForm({ medicine, onSave, onCancel }) {
         name: formData.name.trim(),
         laboratory: formData.laboratory.trim() || null,
         active_ingredient: formData.active_ingredient.trim() || null,
-        dosage_per_pill: formData.dosage_per_pill ? parseFloat(formData.dosage_per_pill) : null,
-        price_paid: formData.price_paid ? parseFloat(formData.price_paid) : null
+        dosage_per_pill: formData.dosage_per_pill ? parseFloat(formData.dosage_per_pill) : null
       }
       
       await onSave(dataToSave)
@@ -113,36 +107,19 @@ export default function MedicineForm({ medicine, onSave, onCancel }) {
         />
       </div>
 
-      <div className="form-row">
-        <div className="form-group">
-          <label htmlFor="dosage_per_pill">Dosagem por Comprimido (mg)</label>
-          <input
-            type="number"
-            id="dosage_per_pill"
-            name="dosage_per_pill"
-            value={formData.dosage_per_pill}
-            onChange={handleChange}
-            className={errors.dosage_per_pill ? 'error' : ''}
-            placeholder="500"
-            step="0.01"
-          />
-          {errors.dosage_per_pill && <span className="error-message">{errors.dosage_per_pill}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="price_paid">Preço Pago (R$)</label>
-          <input
-            type="number"
-            id="price_paid"
-            name="price_paid"
-            value={formData.price_paid}
-            onChange={handleChange}
-            className={errors.price_paid ? 'error' : ''}
-            placeholder="15.90"
-            step="0.01"
-          />
-          {errors.price_paid && <span className="error-message">{errors.price_paid}</span>}
-        </div>
+      <div className="form-group">
+        <label htmlFor="dosage_per_pill">Dosagem por Comprimido (mg)</label>
+        <input
+          type="number"
+          id="dosage_per_pill"
+          name="dosage_per_pill"
+          value={formData.dosage_per_pill}
+          onChange={handleChange}
+          className={errors.dosage_per_pill ? 'error' : ''}
+          placeholder="500"
+          step="0.01"
+        />
+        {errors.dosage_per_pill && <span className="error-message">{errors.dosage_per_pill}</span>}
       </div>
 
       {errors.submit && (

@@ -72,6 +72,20 @@
   color: var(--text-secondary);
 }
 
+.entry-price {
+  font-size: var(--font-size-xs);
+  color: var(--accent-secondary);
+  font-weight: 500;
+}
+
+.entry-total {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  text-align: right;
+  border-top: 1px dotted var(--border-color);
+  padding-top: var(--space-1);
+}
+
 .entry-expiration {
   display: flex;
   justify-content: flex-end;

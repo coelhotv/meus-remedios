@@ -27,10 +27,10 @@ export default function MedicineCard({ medicine, onEdit, onDelete }) {
           </div>
         )}
         
-        {medicine.price_paid && (
+        {medicine.avg_price !== undefined && medicine.avg_price !== null && (
           <div className="detail-item">
-            <span className="detail-label">💰 Preço:</span>
-            <span className="detail-value">R$ {parseFloat(medicine.price_paid).toFixed(2)}</span>
+            <span className="detail-label">💰 Custo Médio:</span>
+            <span className="detail-value">R$ {parseFloat(medicine.avg_price).toFixed(2)}</span>
           </div>
         )}
       </div>

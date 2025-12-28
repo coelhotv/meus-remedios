@@ -6,6 +6,7 @@ export default function StockForm({ medicines, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     medicine_id: '',
     quantity: '',
+    unit_price: '',
     purchase_date: new Date().toISOString().split('T')[0],
     expiration_date: ''
   })
@@ -31,6 +32,10 @@ export default function StockForm({ medicines, onSave, onCancel }) {
     if (!formData.quantity || formData.quantity <= 0) {
       newErrors.quantity = 'Quantidade deve ser maior que zero'
     }
+
+    if (formData.unit_price && isNaN(formData.unit_price)) {
+      newErrors.unit_price = 'Deve ser um número'
+    }
     
     if (formData.expiration_date && formData.expiration_date < formData.purchase_date) {
       newErrors.expiration_date = 'Data de validade não pode ser anterior à compra'
@@ -51,6 +56,7 @@ export default function StockForm({ medicines, onSave, onCancel }) {
       const dataToSave = {
         medicine_id: formData.medicine_id,
         quantity: parseInt(formData.quantity),
+        unit_price: formData.unit_price ? parseFloat(formData.unit_price) : 0,
         purchase_date: formData.purchase_date || null,
         expiration_date: formData.expiration_date || null
       }
@@ -89,21 +95,39 @@ export default function StockForm({ medicines, onSave, onCancel }) {
         {errors.medicine_id && <span className="error-message">{errors.medicine_id}</span>}
       </div>
 
-      <div className="form-group">
-        <label htmlFor="quantity">
-          Quantidade de Comprimidos <span className="required">*</span>
-        </label>
-        <input
-          type="number"
-          id="quantity"
-          name="quantity"
-          value={formData.quantity}
-          onChange={handleChange}
-          className={errors.quantity ? 'error' : ''}
-          placeholder="30"
-          min="1"
-        />
-        {errors.quantity && <span className="error-message">{errors.quantity}</span>}
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="quantity">
+            Qtd. Comprimidos <span className="required">*</span>
+          </label>
+          <input
+            type="number"
+            id="quantity"
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleChange}
+            className={errors.quantity ? 'error' : ''}
+            placeholder="30"
+            min="1"
+          />
+          {errors.quantity && <span className="error-message">{errors.quantity}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="unit_price">Preço Unitário (R$)</label>
+          <input
+            type="number"
+            id="unit_price"
+            name="unit_price"
+            value={formData.unit_price}
+            onChange={handleChange}
+            className={errors.unit_price ? 'error' : ''}
+            placeholder="0.50"
+            step="0.01"
+            min="0"
+          />
+          {errors.unit_price && <span className="error-message">{errors.unit_price}</span>}
+        </div>
       </div>
 
       <div className="form-row">

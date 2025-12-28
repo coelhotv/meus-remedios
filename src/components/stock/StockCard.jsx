@@ -45,10 +45,18 @@ export default function StockCard({ medicine, stockEntries, totalQuantity }) {
               <div key={entry.id} className="entry-item">
                 <div className="entry-info">
                   <span className="entry-quantity">{entry.quantity} un.</span>
+                  <span className="entry-price">
+                    {entry.unit_price > 0 ? `(R$ ${parseFloat(entry.unit_price).toFixed(2)}/un)` : ''}
+                  </span>
                   <span className="entry-date">
                     Compra: {formatDate(entry.purchase_date)}
                   </span>
                 </div>
+                {entry.unit_price > 0 && (
+                  <div className="entry-total">
+                    Custo lote: R$ {(entry.unit_price * entry.quantity).toFixed(2)}
+                  </div>
+                )}
                 {entry.expiration_date && (
                   <div className="entry-expiration">
                     <span 
