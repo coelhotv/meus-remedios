@@ -19,6 +19,7 @@ export default function Dashboard({ onNavigate }) {
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [lastUpdated, setLastUpdated] = useState(new Date())
 
   useEffect(() => {
     loadDashboardData()
@@ -47,6 +48,7 @@ export default function Dashboard({ onNavigate }) {
       setActiveProtocols(protocols)
       setTreatmentPlans(plans)
       setRecentLogs(logs)
+      setLastUpdated(new Date())
       
       // Initialize expandedPlans state (all false by default)
       const initialExpandedState = {}
@@ -113,6 +115,13 @@ export default function Dashboard({ onNavigate }) {
     return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
 
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Bom dia! ☀️'
+    if (hour < 18) return 'Boa tarde! 🌤️'
+    return 'Boa noite! 🌙'
+  }
+
   if (isLoading) {
     return (
       <div className="dashboard-view">
@@ -122,17 +131,44 @@ export default function Dashboard({ onNavigate }) {
   }
 
   return (
-    <div className="dashboard-view">
-      <div className="dashboard-header">
-        <div>
-          <h2>🏠 Dashboard</h2>
+    <div className="dashboard-container">
+      <div className="dashboard-header-premium">
+        <div className="greeting-section">
+          <h1>{getGreeting()}</h1>
           <p className="dashboard-subtitle">
-            Visão geral dos seus medicamentos
+            <span className="live-indicator"></span> 
+            Atualizado em {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-          ✅ Registrar Dose
-        </Button>
+        <div className="quick-actions">
+          <Button variant="primary" className="btn-log-dose" onClick={() => setIsModalOpen(true)}>
+            <span className="btn-icon">➕</span> Registrar Dose
+          </Button>
+        </div>
+      </div>
+
+      <div className="dashboard-summary-row fade-in">
+        <div className="summary-stat-card">
+          <span className="stat-icon">💊</span>
+          <div className="stat-content">
+            <span className="stat-value">{activeProtocols.length}</span>
+            <span className="stat-label">Protocolos Ativos</span>
+          </div>
+        </div>
+        <div className="summary-stat-card">
+          <span className="stat-icon">📅</span>
+          <div className="stat-content">
+            <span className="stat-value">{treatmentPlans.length}</span>
+            <span className="stat-label">Planos em Curso</span>
+          </div>
+        </div>
+        <div className="summary-stat-card warning">
+          <span className="stat-icon">⚠️</span>
+          <div className="stat-content">
+            <span className="stat-value">{stockSummary.filter(s => s.total < 10).length}</span>
+            <span className="stat-label">Estoque Baixo</span>
+          </div>
+        </div>
       </div>
 
       {successMessage && (
