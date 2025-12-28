@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { medicineService, stockService } from '../services/api'
+import { medicineService, stockService, protocolService } from '../services/api'
 import Button from '../components/ui/Button'
 import Loading from '../components/ui/Loading'
 import Modal from '../components/ui/Modal'
@@ -9,7 +9,7 @@ import './Stock.css'
 
 export default function Stock() {
   const [medicines, setMedicines] = useState([])
-  const [stockData, setStockData] = useState({}) // { medicineId: { entries: [], total: 0 } }
+  const [stockData, setStockData] = useState({}) // { medicineId: { entries: [], total: 0, ...status } }
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -24,15 +24,39 @@ export default function Stock() {
       setIsLoading(true)
       setError(null)
       
-      // Carregar medicamentos
-      const medicinesData = await medicineService.getAll()
+      const [medicinesData, protocols] = await Promise.all([
+        medicineService.getAll(),
+        protocolService.getActive()
+      ])
+      
+      // Calcular consumo diário por medicamento
+      const dailyIntakeMap = {}
+      protocols.forEach(p => {
+        if (p.active) {
+          const daily = (p.dosage_per_intake || 0) * (p.time_schedule?.length || 0)
+          dailyIntakeMap[p.medicine_id] = (dailyIntakeMap[p.medicine_id] || 0) + daily
+        }
+      })
+      
       setMedicines(medicinesData)
       
       // Carregar estoque para cada medicamento
       const stockPromises = medicinesData.map(async (medicine) => {
         const entries = await stockService.getByMedicine(medicine.id)
         const total = entries.reduce((sum, entry) => sum + entry.quantity, 0)
-        return { medicineId: medicine.id, entries, total }
+        
+        const dailyIntake = dailyIntakeMap[medicine.id] || 0
+        const daysRemaining = dailyIntake > 0 ? total / dailyIntake : Infinity
+        const isLow = dailyIntake > 0 && daysRemaining < 4
+        
+        return { 
+          medicineId: medicine.id, 
+          entries, 
+          total,
+          dailyIntake,
+          daysRemaining,
+          isLow
+        }
       })
       
       const stockResults = await Promise.all(stockPromises)
@@ -42,7 +66,10 @@ export default function Stock() {
       stockResults.forEach(result => {
         stockMap[result.medicineId] = {
           entries: result.entries,
-          total: result.total
+          total: result.total,
+          dailyIntake: result.dailyIntake,
+          daysRemaining: result.daysRemaining,
+          isLow: result.isLow
         }
       })
       
@@ -82,18 +109,18 @@ export default function Stock() {
   // Filtrar medicamentos que têm estoque ou foram cadastrados
   const medicinesWithStock = medicines.map(medicine => ({
     medicine,
-    stock: stockData[medicine.id] || { entries: [], total: 0 }
+    stock: stockData[medicine.id] || { entries: [], total: 0, daysRemaining: Infinity, isLow: false, dailyIntake: 0 }
   }))
 
-  // Separar em categorias
-  const lowStockMedicines = medicinesWithStock.filter(
-    item => item.stock.total > 0 && item.stock.total <= 10
-  )
+  // Separar em categorias baseadas na nova regra
   const outOfStockMedicines = medicinesWithStock.filter(
     item => item.stock.total === 0
   )
+  const lowStockMedicines = medicinesWithStock.filter(
+    item => item.stock.total > 0 && item.stock.isLow
+  )
   const okStockMedicines = medicinesWithStock.filter(
-    item => item.stock.total > 10
+    item => item.stock.total > 0 && !item.stock.isLow
   )
 
   if (isLoading) {
@@ -110,7 +137,8 @@ export default function Stock() {
         <div>
           <h2>📦 Estoque</h2>
           <p className="stock-subtitle">
-            Controle o estoque dos seus medicamentos
+            <span className="live-indicator"></span> 
+            Sincronizado com protocolos ativos
           </p>
         </div>
         <Button variant="primary" onClick={handleAddStock}>
@@ -138,30 +166,12 @@ export default function Stock() {
         </div>
       ) : (
         <div className="stock-content">
-          {/* Alertas de estoque baixo */}
-          {lowStockMedicines.length > 0 && (
-            <div className="stock-section">
-              <h3 className="section-title warning">
-                ⚠️ Estoque Baixo ({lowStockMedicines.length})
-              </h3>
-              <div className="stock-grid">
-                {lowStockMedicines.map(({ medicine, stock }) => (
-                  <StockCard
-                    key={medicine.id}
-                    medicine={medicine}
-                    stockEntries={stock.entries}
-                    totalQuantity={stock.total}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Medicamentos sem estoque */}
+          {/* Alertas críticos: Sem estoque */}
           {outOfStockMedicines.length > 0 && (
-            <div className="stock-section">
+            <div className="stock-section fade-in">
               <h3 className="section-title error">
                 ❌ Sem Estoque ({outOfStockMedicines.length})
+                <span className="section-subtitle">Reposição imediata necessária</span>
               </h3>
               <div className="stock-grid">
                 {outOfStockMedicines.map(({ medicine, stock }) => (
@@ -170,17 +180,43 @@ export default function Stock() {
                     medicine={medicine}
                     stockEntries={stock.entries}
                     totalQuantity={stock.total}
+                    daysRemaining={stock.daysRemaining}
+                    isLow={true}
                   />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Medicamentos com estoque OK */}
+          {/* Atenção: Acabando em breve */}
+          {lowStockMedicines.length > 0 && (
+            <div className="stock-section fade-in">
+              <h3 className="section-title warning">
+                ⚠️ Acaba em breve ({lowStockMedicines.length})
+                <span className="section-subtitle">Menos de 4 dias de cobertura</span>
+              </h3>
+              <div className="stock-grid">
+                {lowStockMedicines.map(({ medicine, stock }) => (
+                  <StockCard
+                    key={medicine.id}
+                    medicine={medicine}
+                    stockEntries={stock.entries}
+                    totalQuantity={stock.total}
+                    daysRemaining={stock.daysRemaining}
+                    isLow={true}
+                    dailyIntake={stock.dailyIntake}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tudo certo: Estoque OK */}
           {okStockMedicines.length > 0 && (
-            <div className="stock-section">
+            <div className="stock-section fade-in">
               <h3 className="section-title success">
                 ✅ Estoque OK ({okStockMedicines.length})
+                <span className="section-subtitle">Mais de 4 dias garantidos</span>
               </h3>
               <div className="stock-grid">
                 {okStockMedicines.map(({ medicine, stock }) => (
@@ -189,6 +225,9 @@ export default function Stock() {
                     medicine={medicine}
                     stockEntries={stock.entries}
                     totalQuantity={stock.total}
+                    daysRemaining={stock.daysRemaining}
+                    isLow={false}
+                    dailyIntake={stock.dailyIntake}
                   />
                 ))}
               </div>

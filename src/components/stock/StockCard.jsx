@@ -2,7 +2,7 @@ import Card from '../ui/Card'
 import StockIndicator from './StockIndicator'
 import './StockCard.css'
 
-export default function StockCard({ medicine, stockEntries, totalQuantity }) {
+export default function StockCard({ medicine, stockEntries, totalQuantity, daysRemaining, isLow, dailyIntake }) {
   const formatDate = (dateString) => {
     if (!dateString) return '-'
     const date = new Date(dateString)
@@ -25,17 +25,26 @@ export default function StockCard({ medicine, stockEntries, totalQuantity }) {
   }
 
   return (
-    <Card className="stock-card">
+    <Card className={`stock-card-detail ${isLow ? 'low-stock-card' : ''}`}>
       <div className="stock-card-header">
-        <div>
+        <div className="medicine-info-top">
           <h4 className="medicine-name">{medicine.name}</h4>
           {medicine.dosage_per_pill && (
             <span className="medicine-dosage">{medicine.dosage_per_pill}mg</span>
           )}
         </div>
+        <div className="stock-days-badge">
+          {dailyIntake > 0 ? (
+            <span className={`days-count ${isLow ? 'danger' : ''}`}>
+              {Math.floor(daysRemaining)} dias
+            </span>
+          ) : (
+            <span className="days-count neutral">Inativo</span>
+          )}
+        </div>
       </div>
 
-      <StockIndicator quantity={totalQuantity} />
+      <StockIndicator quantity={totalQuantity} isLow={isLow} />
 
       {stockEntries.length > 0 && (
         <div className="stock-entries">

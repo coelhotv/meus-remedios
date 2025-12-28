@@ -42,24 +42,35 @@
 .section-title {
   margin: 0;
   font-size: var(--font-size-xl);
-  font-weight: 600;
-  padding-bottom: var(--space-3);
+  font-weight: 700;
+  padding-bottom: var(--space-4);
   border-bottom: 2px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section-subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .section-title.warning {
   color: var(--accent-warning);
-  border-color: var(--accent-warning);
+  border-color: rgba(255, 170, 0, 0.3);
 }
 
 .section-title.error {
   color: var(--accent-error);
-  border-color: var(--accent-error);
+  border-color: rgba(255, 0, 110, 0.3);
 }
 
 .section-title.success {
   color: var(--accent-success);
-  border-color: var(--accent-success);
+  border-color: rgba(0, 255, 136, 0.3);
 }
 
 .stock-grid {
