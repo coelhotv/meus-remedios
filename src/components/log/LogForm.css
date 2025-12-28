@@ -1,0 +1,37 @@
+.log-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.log-form h3 {
+  margin: 0 0 var(--space-4) 0;
+  color: var(--text-primary);
+}
+
+.protocol-info {
+  padding: var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.info-item {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.info-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  min-width: 130px;
+}
+
+.info-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
