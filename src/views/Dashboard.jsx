@@ -57,15 +57,37 @@ export default function Dashboard({ onNavigate }) {
       })
       setExpandedPlans(initialExpandedState)
       
+      // Calcular consumo diário por medicamento
+      const dailyIntakeMap = {}
+      protocols.forEach(p => {
+        if (p.active) {
+          const daily = (p.dosage_per_intake || 0) * (p.time_schedule?.length || 0)
+          dailyIntakeMap[p.medicine_id] = (dailyIntakeMap[p.medicine_id] || 0) + daily
+        }
+      })
+      
       // Carregar estoque para cada medicamento
       const stockPromises = medicines.map(async (medicine) => {
         const entries = await stockService.getByMedicine(medicine.id)
         const total = entries.reduce((sum, entry) => sum + entry.quantity, 0)
-        return { medicine, total }
+        const dailyIntake = dailyIntakeMap[medicine.id] || 0
+        const daysRemaining = dailyIntake > 0 ? total / dailyIntake : Infinity
+        const isLow = dailyIntake > 0 && daysRemaining < 4
+        
+        return { medicine, total, dailyIntake, daysRemaining, isLow }
       })
       
       const stockData = await Promise.all(stockPromises)
-      setStockSummary(stockData.filter(item => item.total > 0))
+      const sortedStock = stockData
+        .filter(item => item.total > 0)
+        .sort((a, b) => {
+          // Itens baixos primeiro, depois por dias restantes
+          if (a.isLow && !b.isLow) return -1
+          if (!a.isLow && b.isLow) return 1
+          return a.daysRemaining - b.daysRemaining
+        })
+        
+      setStockSummary(sortedStock)
       
     } catch (err) {
       setError('Erro ao carregar dados: ' + err.message)
@@ -165,8 +187,8 @@ export default function Dashboard({ onNavigate }) {
         <div className="summary-stat-card warning">
           <span className="stat-icon">⚠️</span>
           <div className="stat-content">
-            <span className="stat-value">{stockSummary.filter(s => s.total < 10).length}</span>
-            <span className="stat-label">Estoque Baixo</span>
+            <span className="stat-value">{stockSummary.filter(s => s.isLow).length}</span>
+            <span className="stat-label">Acaba em breve</span>
           </div>
         </div>
       </div>
@@ -293,7 +315,10 @@ export default function Dashboard({ onNavigate }) {
         {/* Estoque */}
         <Card className="dashboard-card stock-card">
           <div className="card-header">
-            <h3>📦 Estoque</h3>
+            <h3>
+              📦 Estoque 
+              {stockSummary.some(s => s.isLow) && <span className="badge-alert-mini">!</span>}
+            </h3>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('stock')}>
               Ver todos
             </Button>
@@ -308,12 +333,20 @@ export default function Dashboard({ onNavigate }) {
             </div>
           ) : (
             <div className="stock-list">
-              {stockSummary.slice(0, 3).map(item => (
-                <div key={item.medicine.id} className="stock-item">
+              {stockSummary.slice(0, 5).map(item => (
+                <div key={item.medicine.id} className={`stock-item ${item.isLow ? 'low-stock-highlight' : ''}`}>
                   <div className="stock-info-dash">
-                    <h4>{item.medicine.name}</h4>
+                    <h4>
+                      {item.isLow && <span className="warning-mini">⚠️</span>}
+                      {item.medicine.name}
+                    </h4>
+                    <span className="stock-days-remaining">
+                      {item.dailyIntake > 0 
+                        ? `${Math.floor(item.daysRemaining)} dias restantes`
+                        : 'Sem protocolo ativo'}
+                    </span>
                   </div>
-                  <StockIndicator quantity={item.total} />
+                  <StockIndicator quantity={item.total} isLow={item.isLow} />
                 </div>
               ))}
             </div>

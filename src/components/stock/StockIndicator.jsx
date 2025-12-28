@@ -1,14 +1,20 @@
 import './StockIndicator.css'
 
-export default function StockIndicator({ quantity, lowThreshold = 10 }) {
+export default function StockIndicator({ quantity, lowThreshold = 10, isLow }) {
   const getStatusColor = () => {
     if (quantity === 0) return 'var(--accent-error)'
+    if (isLow !== undefined) {
+      return isLow ? 'var(--accent-warning)' : 'var(--accent-success)'
+    }
     if (quantity <= lowThreshold) return 'var(--accent-warning)'
     return 'var(--accent-success)'
   }
 
   const getStatusText = () => {
     if (quantity === 0) return 'Sem estoque'
+    if (isLow !== undefined) {
+      return isLow ? 'Acaba em breve' : 'Estoque OK'
+    }
     if (quantity <= lowThreshold) return 'Estoque baixo'
     return 'Estoque OK'
   }
