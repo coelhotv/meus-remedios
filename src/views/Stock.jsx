@@ -116,12 +116,13 @@ export default function Stock() {
   const outOfStockMedicines = medicinesWithStock.filter(
     item => item.stock.total === 0
   )
-  const lowStockMedicines = medicinesWithStock.filter(
-    item => item.stock.total > 0 && item.stock.isLow
-  )
-  const okStockMedicines = medicinesWithStock.filter(
-    item => item.stock.total > 0 && !item.stock.isLow
-  )
+  const lowStockMedicines = medicinesWithStock
+    .filter(item => item.stock.total > 0 && item.stock.isLow)
+    .sort((a, b) => a.stock.daysRemaining - b.stock.daysRemaining)
+
+  const okStockMedicines = medicinesWithStock
+    .filter(item => item.stock.total > 0 && !item.stock.isLow)
+    .sort((a, b) => a.stock.daysRemaining - b.stock.daysRemaining)
 
   if (isLoading) {
     return (
@@ -148,7 +149,7 @@ export default function Stock() {
 
       {successMessage && (
         <div className="success-banner fade-in">
-          ✅ {successMessage}
+          ✨ {successMessage}
         </div>
       )}
 
@@ -215,7 +216,7 @@ export default function Stock() {
           {okStockMedicines.length > 0 && (
             <div className="stock-section fade-in">
               <h3 className="section-title success">
-                ✅ Estoque OK ({okStockMedicines.length})
+                📦 Estoque OK ({okStockMedicines.length})
                 <span className="section-subtitle">Mais de 4 dias garantidos</span>
               </h3>
               <div className="stock-grid">

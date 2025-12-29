@@ -4,19 +4,21 @@
 
 Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com suporte a **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Version](https://img.shields.io/badge/version-0.5.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 🎯 Funcionalidades (V0.2.0)
+## 🎯 Funcionalidades (V0.5.0)
 
-- ✅ **Cadastro de Medicamentos**: Registre remédios com nome, laboratório, princípio ativo, dosagem e preço.
-- ✅ **Planos de Tratamento (Grupos)**: Agrupe medicamentos em protocolos complexos (ex: "Quarteto Fantástico" para IC).
-- ✅ **Suporte à Titulação**: Defina doses alvo e acompanhe o status de ajuste medicamentoso (Titulando, Alvo Atingido).
-- ✅ **Controle de Estoque Inteligente**: Gerencie a quantidade com base no custo médio ponderado e validade.
-- ✅ **Registro em Lote ("Tomar Todas")**: Registre todas as doses de um plano de tratamento com um único clique.
-- ✅ **Interface Moderna**: Design neon com glass-morphism, tema escuro e visual premium.
+- ✅ **Dashboard Inteligente**: Interface premium Neo-Glass com indicadores live e saudações dinâmicas.
+- ✅ **Custo de Oportunidade (Estoque Preditivo)**: Regra de estoque baixo baseada em dias de cobertura (menos de 4 dias).
+- ✅ **Seleção Inteligente de Doses**: Interface de checkboxes para registro seletivo de medicamentos ("Tomar Selecionados").
+- ✅ **Gestalt Digital**: Dashboard equilibrado com listas detalhadas de catálogo, protocolos e histórico.
+- ✅ **Metadados Avançados**: Princípios ativos, laboratórios e dosagens destacadas no resumo.
+- ✅ **Cadastro de Medicamentos**: Registre remédios com nome, laboratório, princípio ativo e dosagem.
+- ✅ **Planos de Tratamento**: Agrupe medicamentos em protocolos complexos com suporte à titulação.
+- ✅ **Interface Premium**: Design neon com glass-morphism e tema escuro nativo.
 
 ## 🚀 Roadmap Futuro
 
@@ -185,5 +187,5 @@ Para dúvidas ou problemas:
 
 ---
 
-**Versão**: 0.1.0 (Piloto)  
+**Versão**: 0.5.0 (Piloto)  
 **Última atualização**: Dezembro 2025

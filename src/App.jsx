@@ -91,7 +91,7 @@ function App() {
         color: 'var(--text-tertiary)',
         fontSize: 'var(--font-size-sm)'
       }}>
-        <p>Meus Remédios v0.1.0 - Piloto</p>
+        <p>Meus Remédios v0.5.0 - Piloto</p>
         
         <span 
           onClick={() => setShowDebug(!showDebug)} 

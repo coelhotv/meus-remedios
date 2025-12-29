@@ -206,6 +206,34 @@
   background: rgba(0, 0, 0, 0.2);
 }
 
+.plan-protocol-item-dash.selectable {
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.plan-protocol-item-dash.selectable:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.plan-protocol-item-dash.selected {
+  border-color: var(--accent-primary);
+  background: rgba(0, 240, 255, 0.05);
+}
+
+.protocol-selection-area {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.protocol-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
 .plan-protocol-item-dash {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -316,9 +344,98 @@
   box-shadow: 0 0 8px var(--accent-warning);
 }
 
-.protocol-info-dash h4 {
+.item-list-dash {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.summary-item-dash {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.summary-item-dash:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.item-info-dash h4 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.item-details-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.item-main-dash {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: capitalize;
+  display: block;
+}
+
+.item-lab-dash, .item-freq-dash {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  display: block;
+}
+
+.item-right-dash {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.dosage-highlight-dash {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  background: rgba(0, 240, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.05);
+}
+
+.type-tag-dash {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  background: rgba(0, 240, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.item-schedule-dash {
+  display: flex;
+  gap: 4px;
+}
+
+.protocol-info-dash h4,
+.stock-info-dash h4 {
   margin: 0 0 2px 0;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .stock-days-remaining {
@@ -403,7 +520,13 @@
 
   .plan-actions-dash {
     width: 100%;
+    display: flex;
     justify-content: space-between;
+    align-items: center;
+  }
+
+  .plan-actions-dash button {
+    margin-left: auto;
   }
 }
 

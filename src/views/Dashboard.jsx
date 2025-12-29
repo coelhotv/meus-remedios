@@ -14,12 +14,14 @@ export default function Dashboard({ onNavigate }) {
   const [treatmentPlans, setTreatmentPlans] = useState([])
   const [recentLogs, setRecentLogs] = useState([])
   const [stockSummary, setStockSummary] = useState([])
+  const [allMedicines, setAllMedicines] = useState([])
   const [expandedPlans, setExpandedPlans] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [lastUpdated, setLastUpdated] = useState(new Date())
+  const [selectedProtocols, setSelectedProtocols] = useState({}) // { planId: [protocolIds] }
 
   useEffect(() => {
     loadDashboardData()
@@ -31,6 +33,22 @@ export default function Dashboard({ onNavigate }) {
       ...prev,
       [planId]: !prev[planId]
     }))
+  }
+
+  const toggleProtocolSelection = (planId, protocolId) => {
+    setSelectedProtocols(prev => {
+      const currentSelection = prev[planId] || []
+      const isSelected = currentSelection.includes(protocolId)
+      
+      const newSelection = isSelected 
+        ? currentSelection.filter(id => id !== protocolId)
+        : [...currentSelection, protocolId]
+        
+      return {
+        ...prev,
+        [planId]: newSelection
+      }
+    })
   }
 
   const loadDashboardData = async () => {
@@ -48,14 +66,23 @@ export default function Dashboard({ onNavigate }) {
       setActiveProtocols(protocols)
       setTreatmentPlans(plans)
       setRecentLogs(logs)
+      setAllMedicines(medicines)
       setLastUpdated(new Date())
       
-      // Initialize expandedPlans state (all false by default)
+      // Initialize expandedPlans and selectedProtocols
       const initialExpandedState = {}
+      const initialSelectionState = {}
+      
       plans.forEach(plan => {
         initialExpandedState[plan.id] = false
+        // Todos selecionados por padrão
+        initialSelectionState[plan.id] = plan.protocols
+          ?.filter(p => p.active)
+          .map(p => p.id) || []
       })
+      
       setExpandedPlans(initialExpandedState)
+      setSelectedProtocols(initialSelectionState)
       
       // Calcular consumo diário por medicamento
       const dailyIntakeMap = {}
@@ -113,12 +140,14 @@ export default function Dashboard({ onNavigate }) {
     }
   }
 
-  const handleTakeAllFromPlan = async (e, plan) => {
-    e.stopPropagation() // Prevent toggling the card when clicking the button
-    const activeProtocols = plan.protocols?.filter(p => p.active) || []
-    if (activeProtocols.length === 0) return
+  const handleTakeSelectedFromPlan = async (e, plan) => {
+    e.stopPropagation()
+    const selection = selectedProtocols[plan.id] || []
+    const protocolsToTake = plan.protocols?.filter(p => p.active && selection.includes(p.id)) || []
+    
+    if (protocolsToTake.length === 0) return
 
-    const logs = activeProtocols.map(p => ({
+    const logs = protocolsToTake.map(p => ({
       protocol_id: p.id,
       medicine_id: p.medicine_id,
       quantity_taken: p.dosage_per_intake,
@@ -195,7 +224,7 @@ export default function Dashboard({ onNavigate }) {
 
       {successMessage && (
         <div className="success-banner fade-in">
-          ✅ {successMessage}
+          ✨ {successMessage}
         </div>
       )}
 
@@ -225,10 +254,10 @@ export default function Dashboard({ onNavigate }) {
                     <Button 
                       variant="primary" 
                       size="sm" 
-                      onClick={(e) => handleTakeAllFromPlan(e, plan)}
-                      disabled={!plan.protocols?.some(p => p.active)}
+                      onClick={(e) => handleTakeSelectedFromPlan(e, plan)}
+                      disabled={!(selectedProtocols[plan.id]?.length > 0)}
                     >
-                      ✅ Tomar Todas
+                      ✅ Tomar Selecionados
                     </Button>
                   </div>
                 </div>
@@ -236,11 +265,26 @@ export default function Dashboard({ onNavigate }) {
                 {expandedPlans[plan.id] && (
                   <div className="plan-summary-dash fade-in">
                     {plan.protocols?.filter(p => p.active).map(p => (
-                      <div key={p.id} className="plan-protocol-item-dash">
-                        <span>💊 {p.name}</span>
+                      <div 
+                        key={p.id} 
+                        className={`plan-protocol-item-dash selectable ${selectedProtocols[plan.id]?.includes(p.id) ? 'selected' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleProtocolSelection(plan.id, p.id);
+                        }}
+                      >
+                        <div className="protocol-selection-area">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedProtocols[plan.id]?.includes(p.id) || false}
+                            onChange={() => {}} // Handled by div onClick
+                            className="protocol-checkbox"
+                          />
+                          <span>💊 {p.name}</span>
+                        </div>
                         <div className="protocol-meta-dash">
                           <span className={`status-tag-dash ${p.titration_status}`}>
-                            {p.titration_status === 'titulando' ? '📈 Titulando' : '✅'}
+                            {p.titration_status === 'titulando' ? '📈 Titulando' : 'Estável'}
                           </span>
                           <div className="plan-times-dash">
                             {p.time_schedule?.map(t => (
@@ -265,51 +309,74 @@ export default function Dashboard({ onNavigate }) {
               Gerenciar
             </Button>
           </div>
-          <div className="medicines-summary">
-            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)' }}>
-              Cadastre novos remédios e consulte o seu catálogo.
-            </p>
-            <Button variant="outline" size="sm" onClick={() => onNavigate('medicines')}>
-              Ver Catálogo
-            </Button>
+          <div className="card-content-dash">
+            {allMedicines.length === 0 ? (
+              <div className="empty-message">
+                <p>Nenhum remédio cadastrado</p>
+                <Button variant="outline" size="sm" onClick={() => onNavigate('medicines')}>
+                  Cadastrar
+                </Button>
+              </div>
+            ) : (
+              <div className="item-list-dash">
+                {allMedicines.slice(-8).reverse().map(medicine => (
+                  <div key={medicine.id} className="summary-item-dash">
+                    <div className="item-info-dash">
+                      <h4>{medicine.name}</h4>
+                      <div className="item-details-dash">
+                        <span className="item-main-dash">{medicine.active_ingredient}</span>
+                        <span className="item-lab-dash">{medicine.laboratory}</span>
+                      </div>
+                    </div>
+                    <div className="item-right-dash">
+                      <span className="dosage-highlight-dash">{medicine.dosage_per_pill}mg</span>
+                      <span className="type-tag-dash">MED</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </Card>
 
-        {/* Protocolos Isolados */}
+        {/* Protocolos Avulsos */}
         <Card className="dashboard-card protocols-card">
           <div className="card-header">
-            <h3>📋 Protocolos {treatmentPlans.length > 0 ? 'Avulsos' : 'Ativos'}</h3>
+            <h3>📋 Protocolos Avulsos</h3>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('protocols')}>
               Ver todos
             </Button>
           </div>
           
-          {activeProtocols.filter(p => !p.treatment_plan_id).length === 0 ? (
-            <div className="empty-message">
-              <p>Nenhum protocolo avulso</p>
-            </div>
-          ) : (
-            <div className="protocols-list">
-              {activeProtocols.filter(p => !p.treatment_plan_id).slice(0, 3).map(protocol => (
-                <div key={protocol.id} className="protocol-item">
-                  <div className="protocol-info-dash">
-                    <h4>{protocol.name}</h4>
-                    <span className="protocol-medicine-dash">{protocol.medicine?.name}</span>
+          <div className="card-content-dash">
+            {activeProtocols.filter(p => !p.treatment_plan_id).length === 0 ? (
+              <div className="empty-message">
+                <p>Nenhum protocolo avulso</p>
+                <Button variant="outline" size="sm" onClick={() => onNavigate('protocols')}>
+                  Criar
+                </Button>
+              </div>
+            ) : (
+              <div className="item-list-dash">
+                {activeProtocols.filter(p => !p.treatment_plan_id).slice(0, 8).map(protocol => (
+                  <div key={protocol.id} className="summary-item-dash">
+                    <div className="item-info-dash">
+                      <h4>{protocol.name}</h4>
+                      <div className="item-details-dash">
+                        <span className="item-main-dash">{protocol.medicine?.name}</span>
+                        <span className="item-freq-dash">{protocol.frequency} • {protocol.dosage_per_intake} comp.</span>
+                      </div>
+                    </div>
+                    <div className="item-schedule-dash">
+                      {protocol.time_schedule?.slice(0, 2).map(time => (
+                        <span key={time} className="time-mini-dash">{time}</span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="protocol-schedule">
-                    {protocol.time_schedule && protocol.time_schedule.map(time => (
-                      <span 
-                        key={time} 
-                        className={`time-badge-dash ${time <= getCurrentTime() ? 'past' : ''}`}
-                      >
-                        {time}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </Card>
 
         {/* Estoque */}
