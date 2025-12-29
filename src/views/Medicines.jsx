@@ -15,9 +15,6 @@ export default function Medicines() {
   const [editingMedicine, setEditingMedicine] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
 
-  useEffect(() => {
-    loadMedicines()
-  }, [])
 
   const loadMedicines = async () => {
     try {
@@ -32,6 +29,10 @@ export default function Medicines() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadMedicines()
+  }, [])
 
   const handleAdd = () => {
     setEditingMedicine(null)

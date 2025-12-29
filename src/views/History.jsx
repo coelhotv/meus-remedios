@@ -15,9 +15,6 @@ export default function History() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
-  useEffect(() => {
-    loadData()
-  }, [loadData])
 
   const loadData = useCallback(async () => {
     try {
@@ -38,6 +35,10 @@ export default function History() {
       setIsLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleLogMedicine = async (logData) => {
     try {

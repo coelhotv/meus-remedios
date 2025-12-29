@@ -23,9 +23,6 @@ export default function Dashboard({ onNavigate }) {
   const [lastUpdated, setLastUpdated] = useState(new Date())
   const [selectedProtocols, setSelectedProtocols] = useState({}) // { planId: [protocolIds] }
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [loadDashboardData])
 
   const togglePlan = (planId) => {
     setExpandedPlans(prev => ({
@@ -122,6 +119,10 @@ export default function Dashboard({ onNavigate }) {
       setIsLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [loadDashboardData])
 
   const handleLogMedicine = async (logData) => {
     try {

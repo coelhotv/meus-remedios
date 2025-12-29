@@ -21,9 +21,6 @@ export default function Protocols() {
   const [editingPlan, setEditingPlan] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
 
-  useEffect(() => {
-    loadData()
-  }, [loadData])
 
   const loadData = useCallback(async () => {
     try {
@@ -46,6 +43,10 @@ export default function Protocols() {
       setIsLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleAdd = () => {
     if (medicines.length === 0) {

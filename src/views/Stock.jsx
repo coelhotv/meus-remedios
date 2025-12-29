@@ -15,9 +15,6 @@ export default function Stock() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
-  useEffect(() => {
-    loadData()
-  }, [])
 
   const loadData = async () => {
     try {
@@ -81,6 +78,11 @@ export default function Stock() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
 
   const handleAddStock = () => {
     if (medicines.length === 0) {
