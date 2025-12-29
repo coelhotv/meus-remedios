@@ -12,7 +12,8 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 ## 🎯 Funcionalidades (V0.5.0)
 
 - ✅ **Dashboard Inteligente**: Interface premium Neo-Glass com indicadores live e saudações dinâmicas.
-- ✅ **Custo de Oportunidade (Estoque Preditivo)**: Regra de estoque baixo baseada em dias de cobertura (menos de 4 dias).
+- ✅ **Custo de Oportunidade (Estoque Preditivo)**: Regra de estoque baixo baseada em dias de cobertura (menos de 4 dias)
+- ✅ **Suporte à Titulação**: Defina doses alvo e acompanhe o status de ajuste medicamentoso (Titulando, Alvo Atingido).
 - ✅ **Seleção Inteligente de Doses**: Interface de checkboxes para registro seletivo de medicamentos ("Tomar Selecionados").
 - ✅ **Gestalt Digital**: Dashboard equilibrado com listas detalhadas de catálogo, protocolos e histórico.
 - ✅ **Metadados Avançados**: Princípios ativos, laboratórios e dosagens destacadas no resumo.
