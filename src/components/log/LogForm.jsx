@@ -207,7 +207,7 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
         <Button 
           type="submit" 
           variant="primary"
-          disabled={isSubmitting || !formData.protocol_id}
+          disabled={isSubmitting || (formData.type === 'protocol' ? !formData.protocol_id : !formData.treatment_plan_id)}
         >
           {isSubmitting ? 'Registrando...' : '✅ Registrar Dose'}
         </Button>

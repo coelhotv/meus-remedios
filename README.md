@@ -12,13 +12,11 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 ## 🎯 Funcionalidades (V0.5.0)
 
 - ✅ **Dashboard Inteligente**: Interface premium Neo-Glass com indicadores live e saudações dinâmicas.
-- ✅ **Custo de Oportunidade (Estoque Preditivo)**: Regra de estoque baixo baseada em dias de cobertura (menos de 4 dias)
-- ✅ **Suporte à Titulação**: Defina doses alvo e acompanhe o status de ajuste medicamentoso (Titulando, Alvo Atingido).
-- ✅ **Seleção Inteligente de Doses**: Interface de checkboxes para registro seletivo de medicamentos ("Tomar Selecionados").
-- ✅ **Gestalt Digital**: Dashboard equilibrado com listas detalhadas de catálogo, protocolos e histórico.
-- ✅ **Metadados Avançados**: Princípios ativos, laboratórios e dosagens destacadas no resumo.
-- ✅ **Cadastro de Medicamentos**: Registre remédios com nome, laboratório, princípio ativo e dosagem.
-- ✅ **Planos de Tratamento**: Agrupe medicamentos em protocolos complexos com suporte à titulação.
+- ✅ **Garantia de Qualidade**: Suíte de testes unitários com Vitest (Services e UI).
+- ✅ **Custo de Oportunidade (Estoque Preditivo)**: Regra de estoque baixo baseada em dias de cobertura.
+- ✅ **Suporte à Titulação**: Defina doses alvo e acompanhe o status de ajuste medicamentoso.
+- ✅ **Gestalt Digital**: Dashboard equilibrado com listas detalhadas de catálogo e histórico.
+- ✅ **Planos de Tratamento**: Agrupe medicamentos em protocolos complexos.
 - ✅ **Interface Premium**: Design neon com glass-morphism e tema escuro nativo.
 
 ## 🚀 Roadmap Futuro
@@ -51,41 +49,41 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 
 ### Passo a Passo
 
-1. **Clone o repositório**:
-   ```bash
-   git clone https://github.com/SEU-USUARIO/meu-remedio.git
-   cd meu-remedio
-   ```
+1.  **Clone o repositório**:
+    ```bash
+    git clone https://github.com/SEU-USUARIO/meu-remedio.git
+    cd meu-remedio
+    ```
 
-2. **Instale as dependências**:
-   ```bash
-   npm install
-   ```
+2.  **Instale as dependências**:
+    ```bash
+    npm install
+    ```
 
-3. **Configure o Supabase**:
-   - Siga o guia completo em [SETUP.md](./SETUP.md)
-   - Crie um projeto no Supabase
-   - Execute o SQL para criar as tabelas
-   - Copie as credenciais
+3.  **Configure o Supabase**:
+    - Siga o guia completo em [SETUP.md](./SETUP.md)
+    - Crie um projeto no Supabase
+    - Execute o SQL para criar as tabelas
+    - Copie as credenciais
 
-4. **Configure as variáveis de ambiente**:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edite o arquivo `.env` e adicione suas credenciais do Supabase:
-   ```
-   VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-   VITE_SUPABASE_ANON_KEY=sua-chave-aqui
-   ```
+4.  **Configure as variáveis de ambiente**:
+    ```bash
+    cp .env.example .env
+    ```
+    
+    Edite o arquivo `.env` e adicione suas credenciais do Supabase:
+    ```
+    VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+    VITE_SUPABASE_ANON_KEY=sua-chave-aqui
+    ```
 
-5. **Rode o servidor de desenvolvimento**:
-   ```bash
-   npm run dev
-   ```
+5.  **Rode o servidor de desenvolvimento**:
+    ```bash
+    npm run dev
+    ```
 
-6. **Acesse o app**:
-   Abra [http://localhost:5173](http://localhost:5173) no navegador
+6.  **Acesse o app**:
+    Abra [http://localhost:5173](http://localhost:5173) no navegador
 
 ---
 
@@ -138,6 +136,14 @@ O app usa um design system customizado com:
 
 ---
 
+## 🧪 Garantia de Qualidade
+
+O projeto utiliza uma suíte de testes unitários moderna para garantir a confiabilidade das regras de negócio:
+
+- **Framework**: [Vitest](https://vitest.dev/) (Velocidade e compatibilidade com Vite)
+- **Library**: [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- **Cobertura**: Services (API/Lógica de Negócio) e Componentes Críticos.
+
 ## 🧪 Scripts Disponíveis
 
 ```bash
@@ -145,6 +151,7 @@ npm run dev          # Servidor de desenvolvimento
 npm run build        # Build de produção
 npm run preview      # Preview do build
 npm run lint         # Linter ESLint
+npm test             # Executa a suíte de testes unitários (Vitest)
 ```
 
 ---

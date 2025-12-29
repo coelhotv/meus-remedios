@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { protocolService, logService, stockService, medicineService, treatmentPlanService } from '../services/api'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -25,8 +25,7 @@ export default function Dashboard({ onNavigate }) {
 
   useEffect(() => {
     loadDashboardData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [loadDashboardData])
 
   const togglePlan = (planId) => {
     setExpandedPlans(prev => ({
@@ -51,7 +50,7 @@ export default function Dashboard({ onNavigate }) {
     })
   }
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -122,7 +121,7 @@ export default function Dashboard({ onNavigate }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const handleLogMedicine = async (logData) => {
     try {

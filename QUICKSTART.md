@@ -13,7 +13,8 @@
 - ✅ Glass-morphism effects e animações suaves
 - ✅ Responsivo mobile-first
 
-### 3. Features Ativas (V0.2.0)
+### 3. Features Ativas (V0.5.0)
+- ✅ **Testes Unitários**: Suíte Vitest garantindo integridade dos cálculos.
 - ✅ **Planos de Tratamento**: Agrupamento de medicamentos complexos.
 - ✅ **Titulação de Dose**: Controle de Dose Alvo e Status.
 - ✅ **Ações em Lote**: Botão "Tomar Todas" para planos.
@@ -204,6 +205,9 @@ git push
 
 # Build de produção
 npm run build
+
+# Executar testes unitários
+npm test
 ```
 
 ---

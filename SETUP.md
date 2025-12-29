@@ -235,13 +235,27 @@ Se tudo deu certo, você deve conseguir:
 
 ---
 
+## 🧪 Passo 5: Testes Unitários
+
+Para garantir que tudo está funcionando corretamente após a instalação:
+
+1. No terminal, execute:
+   ```bash
+   npm test
+   ```
+2. Você verá o resultado dos testes unitários para os serviços de API e componentes principais.
+3. Mantenha os testes passando ao realizar novas modificações!
+
+---
+
 ## 📞 Próximos passos
 
 Depois que tudo estiver funcionando, você pode:
 
 1. Testar o app localmente: `npm run dev`
-2. Começar a adicionar remédios e protocolos
-3. Reportar bugs ou sugerir melhorias
+2. Rodar a suíte de testes: `npm test`
+3. Começar a adicionar remédios e protocolos
+4. Reportar bugs ou sugerir melhorias
 
 ---
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { logService, protocolService } from '../services/api'
 import Button from '../components/ui/Button'
 import Loading from '../components/ui/Loading'
@@ -17,10 +17,9 @@ export default function History() {
 
   useEffect(() => {
     loadData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [loadData])
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -38,7 +37,7 @@ export default function History() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const handleLogMedicine = async (logData) => {
     try {

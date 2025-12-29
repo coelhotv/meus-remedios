@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { medicineService, protocolService, treatmentPlanService } from '../services/api'
 import Button from '../components/ui/Button'
 import Loading from '../components/ui/Loading'
@@ -23,10 +23,9 @@ export default function Protocols() {
 
   useEffect(() => {
     loadData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [loadData])
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -46,7 +45,7 @@ export default function Protocols() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const handleAdd = () => {
     if (medicines.length === 0) {
