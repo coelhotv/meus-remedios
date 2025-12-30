@@ -11,6 +11,7 @@ import TestConnection from './components/TestConnection'
 function App() {
   const [currentView, setCurrentView] = useState('dashboard')
   const [showDebug, setShowDebug] = useState(false)
+  const [initialProtocolParams, setInitialProtocolParams] = useState(null)
 
   // Shared navigation header for sub-views
   const renderNav = () => (
@@ -36,12 +37,17 @@ function App() {
     </div>
   )
 
+  const navigateToProtocol = (medicineId) => {
+    setInitialProtocolParams({ medicineId })
+    setCurrentView('protocols')
+  }
+
   // View Routing
   if (currentView === 'medicines') {
     return (
       <div>
         {renderNav()}
-        <Medicines />
+        <Medicines onNavigateToProtocol={navigateToProtocol} />
       </div>
     )
   }
@@ -59,7 +65,10 @@ function App() {
     return (
       <div>
         {renderNav()}
-        <Protocols />
+        <Protocols 
+          initialParams={initialProtocolParams} 
+          onClearParams={() => setInitialProtocolParams(null)}
+        />
       </div>
     )
   }

@@ -9,7 +9,7 @@ import TreatmentPlanForm from '../components/protocol/TreatmentPlanForm'
 import Card from '../components/ui/Card'
 import './Protocols.css'
 
-export default function Protocols() {
+export default function Protocols({ initialParams, onClearParams }) {
   const [medicines, setMedicines] = useState([])
   const [protocols, setProtocols] = useState([])
   const [treatmentPlans, setTreatmentPlans] = useState([])
@@ -48,6 +48,13 @@ export default function Protocols() {
     loadData()
   }, [loadData])
 
+  useEffect(() => {
+    if (initialParams?.medicineId && medicines.length > 0) {
+      setIsModalOpen(true)
+      setEditingProtocol(null)
+    }
+  }, [initialParams, medicines])
+
   const handleAdd = () => {
     if (medicines.length === 0) {
       setError('Cadastre um medicamento antes de criar protocolos')
@@ -84,6 +91,7 @@ export default function Protocols() {
       
       setIsModalOpen(false)
       setEditingProtocol(null)
+      if (onClearParams) onClearParams()
       await loadData()
     } catch (err) {
       throw new Error('Erro ao salvar protocolo: ' + err.message)
@@ -292,16 +300,19 @@ export default function Protocols() {
         onClose={() => {
           setIsModalOpen(false)
           setEditingProtocol(null)
+          if (onClearParams) onClearParams()
         }}
       >
         <ProtocolForm
           medicines={medicines}
           treatmentPlans={treatmentPlans}
           protocol={editingProtocol}
+          initialValues={initialParams ? { medicine_id: initialParams.medicineId } : null}
           onSave={handleSave}
           onCancel={() => {
             setIsModalOpen(false)
             setEditingProtocol(null)
+            if (onClearParams) onClearParams()
           }}
         />
       </Modal>

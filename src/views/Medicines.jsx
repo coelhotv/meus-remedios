@@ -7,7 +7,7 @@ import MedicineForm from '../components/medicine/MedicineForm'
 import MedicineCard from '../components/medicine/MedicineCard'
 import './Medicines.css'
 
-export default function Medicines() {
+export default function Medicines({ onNavigateToProtocol }) {
   const [medicines, setMedicines] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -50,8 +50,16 @@ export default function Medicines() {
         await medicineService.update(editingMedicine.id, medicineData)
         showSuccess('Medicamento atualizado com sucesso!')
       } else {
-        await medicineService.create(medicineData)
+        const newMedicine = await medicineService.create(medicineData)
         showSuccess('Medicamento cadastrado com sucesso!')
+        
+        // UX: Offer to create a protocol immediately
+        if (window.confirm('✨ Medicamento criado! Deseja criar um protocolo de uso para ele agora?')) {
+          if (onNavigateToProtocol) {
+            onNavigateToProtocol(newMedicine.id)
+            return // Exit early to avoid closing/reloading the current screen unnecessarily
+          }
+        }
       }
       
       setIsModalOpen(false)

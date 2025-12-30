@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Button from '../ui/Button'
+import ProtocolChecklistItem from '../protocol/ProtocolChecklistItem'
 import './LogForm.css'
 
 export default function LogForm({ protocols, treatmentPlans = [], onSave, onCancel }) {
@@ -10,17 +11,46 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
     notes: ''
   })
   
+  const [selectedPlanProtocols, setSelectedPlanProtocols] = useState([])
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const selectedProtocol = protocols.find(p => p.id === formData.protocol_id)
   const selectedPlan = treatmentPlans.find(p => p.id === formData.treatment_plan_id)
 
+  // Auto-select all protocols when a plan is selected
+  useEffect(() => {
+    if (formData.type === 'plan' && formData.treatment_plan_id) {
+      const plan = treatmentPlans.find(p => p.id === formData.treatment_plan_id)
+      if (plan) {
+        const activeIds = plan.protocols?.filter(p => p.active).map(p => p.id) || []
+        setSelectedPlanProtocols(activeIds)
+      }
+    } else {
+      setSelectedPlanProtocols([])
+    }
+  }, [formData.treatment_plan_id, formData.type, treatmentPlans])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const toggleProtocol = (protocolId) => {
+    setSelectedPlanProtocols(prev => {
+      if (prev.includes(protocolId)) {
+        return prev.filter(id => id !== protocolId)
+      } else {
+        return [...prev, protocolId]
+      }
+    })
+    
+    // Clear error if selection becomes valid
+    if (errors.submit && selectedPlanProtocols.length === 0) { // logic inverted because state update is async, but simple check is enough
+       setErrors(prev => ({ ...prev, submit: '' }))
     }
   }
 
@@ -31,8 +61,12 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
       newErrors.protocol_id = 'Selecione um protocolo'
     }
     
-    if (formData.type === 'plan' && !formData.treatment_plan_id) {
-      newErrors.treatment_plan_id = 'Selecione um plano'
+    if (formData.type === 'plan') {
+      if (!formData.treatment_plan_id) {
+        newErrors.treatment_plan_id = 'Selecione um plano'
+      } else if (selectedPlanProtocols.length === 0) {
+        newErrors.submit = 'Selecione pelo menos um medicamento para registrar'
+      }
     }
     
     setErrors(newErrors)
@@ -59,17 +93,21 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
       } else {
         // Plan bulk log
         const plan = treatmentPlans.find(p => p.id === formData.treatment_plan_id)
-        const activeProtocols = plan.protocols?.filter(p => p.active) || []
         
-        if (activeProtocols.length === 0) {
-          throw new Error('Este plano não possui protocolos ativos')
+        // Filter only selected protocols
+        const protocolsToLog = plan.protocols?.filter(p => 
+          p.active && selectedPlanProtocols.includes(p.id)
+        ) || []
+        
+        if (protocolsToLog.length === 0) {
+          throw new Error('Nenhum protocolo selecionado')
         }
 
-        const logsToSave = activeProtocols.map(p => ({
+        const logsToSave = protocolsToLog.map(p => ({
           protocol_id: p.id,
           medicine_id: p.medicine_id,
           quantity_taken: p.dosage_per_intake,
-          notes: `[Lote: ${plan.name}] ${formData.notes.trim()}`.trim()
+          notes: `[Plan: ${plan.name}] ${formData.notes.trim()}`.trim()
         }))
         
         await onSave(logsToSave)
@@ -165,14 +203,24 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
 
       {selectedPlan && formData.type === 'plan' && (
         <div className="protocol-info">
-          <p className="plan-summary-title">Medicamentos incluídos:</p>
+          <p className="plan-summary-title">Selecione os medicamentos tomados:</p>
           <div className="plan-medicines-list">
             {selectedPlan.protocols?.filter(p => p.active).map(p => (
-              <div key={p.id} className="plan-med-item">
-                <span>💊 {p.name}</span>
-                <span>{p.dosage_per_intake} comp.</span>
-              </div>
+              <ProtocolChecklistItem
+                key={p.id}
+                protocol={p}
+                isSelected={selectedPlanProtocols.includes(p.id)}
+                onToggle={toggleProtocol}
+              />
             ))}
+          </div>
+          <div style={{ 
+            marginTop: '8px', 
+            fontSize: '11px', 
+            color: 'var(--text-tertiary)', 
+            textAlign: 'right' 
+          }}>
+            {selectedPlanProtocols.length} selecionados
           </div>
         </div>
       )}
@@ -207,9 +255,16 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
         <Button 
           type="submit" 
           variant="primary"
-          disabled={isSubmitting || (formData.type === 'protocol' ? !formData.protocol_id : !formData.treatment_plan_id)}
+          disabled={
+            isSubmitting || 
+            (formData.type === 'protocol' ? !formData.protocol_id : (!formData.treatment_plan_id || selectedPlanProtocols.length === 0))
+          }
         >
-          {isSubmitting ? 'Registrando...' : '✅ Registrar Dose'}
+          {isSubmitting ? 'Registrando...' : 
+            formData.type === 'plan' && selectedPlanProtocols.length > 0 
+              ? `✅ Registrar (${selectedPlanProtocols.length})` 
+              : '✅ Registrar Dose'
+          }
         </Button>
       </div>
     </form>

@@ -7,6 +7,7 @@ import Modal from '../components/ui/Modal'
 import LogForm from '../components/log/LogForm'
 import LogEntry from '../components/log/LogEntry'
 import StockIndicator from '../components/stock/StockIndicator'
+import ProtocolChecklistItem from '../components/protocol/ProtocolChecklistItem'
 import './Dashboard.css'
 
 export default function Dashboard({ onNavigate }) {
@@ -251,48 +252,29 @@ export default function Dashboard({ onNavigate }) {
                   </div>
                   <div className="plan-actions-dash">
                     <span className="plan-objective-dash">{plan.objective}</span>
+
                     <Button 
                       variant="primary" 
                       size="sm" 
                       onClick={(e) => handleTakeSelectedFromPlan(e, plan)}
                       disabled={!(selectedProtocols[plan.id]?.length > 0)}
                     >
-                      ✅ Tomar Selecionados
+                      {selectedProtocols[plan.id]?.length > 0 
+                        ? `✅ Tomar (${selectedProtocols[plan.id].length})`
+                        : '✅ Tomar Selecionados'}
                     </Button>
                   </div>
                 </div>
                 
                 {expandedPlans[plan.id] && (
-                  <div className="plan-summary-dash fade-in">
+                  <div className="plan-summary-dash fade-in" style={{ padding: '0 var(--space-4) var(--space-4)' }}>
                     {plan.protocols?.filter(p => p.active).map(p => (
-                      <div 
-                        key={p.id} 
-                        className={`plan-protocol-item-dash selectable ${selectedProtocols[plan.id]?.includes(p.id) ? 'selected' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleProtocolSelection(plan.id, p.id);
-                        }}
-                      >
-                        <div className="protocol-selection-area">
-                          <input 
-                            type="checkbox" 
-                            checked={selectedProtocols[plan.id]?.includes(p.id) || false}
-                            onChange={() => {}} // Handled by div onClick
-                            className="protocol-checkbox"
-                          />
-                          <span>💊 {p.name}</span>
-                        </div>
-                        <div className="protocol-meta-dash">
-                          <span className={`status-tag-dash ${p.titration_status}`}>
-                            {p.titration_status === 'titulando' ? '📈 Titulando' : 'Estável'}
-                          </span>
-                          <div className="plan-times-dash">
-                            {p.time_schedule?.map(t => (
-                              <span key={t} className={`time-mini-dash ${t <= getCurrentTime() ? 'past' : ''}`}>{t}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                      <ProtocolChecklistItem
+                        key={p.id}
+                        protocol={p}
+                        isSelected={selectedProtocols[plan.id]?.includes(p.id) || false}
+                        onToggle={(protocolId) => toggleProtocolSelection(plan.id, protocolId)}
+                      />
                     ))}
                   </div>
                 )}
@@ -304,7 +286,7 @@ export default function Dashboard({ onNavigate }) {
         {/* Catálogo de Medicamentos */}
         <Card className="dashboard-card medicines-card">
           <div className="card-header">
-            <h3>💊 Catálogo</h3>
+            <h3>💊 Medicamentos</h3>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('medicines')}>
               Gerenciar
             </Button>
@@ -344,7 +326,7 @@ export default function Dashboard({ onNavigate }) {
           <div className="card-header">
             <h3>📋 Protocolos Avulsos</h3>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('protocols')}>
-              Ver todos
+              Gerenciar
             </Button>
           </div>
           
@@ -387,7 +369,7 @@ export default function Dashboard({ onNavigate }) {
               {stockSummary.some(s => s.isLow) && <span className="badge-alert-mini">!</span>}
             </h3>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('stock')}>
-              Ver todos
+              Gerenciar
             </Button>
           </div>
           

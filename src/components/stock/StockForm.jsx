@@ -123,7 +123,7 @@ export default function StockForm({ medicines, onSave, onCancel }) {
             onChange={handleChange}
             className={errors.unit_price ? 'error' : ''}
             placeholder="0.50"
-            step="0.01"
+            step="0.001"
             min="0"
           />
           {errors.unit_price && <span className="error-message">{errors.unit_price}</span>}

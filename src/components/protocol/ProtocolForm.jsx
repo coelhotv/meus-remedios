@@ -2,9 +2,9 @@ import { useState } from 'react'
 import Button from '../ui/Button'
 import './ProtocolForm.css'
 
-export default function ProtocolForm({ medicines, treatmentPlans = [], protocol, onSave, onCancel }) {
+export default function ProtocolForm({ medicines, treatmentPlans = [], protocol, initialValues, onSave, onCancel }) {
   const [formData, setFormData] = useState({
-    medicine_id: protocol?.medicine_id || '',
+    medicine_id: protocol?.medicine_id || initialValues?.medicine_id || '',
     treatment_plan_id: protocol?.treatment_plan_id || '',
     name: protocol?.name || '',
     frequency: protocol?.frequency || '',
