@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
+import TitrationWizard from './TitrationWizard'
 import './ProtocolForm.css'
 
 export default function ProtocolForm({ medicines, treatmentPlans = [], protocol, initialValues, onSave, onCancel }) {
@@ -12,9 +13,14 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
     dosage_per_intake: protocol?.dosage_per_intake || '',
     target_dosage: protocol?.target_dosage || '',
     titration_status: protocol?.titration_status || 'estável',
+    titration_schedule: protocol?.titration_schedule || [],
     notes: protocol?.notes || '',
     active: protocol?.active !== undefined ? protocol.active : true
   })
+  
+  const [enableTitration, setEnableTitration] = useState(
+    (protocol?.titration_schedule?.length > 0) || (protocol?.titration_status === 'titulando')
+  )
   
   const [timeInput, setTimeInput] = useState('')
   const [errors, setErrors] = useState({})
@@ -93,6 +99,8 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
     setIsSubmitting(true)
     
     try {
+      const isTitrating = enableTitration && formData.titration_schedule.length > 0
+
       const dataToSave = {
         medicine_id: formData.medicine_id,
         treatment_plan_id: formData.treatment_plan_id || null,
@@ -101,7 +109,8 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
         time_schedule: formData.time_schedule,
         dosage_per_intake: parseFloat(formData.dosage_per_intake),
         target_dosage: formData.target_dosage ? parseFloat(formData.target_dosage) : null,
-        titration_status: formData.titration_status,
+        titration_status: isTitrating ? 'titulando' : formData.titration_status,
+        titration_schedule: isTitrating ? formData.titration_schedule : [],
         notes: formData.notes.trim() || null,
         active: formData.active
       }
@@ -212,34 +221,56 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
         </div>
       </div>
 
-      <div className="form-row" style={{ border: '1px solid var(--border-color)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', marginBottom: 'var(--space-4)' }}>
-        <div className="form-group">
-          <label htmlFor="target_dosage">Dose Alvo (mg)</label>
-          <input
-            type="number"
-            id="target_dosage"
-            name="target_dosage"
-            value={formData.target_dosage}
-            onChange={handleChange}
-            placeholder="Ex: 50"
-            step="0.5"
-          />
-          <small style={{ color: 'var(--text-tertiary)' }}>A dose que o médico quer atingir.</small>
+      <div className="form-row" style={{ flexDirection: 'column', gap: 'var(--space-2)', border: '1px solid var(--border-color)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', marginBottom: 'var(--space-4)' }}>
+        <div className="form-group checkbox-group" style={{ marginBottom: 0 }}>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={enableTitration}
+              onChange={(e) => {
+                 setEnableTitration(e.target.checked)
+                 if (e.target.checked) setFormData(prev => ({ ...prev, titration_status: 'titulando' }))
+                 else setFormData(prev => ({ ...prev, titration_status: 'estável' }))
+              }}
+            />
+            <span>📈 Regime de Titulação Inteligente</span>
+          </label>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="titration_status">Status de Titulação</label>
-          <select
-            id="titration_status"
-            name="titration_status"
-            value={formData.titration_status}
-            onChange={handleChange}
-          >
-            <option value="estável">✅ Estável</option>
-            <option value="titulando">📈 Titulando (ajustando)</option>
-            <option value="alvo_atingido">🎯 Alvo Atingido</option>
-          </select>
-        </div>
+        {enableTitration ? (
+          <TitrationWizard 
+            schedule={formData.titration_schedule}
+            onChange={(newSchedule) => setFormData(prev => ({ ...prev, titration_schedule: newSchedule }))}
+          />
+        ) : (
+           <div className="form-row" style={{ marginTop: 'var(--space-2)' }}>
+            <div className="form-group">
+              <label htmlFor="target_dosage">Dose Alvo (mg)</label>
+              <input
+                type="number"
+                id="target_dosage"
+                name="target_dosage"
+                value={formData.target_dosage}
+                onChange={handleChange}
+                placeholder="Ex: 50"
+                step="0.5"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="titration_status">Status Manual</label>
+              <select
+                id="titration_status"
+                name="titration_status"
+                value={formData.titration_status}
+                onChange={handleChange}
+              >
+                <option value="estável">✅ Estável</option>
+                <option value="titulando">📈 Titulando</option>
+                <option value="alvo_atingido">🎯 Alvo Atingido</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="form-group">

@@ -165,7 +165,14 @@ export const protocolService = {
   async create(protocol) {
     const { data, error } = await supabase
       .from('protocols')
-      .insert([{ ...protocol, user_id: MOCK_USER_ID }])
+      .insert([{ 
+        ...protocol, 
+        user_id: MOCK_USER_ID,
+        // Ensure defaults for titration
+        titration_schedule: protocol.titration_schedule || [],
+        current_stage_index: protocol.current_stage_index || 0,
+        stage_started_at: protocol.titration_schedule?.length > 0 ? new Date().toISOString() : null
+      }])
       .select(`
         *,
         medicine:medicines(*),

@@ -8,6 +8,7 @@ import LogForm from '../components/log/LogForm'
 import LogEntry from '../components/log/LogEntry'
 import StockIndicator from '../components/stock/StockIndicator'
 import ProtocolChecklistItem from '../components/protocol/ProtocolChecklistItem'
+import { calculateTitrationData } from '../utils/titrationUtils'
 import './Dashboard.css'
 
 export default function Dashboard({ onNavigate }) {
@@ -56,12 +57,27 @@ export default function Dashboard({ onNavigate }) {
       const [protocols, plans, logs, medicines] = await Promise.all([
         protocolService.getActive(),
         treatmentPlanService.getAll(),
-        logService.getAll(10), // Últimos 10 registros
+        logService.getAll(10),
         medicineService.getAll()
       ])
       
-      setActiveProtocols(protocols)
-      setTreatmentPlans(plans)
+      // Enrich protocols with titration data
+      const enrichedProtocols = protocols.map(p => ({
+        ...p,
+        titration_scheduler_data: calculateTitrationData(p)
+      }))
+      
+      // Enrich plans with protocol titration data
+      const enrichedPlans = plans.map(plan => ({
+        ...plan,
+        protocols: plan.protocols?.map(p => ({
+           ...p,
+           titration_scheduler_data: calculateTitrationData(p)
+        }))
+      }))
+
+      setActiveProtocols(enrichedProtocols)
+      setTreatmentPlans(enrichedPlans)
       setRecentLogs(logs)
       setAllMedicines(medicines)
       setLastUpdated(new Date())
@@ -70,7 +86,7 @@ export default function Dashboard({ onNavigate }) {
       const initialExpandedState = {}
       const initialSelectionState = {}
       
-      plans.forEach(plan => {
+      enrichedPlans.forEach(plan => {
         initialExpandedState[plan.id] = false
         // Todos selecionados por padrão
         initialSelectionState[plan.id] = plan.protocols
@@ -83,7 +99,7 @@ export default function Dashboard({ onNavigate }) {
       
       // Calcular consumo diário por medicamento
       const dailyIntakeMap = {}
-      protocols.forEach(p => {
+      enrichedProtocols.forEach(p => {
         if (p.active) {
           const daily = (p.dosage_per_intake || 0) * (p.time_schedule?.length || 0)
           dailyIntakeMap[p.medicine_id] = (dailyIntakeMap[p.medicine_id] || 0) + daily
@@ -147,6 +163,7 @@ export default function Dashboard({ onNavigate }) {
     const protocolsToTake = plan.protocols?.filter(p => p.active && selection.includes(p.id)) || []
     
     if (protocolsToTake.length === 0) return
+
 
     const logs = protocolsToTake.map(p => ({
       protocol_id: p.id,
@@ -341,20 +358,12 @@ export default function Dashboard({ onNavigate }) {
             ) : (
               <div className="item-list-dash">
                 {activeProtocols.filter(p => !p.treatment_plan_id).slice(0, 8).map(protocol => (
-                  <div key={protocol.id} className="summary-item-dash">
-                    <div className="item-info-dash">
-                      <h4>{protocol.name}</h4>
-                      <div className="item-details-dash">
-                        <span className="item-main-dash">{protocol.medicine?.name}</span>
-                        <span className="item-freq-dash">{protocol.frequency} • {protocol.dosage_per_intake} comp.</span>
-                      </div>
-                    </div>
-                    <div className="item-schedule-dash">
-                      {protocol.time_schedule?.slice(0, 2).map(time => (
-                        <span key={time} className="time-mini-dash">{time}</span>
-                      ))}
-                    </div>
-                  </div>
+                  <ProtocolChecklistItem
+                    key={protocol.id}
+                    protocol={protocol}
+                    isSelected={false} // Display only mostly
+                    onToggle={() => {}} // No interaction for now in this list
+                  />
                 ))}
               </div>
             )}
