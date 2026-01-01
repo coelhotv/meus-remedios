@@ -30,7 +30,7 @@ export default function StockCard({ medicine, stockEntries, totalQuantity, daysR
         <div className="medicine-info-top">
           <h4 className="medicine-name">{medicine.name}</h4>
           {medicine.dosage_per_pill && (
-            <span className="medicine-dosage">{medicine.dosage_per_pill}mg</span>
+            <span className="medicine-dosage">{medicine.dosage_per_pill}{medicine.dosage_unit || 'mg'}</span>
           )}
         </div>
         <div className="stock-days-badge">

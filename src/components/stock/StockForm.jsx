@@ -88,7 +88,7 @@ export default function StockForm({ medicines, initialValues, onSave, onCancel }
           <option value="">Selecione um medicamento</option>
           {medicines.map(medicine => (
             <option key={medicine.id} value={medicine.id}>
-              {medicine.name} {medicine.dosage_per_pill ? `(${medicine.dosage_per_pill}mg)` : ''}
+              {medicine.name} {medicine.dosage_per_pill ? `(${medicine.dosage_per_pill}${medicine.dosage_unit || 'mg'})` : ''}
             </option>
           ))}
         </select>
@@ -98,7 +98,7 @@ export default function StockForm({ medicines, initialValues, onSave, onCancel }
       <div className="form-row">
         <div className="form-group">
           <label htmlFor="quantity">
-            Qtd. Comprimidos <span className="required">*</span>
+            Quantidade <span className="required">*</span>
           </label>
           <input
             type="number"

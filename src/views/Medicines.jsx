@@ -14,6 +14,7 @@ export default function Medicines({ onNavigateToProtocol }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingMedicine, setEditingMedicine] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
+  const [filterType, setFilterType] = useState('all') // 'all', 'medicine', 'supplement'
 
 
   const loadMedicines = async () => {
@@ -102,13 +103,37 @@ export default function Medicines({ onNavigateToProtocol }) {
     <div className="medicines-view">
       <div className="medicines-header">
         <div>
-          <h2>💊 Medicamentos</h2>
+          <h2>💊 Medicamentos e Suplementos</h2>
           <p className="medicines-subtitle">
             Gerencie seus medicamentos cadastrados
           </p>
         </div>
         <Button variant="primary" onClick={handleAdd}>
-          ➕ Adicionar Medicamento
+          ➕ Adicionar
+        </Button>
+      </div>
+
+      <div className="filter-tabs" style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+        <Button 
+          variant={filterType === 'all' ? 'primary' : 'outline'} 
+          onClick={() => setFilterType('all')}
+          size="sm"
+        >
+          Todos
+        </Button>
+        <Button 
+          variant={filterType === 'medicine' ? 'primary' : 'outline'} 
+          onClick={() => setFilterType('medicine')}
+          size="sm"
+        >
+          Medicamentos
+        </Button>
+        <Button 
+          variant={filterType === 'supplement' ? 'primary' : 'outline'} 
+          onClick={() => setFilterType('supplement')}
+          size="sm"
+        >
+          Suplementos
         </Button>
       </div>
 
@@ -135,7 +160,9 @@ export default function Medicines({ onNavigateToProtocol }) {
         </div>
       ) : (
         <div className="medicines-grid">
-          {medicines.map(medicine => (
+          {medicines
+            .filter(m => filterType === 'all' || m.type === filterType)
+            .map(medicine => (
             <MedicineCard
               key={medicine.id}
               medicine={medicine}

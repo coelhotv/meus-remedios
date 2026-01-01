@@ -14,7 +14,7 @@ export default function ProtocolCard({ protocol, onEdit, onToggleActive, onDelet
           <h4 className="protocol-name">{protocol.name}</h4>
           <span className="protocol-medicine">
             {protocol.medicine?.name} 
-            {protocol.medicine?.dosage_per_pill && ` (${protocol.medicine.dosage_per_pill}mg)`}
+            {protocol.medicine?.dosage_per_pill ? ` (${protocol.medicine.dosage_per_pill}${protocol.medicine.dosage_unit || 'mg'})` : ''}
           </span>
         </div>
         <div className={`protocol-status ${protocol.active ? 'active' : 'inactive'}`}>
@@ -31,9 +31,9 @@ export default function ProtocolCard({ protocol, onEdit, onToggleActive, onDelet
         <div className="detail-item">
           <span className="detail-label">💊 Dosagem:</span>
           <span className="detail-value">
-            {protocol.dosage_per_intake} {protocol.dosage_per_intake === 1 ? 'comprimido' : 'comprimidos'}
+            {protocol.dosage_per_intake} {protocol.medicine?.dosage_unit === 'ml' ? 'ml' : (protocol.dosage_per_intake === 1 ? 'unidade' : 'unidades')}
             {protocol.target_dosage && (
-              <span className="titration-progress"> (Alvo: {protocol.target_dosage}mg)</span>
+              <span className="titration-progress"> (Alvo: {protocol.target_dosage}{protocol.medicine?.dosage_unit || 'mg'})</span>
             )}
           </span>
         </div>

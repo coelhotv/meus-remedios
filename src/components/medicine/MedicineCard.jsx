@@ -23,8 +23,17 @@ export default function MedicineCard({ medicine, onEdit, onDelete }) {
         {medicine.dosage_per_pill && (
           <div className="detail-item">
             <span className="detail-label">💊 Dosagem:</span>
-            <span className="detail-value">{medicine.dosage_per_pill} mg</span>
+            <span className="detail-value">
+              {medicine.dosage_per_pill} {medicine.dosage_unit || 'mg'}
+            </span>
           </div>
+        )}
+        
+        {medicine.type === 'supplement' && (
+           <div className="detail-item">
+             <span className="detail-label">ℹ️ Tipo:</span>
+             <span className="detail-value">Suplemento</span>
+           </div>
         )}
         
         {medicine.avg_price !== undefined && medicine.avg_price !== null && (

@@ -328,8 +328,10 @@ export default function Dashboard({ onNavigate }) {
                       </div>
                     </div>
                     <div className="item-right-dash">
-                      <span className="dosage-highlight-dash">{medicine.dosage_per_pill}mg</span>
-                      <span className="type-tag-dash">MED</span>
+                      <span className="dosage-highlight-dash">
+                        {medicine.dosage_per_pill ? `${medicine.dosage_per_pill}${medicine.dosage_unit || 'mg'}` : (medicine.type === 'supplement' ? 'Sup.' : 'N/A')}
+                      </span>
+                      <span className="type-tag-dash">{medicine.type === 'supplement' ? 'SUP' : 'MED'}</span>
                     </div>
                   </div>
                 ))}

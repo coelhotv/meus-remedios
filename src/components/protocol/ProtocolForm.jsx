@@ -143,7 +143,7 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
           <option value="">Selecione um medicamento</option>
           {medicines.map(medicine => (
             <option key={medicine.id} value={medicine.id}>
-              {medicine.name} {medicine.dosage_per_pill ? `(${medicine.dosage_per_pill}mg)` : ''}
+              {medicine.name} {medicine.dosage_per_pill ? `(${medicine.dosage_per_pill}${medicine.dosage_unit || 'mg'})` : `(${medicine.type === 'supplement' ? 'Sup.' : 'N/A'})`}
             </option>
           ))}
         </select>
@@ -204,7 +204,7 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
 
         <div className="form-group">
           <label htmlFor="dosage_per_intake">
-            Dose Atual (Comprimidos) <span className="required">*</span>
+            Dose por Horário (qtd) <span className="required">*</span>
           </label>
           <input
             type="number"
