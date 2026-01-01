@@ -7,7 +7,7 @@ import StockForm from '../components/stock/StockForm'
 import StockCard from '../components/stock/StockCard'
 import './Stock.css'
 
-export default function Stock() {
+export default function Stock({ initialParams, onClearParams }) {
   const [medicines, setMedicines] = useState([])
   const [stockData, setStockData] = useState({}) // { medicineId: { entries: [], total: 0, ...status } }
   const [isLoading, setIsLoading] = useState(true)
@@ -28,6 +28,8 @@ export default function Stock() {
       
       // Calcular consumo diário por medicamento
       const dailyIntakeMap = {}
+      const activeMedicineIds = new Set(protocols.map(p => p.medicine_id))
+
       protocols.forEach(p => {
         if (p.active) {
           const daily = (p.dosage_per_intake || 0) * (p.time_schedule?.length || 0)
@@ -48,6 +50,7 @@ export default function Stock() {
         
         return { 
           medicineId: medicine.id, 
+          hasActiveProtocol: activeMedicineIds.has(medicine.id),
           entries, 
           total,
           dailyIntake,
@@ -62,6 +65,7 @@ export default function Stock() {
       const stockMap = {}
       stockResults.forEach(result => {
         stockMap[result.medicineId] = {
+          hasActiveProtocol: result.hasActiveProtocol,
           entries: result.entries,
           total: result.total,
           dailyIntake: result.dailyIntake,
@@ -83,6 +87,11 @@ export default function Stock() {
     loadData()
   }, [])
 
+  useEffect(() => {
+    if (initialParams?.medicineId && medicines.length > 0) {
+      setIsModalOpen(true)
+    }
+  }, [initialParams, medicines])
 
   const handleAddStock = () => {
     if (medicines.length === 0) {
@@ -97,6 +106,7 @@ export default function Stock() {
       await stockService.add(stockData)
       showSuccess('Estoque adicionado com sucesso!')
       setIsModalOpen(false)
+      if (onClearParams) onClearParams()
       await loadData()
     } catch (err) {
       throw new Error('Erro ao adicionar estoque: ' + err.message)
@@ -111,12 +121,12 @@ export default function Stock() {
   // Filtrar medicamentos que têm estoque ou foram cadastrados
   const medicinesWithStock = medicines.map(medicine => ({
     medicine,
-    stock: stockData[medicine.id] || { entries: [], total: 0, daysRemaining: Infinity, isLow: false, dailyIntake: 0 }
+    stock: stockData[medicine.id] || { entries: [], total: 0, daysRemaining: Infinity, isLow: false, dailyIntake: 0, hasActiveProtocol: false }
   }))
 
   // Separar em categorias baseadas na nova regra
   const outOfStockMedicines = medicinesWithStock.filter(
-    item => item.stock.total === 0
+    item => item.stock.total === 0 && item.stock.hasActiveProtocol
   )
   const lowStockMedicines = medicinesWithStock
     .filter(item => item.stock.total > 0 && item.stock.isLow)
@@ -241,12 +251,19 @@ export default function Stock() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          if (onClearParams) onClearParams()
+        }}
       >
         <StockForm
           medicines={medicines}
+          initialValues={initialParams ? { medicine_id: initialParams.medicineId } : null}
           onSave={handleSaveStock}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => {
+             setIsModalOpen(false)
+             if (onClearParams) onClearParams()
+          }}
         />
       </Modal>
     </div>

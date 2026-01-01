@@ -12,6 +12,7 @@ function App() {
   const [currentView, setCurrentView] = useState('dashboard')
   const [showDebug, setShowDebug] = useState(false)
   const [initialProtocolParams, setInitialProtocolParams] = useState(null)
+  const [initialStockParams, setInitialStockParams] = useState(null)
 
   // Shared navigation header for sub-views
   const renderNav = () => (
@@ -42,6 +43,11 @@ function App() {
     setCurrentView('protocols')
   }
 
+  const navigateToStock = (medicineId) => {
+    setInitialStockParams({ medicineId })
+    setCurrentView('stock')
+  }
+
   // View Routing
   if (currentView === 'medicines') {
     return (
@@ -56,7 +62,10 @@ function App() {
     return (
       <div>
         {renderNav()}
-        <Stock />
+        <Stock 
+          initialParams={initialStockParams}
+          onClearParams={() => setInitialStockParams(null)}
+        />
       </div>
     )
   }
@@ -68,6 +77,7 @@ function App() {
         <Protocols 
           initialParams={initialProtocolParams} 
           onClearParams={() => setInitialProtocolParams(null)}
+          onNavigateToStock={navigateToStock}
         />
       </div>
     )

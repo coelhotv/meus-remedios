@@ -9,7 +9,7 @@ import TreatmentPlanForm from '../components/protocol/TreatmentPlanForm'
 import Card from '../components/ui/Card'
 import './Protocols.css'
 
-export default function Protocols({ initialParams, onClearParams }) {
+export default function Protocols({ initialParams, onClearParams, onNavigateToStock }) {
   const [medicines, setMedicines] = useState([])
   const [protocols, setProtocols] = useState([])
   const [treatmentPlans, setTreatmentPlans] = useState([])
@@ -87,6 +87,10 @@ export default function Protocols({ initialParams, onClearParams }) {
       } else {
         await protocolService.create(protocolData)
         showSuccess('Protocolo criado com sucesso!')
+        
+        if (window.confirm('Protocolo criado! Deseja adicionar o estoque inicial deste medicamento agora?')) {
+          onNavigateToStock(protocolData.medicine_id)
+        }
       }
       
       setIsModalOpen(false)

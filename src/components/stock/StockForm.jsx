@@ -2,9 +2,9 @@ import { useState } from 'react'
 import Button from '../ui/Button'
 import './StockForm.css'
 
-export default function StockForm({ medicines, onSave, onCancel }) {
+export default function StockForm({ medicines, initialValues, onSave, onCancel }) {
   const [formData, setFormData] = useState({
-    medicine_id: '',
+    medicine_id: initialValues?.medicine_id || '',
     quantity: '',
     unit_price: '',
     purchase_date: new Date().toISOString().split('T')[0],
