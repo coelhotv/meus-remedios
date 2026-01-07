@@ -50,7 +50,7 @@ describe('LogForm', () => {
     render(<LogForm protocols={mockProtocols} treatmentPlans={mockPlans} />)
     expect(screen.getByText('Registrar Medicamento Tomado')).toBeInTheDocument()
     expect(screen.getByText('💊 Único Remédio')).toBeInTheDocument()
-    expect(screen.getByLabelText(/Protocolo/i)).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: /Protocolo/i })).toBeInTheDocument()
   })
 
   it('should validate form submission', async () => {
@@ -75,7 +75,7 @@ describe('LogForm', () => {
     render(<LogForm protocols={mockProtocols} treatmentPlans={mockPlans} onSave={onSave} />)
     
     // Select protocol
-    fireEvent.change(screen.getByLabelText(/Protocolo/i), { target: { value: 'p1' } })
+    fireEvent.change(screen.getByRole('combobox', { name: /Protocolo/i }), { target: { value: 'p1' } })
     
     // Add note
     fireEvent.change(screen.getByLabelText(/Observações/i), { target: { value: 'Com dor' } })
@@ -90,6 +90,7 @@ describe('LogForm', () => {
             protocol_id: 'p1',
             medicine_id: 'm1',
             quantity_taken: 1,
+            taken_at: expect.any(String),
             notes: 'Com dor'
         })
     })
@@ -103,14 +104,15 @@ describe('LogForm', () => {
     fireEvent.click(screen.getByText('📁 Plano Completo'))
     
     // Select plan
-    expect(screen.getByLabelText(/Plano de Tratamento/i)).toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText(/Plano de Tratamento/i), { target: { value: 'plan1' } })
+    expect(screen.getByRole('combobox', { name: /Plano de Tratamento/i })).toBeInTheDocument()
+    fireEvent.change(screen.getByRole('combobox', { name: /Plano de Tratamento/i }), { target: { value: 'plan1' } })
     
     // Verify medicines are listed
     expect(screen.getByText('💊 Aspirina')).toBeInTheDocument()
     
     // Submit
-    fireEvent.click(screen.getByText('✅ Registrar Dose'))
+    const submitBtn = screen.getByText('✅ Registrar (1)')
+    fireEvent.click(submitBtn)
     
     await waitFor(() => {
         expect(onSave).toHaveBeenCalledWith(expect.arrayContaining([
@@ -118,7 +120,7 @@ describe('LogForm', () => {
                 protocol_id: 'p1',
                 medicine_id: 'm1',
                 quantity_taken: 1,
-                notes: '[Lote: Pós Almoço]' // Note format check
+                notes: '[Plan: Pós Almoço]' // Note format check
             })
         ]))
     })

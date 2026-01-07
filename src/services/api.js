@@ -375,6 +375,28 @@ export const stockService = {
   },
 
   /**
+   * Increase stock (when a log is deleted or quantity decreased)
+   * It creates a special "adjustment" entry to maintain history integrity
+   */
+  async increase(medicineId, quantity, reason = 'Estorno de dose') {
+    const { data, error } = await supabase
+      .from('stock')
+      .insert([{ 
+        medicine_id: medicineId, 
+        quantity: quantity,
+        purchase_date: new Date().toISOString().split('T')[0],
+        unit_price: 0,
+        user_id: MOCK_USER_ID,
+        notes: reason
+      }])
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  /**
    * Delete a stock entry
    */
   async delete(id) {
@@ -499,10 +521,61 @@ export const logService = {
   },
 
   /**
+   * Update a log entry and adjust stock
+   */
+  async update(id, updates) {
+    // 1. Get original log to calculate stock delta
+    const { data: oldLog, error: fetchError } = await supabase
+      .from('medicine_logs')
+      .select('*')
+      .eq('id', id)
+      .single()
+    
+    if (fetchError) throw fetchError
+
+    // 2. Perform update
+    const { data, error } = await supabase
+      .from('medicine_logs')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', MOCK_USER_ID)
+      .select(`
+        *,
+        protocol:protocols(*),
+        medicine:medicines(*)
+      `)
+      .single()
+    
+    if (error) throw error
+
+    // 3. Adjust stock if quantity changed
+    if (updates.quantity_taken !== undefined && updates.quantity_taken !== oldLog.quantity_taken) {
+      const delta = updates.quantity_taken - oldLog.quantity_taken
+      if (delta > 0) {
+        await stockService.decrease(oldLog.medicine_id, delta)
+      } else if (delta < 0) {
+        await stockService.increase(oldLog.medicine_id, Math.abs(delta), `Ajuste de dose (ID: ${id})`)
+      }
+    }
+    
+    return data
+  },
+
+  /**
    * Delete a log entry
-   * Note: This does NOT restore stock
+   * Now restores stock!
    */
   async delete(id) {
+    // 1. Get log info before deleting
+    const { data: log, error: fetchError } = await supabase
+      .from('medicine_logs')
+      .select('*')
+      .eq('id', id)
+      .single()
+    
+    if (fetchError) throw fetchError
+
+    // 2. Delete log
     const { error } = await supabase
       .from('medicine_logs')
       .delete()
@@ -510,5 +583,8 @@ export const logService = {
       .eq('user_id', MOCK_USER_ID)
     
     if (error) throw error
+
+    // 3. Restore stock
+    await stockService.increase(log.medicine_id, log.quantity_taken, `Dose excluída (ID: ${id})`)
   }
 }

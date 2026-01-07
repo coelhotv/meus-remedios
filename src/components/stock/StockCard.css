@@ -9,6 +9,42 @@
   border-top: 4px solid var(--accent-warning) !important;
 }
 
+.out-of-stock-card {
+  border: 2px solid var(--accent-error) !important;
+  background: rgba(255, 0, 110, 0.05) !important;
+  box-shadow: 0 0 15px rgba(255, 0, 110, 0.1) !important;
+}
+
+.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.clickable:hover {
+  transform: translateY(-4px);
+  filter: brightness(1.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.clickable::after {
+  content: '👆 Clique para repor';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: var(--font-size-xs);
+  background: var(--accent-primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.clickable:hover::after {
+  opacity: 1;
+}
+
 .stock-card-header {
   display: flex;
   justify-content: space-between;

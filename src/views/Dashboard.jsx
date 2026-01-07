@@ -5,6 +5,7 @@ import Card from '../components/ui/Card'
 import Loading from '../components/ui/Loading'
 import Modal from '../components/ui/Modal'
 import LogForm from '../components/log/LogForm'
+import Calendar from '../components/ui/Calendar'
 import LogEntry from '../components/log/LogEntry'
 import StockIndicator from '../components/stock/StockIndicator'
 import ProtocolChecklistItem from '../components/protocol/ProtocolChecklistItem'
@@ -16,11 +17,13 @@ export default function Dashboard({ onNavigate }) {
   const [treatmentPlans, setTreatmentPlans] = useState([])
   const [recentLogs, setRecentLogs] = useState([])
   const [stockSummary, setStockSummary] = useState([])
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(null)
   const [allMedicines, setAllMedicines] = useState([])
   const [expandedPlans, setExpandedPlans] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingLog, setEditingLog] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [lastUpdated, setLastUpdated] = useState(new Date())
   const [selectedProtocols, setSelectedProtocols] = useState({}) // { planId: [protocolIds] }
@@ -57,7 +60,7 @@ export default function Dashboard({ onNavigate }) {
       const [protocols, plans, logs, medicines] = await Promise.all([
         protocolService.getActive(),
         treatmentPlanService.getAll(),
-        logService.getAll(10),
+        logService.getAll(100), // More logs for calendar markers
         medicineService.getAll()
       ])
       
@@ -96,6 +99,10 @@ export default function Dashboard({ onNavigate }) {
       
       setExpandedPlans(initialExpandedState)
       setSelectedProtocols(initialSelectionState)
+
+      if (logs.length > 0 && !selectedCalendarDate) {
+        setSelectedCalendarDate(new Date(logs[0].taken_at))
+      }
       
       // Calcular consumo diário por medicamento
       const dailyIntakeMap = {}
@@ -135,7 +142,8 @@ export default function Dashboard({ onNavigate }) {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Intentional: only load once on mount
 
   useEffect(() => {
     loadDashboardData()
@@ -146,15 +154,29 @@ export default function Dashboard({ onNavigate }) {
       if (Array.isArray(logData)) {
         await logService.createBulk(logData)
         showSuccess('Lote de medicamentos registrado com sucesso!')
+      } else if (logData.id) {
+        await logService.update(logData.id, logData)
+        showSuccess('Registro atualizado com sucesso!')
       } else {
         await logService.create(logData)
         showSuccess('Medicamento registrado com sucesso!')
       }
       setIsModalOpen(false)
+      setEditingLog(null)
       await loadDashboardData()
     } catch (err) {
       throw new Error(err.message)
     }
+  }
+
+  function handleEditClick(log) {
+    setEditingLog(log)
+    setIsModalOpen(true)
+  }
+
+  function handleOpenNewLog() {
+    setEditingLog(null)
+    setIsModalOpen(true)
   }
 
   const handleTakeSelectedFromPlan = async (e, plan) => {
@@ -180,16 +202,20 @@ export default function Dashboard({ onNavigate }) {
     setTimeout(() => setSuccessMessage(''), 3000)
   }
 
-  const getCurrentTime = () => {
-    return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-  }
-
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return 'Bom dia! ☀️'
     if (hour < 18) return 'Boa tarde! 🌤️'
     return 'Boa noite! 🌙'
   }
+
+  const displayDate = selectedCalendarDate || new Date()
+  const selectedDayLogs = recentLogs.filter(log => {
+    const d = new Date(log.taken_at)
+    return d.getFullYear() === displayDate.getFullYear() &&
+           d.getMonth() === displayDate.getMonth() &&
+           d.getDate() === displayDate.getDate()
+  })
 
   if (isLoading) {
     return (
@@ -210,7 +236,7 @@ export default function Dashboard({ onNavigate }) {
           </p>
         </div>
         <div className="quick-actions">
-          <Button variant="primary" className="btn-log-dose" onClick={() => setIsModalOpen(true)}>
+          <Button variant="primary" className="btn-log-dose" onClick={handleOpenNewLog}>
             <span className="btn-icon">➕</span> Registrar Dose
           </Button>
         </div>
@@ -373,6 +399,7 @@ export default function Dashboard({ onNavigate }) {
         </Card>
 
         {/* Estoque */}
+        {/* Ações Rápidas secundário removido - já existe no header */}
         <Card className="dashboard-card stock-card">
           <div className="card-header">
             <h3>
@@ -394,7 +421,11 @@ export default function Dashboard({ onNavigate }) {
           ) : (
             <div className="stock-list">
               {stockSummary.slice(0, 5).map(item => (
-                <div key={item.medicine.id} className={`stock-item ${item.isLow ? 'low-stock-highlight' : ''}`}>
+                <div 
+                  key={item.medicine.id} 
+                  className={`stock-item clickable-replenish ${item.isLow ? 'low-stock-highlight' : ''}`}
+                  onClick={() => onNavigate('stock', { medicineId: item.medicine.id })}
+                >
                   <div className="stock-info-dash">
                     <h4>
                       {item.isLow && <span className="warning-mini">⚠️</span>}
@@ -413,41 +444,84 @@ export default function Dashboard({ onNavigate }) {
           )}
         </Card>
 
-        {/* Histórico Recente */}
+        {/* Calendário de Doses */}
         <Card className="dashboard-card history-card full-width">
           <div className="card-header">
-            <h3>📝 Histórico Recente</h3>
+            <h3>📅 Ciclo de Doses</h3>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('history')}>
-              Ver todos
+              Ver Histórico Completo
             </Button>
           </div>
           
-          {recentLogs.length === 0 ? (
-            <div className="empty-message">
-              <p>Nenhum registro ainda</p>
-              <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
-                Registrar Primeira Dose
-              </Button>
+          <div className="card-content-dash" style={{ padding: 'var(--space-5)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 'var(--space-8)', alignItems: 'start' }}>
+              <Calendar 
+                markedDates={recentLogs.map(log => log.taken_at)} 
+                selectedDate={selectedCalendarDate}
+                onDayClick={(date) => setSelectedCalendarDate(date)}
+              />
+              
+              <div className="recent-activity">
+                <h4 style={{ marginBottom: 'var(--space-4)', fontSize: '13px', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
+                  {displayDate.toLocaleDateString('pt-BR')} 
+                  {displayDate.toDateString() === new Date().toDateString() ? ' (Hoje)' : ''}
+                </h4>
+                
+                {selectedDayLogs.length === 0 ? (
+                    <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                      Nenhum registro neste dia
+                    </p>
+                  ) : (
+                    <div className="logs-timeline-mini">
+                      {selectedDayLogs.map(log => (
+                        <div 
+                          key={log.id} 
+                          onClick={() => handleEditClick(log)}
+                          style={{ 
+                            padding: 'var(--space-3)', 
+                            background: 'rgba(255,255,255,0.03)', 
+                            borderRadius: 'var(--radius-md)',
+                            marginBottom: 'var(--space-2)',
+                            borderLeft: '3px solid var(--accent-success)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          className="clickable-log-item"
+                        >
+                          <div style={{ fontWeight: 600, fontSize: '13px', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>{log.medicine?.name}</span>
+                            <span style={{ opacity: 0.5, fontSize: '11px' }}>✏️</span>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '2px' }}>
+                            {new Date(log.taken_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            {log.quantity_taken && ` • ${log.quantity_taken} ${log.quantity_taken === 1 ? 'dose' : 'doses'}`}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
             </div>
-          ) : (
-            <div className="logs-timeline">
-              {recentLogs.slice(0, 5).map(log => (
-                <LogEntry key={log.id} log={log} />
-              ))}
-            </div>
-          )}
+          </div>
         </Card>
       </div>
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingLog(null)
+        }}
       >
         <LogForm
           protocols={activeProtocols}
           treatmentPlans={treatmentPlans}
+          initialValues={editingLog}
           onSave={handleLogMedicine}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => {
+            setIsModalOpen(false)
+            setEditingLog(null)
+          }}
         />
       </Modal>
     </div>

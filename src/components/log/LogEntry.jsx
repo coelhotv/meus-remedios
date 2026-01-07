@@ -1,6 +1,6 @@
 import './LogEntry.css'
 
-export default function LogEntry({ log }) {
+export default function LogEntry({ log, onEdit, onDelete }) {
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
     return {
@@ -18,8 +18,24 @@ export default function LogEntry({ log }) {
           <span className="log-date">{date}</span>
           <span className="log-hour">{time}</span>
         </div>
-        <div className="log-badge">
-          ✅ Tomado
+        <div className="actions-header">
+          {onEdit && (
+            <button className="btn-edit-log" onClick={() => onEdit(log)}>
+              ✏️ Editar
+            </button>
+          )}
+          {onDelete && log.id && (
+            <button className="btn-delete-log" onClick={() => {
+              if (window.confirm('Excluir este registro de dose? O estoque será devolvido.')) {
+                onDelete(log.id)
+              }
+            }}>
+              🗑️
+            </button>
+          )}
+          <div className="log-badge">
+            ✅ Tomado
+          </div>
         </div>
       </div>
 

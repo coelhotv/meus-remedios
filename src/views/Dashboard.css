@@ -323,6 +323,37 @@
   background: rgba(255, 170, 0, 0.05);
 }
 
+.clickable-replenish {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.clickable-replenish:hover {
+  transform: translateX(4px);
+  background: rgba(0, 240, 255, 0.05) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+.clickable-replenish::after {
+  content: '➕ Repor';
+  position: absolute;
+  top: 50%;
+  right: -60px;
+  transform: translateY(-50%);
+  background: var(--accent-primary);
+  color: #000;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px 0 0 4px;
+  transition: right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.clickable-replenish:hover::after {
+  right: 0;
+}
+
 .warning-mini {
   margin-right: var(--space-2);
   filter: drop-shadow(0 0 5px var(--accent-warning));

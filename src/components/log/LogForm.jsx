@@ -3,12 +3,22 @@ import Button from '../ui/Button'
 import ProtocolChecklistItem from '../protocol/ProtocolChecklistItem'
 import './LogForm.css'
 
-export default function LogForm({ protocols, treatmentPlans = [], onSave, onCancel }) {
+export default function LogForm({ protocols, treatmentPlans = [], initialValues, onSave, onCancel }) {
+  // Helper to format date to local ISO string (YYYY-MM-DDTHH:mm) for datetime-local input
+  const toLocalISO = (dateStr) => {
+    const date = dateStr ? new Date(dateStr) : new Date()
+    const offset = date.getTimezoneOffset() * 60000
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+  }
+
   const [formData, setFormData] = useState({
-    type: 'protocol', // 'protocol' or 'plan'
-    protocol_id: '',
-    treatment_plan_id: '',
-    notes: ''
+    type: initialValues?.protocol_id ? 'protocol' : (initialValues?.treatment_plan_id ? 'plan' : 'protocol'),
+    id: initialValues?.id || null, // For editing
+    protocol_id: initialValues?.protocol_id || '',
+    treatment_plan_id: initialValues?.treatment_plan_id || '',
+    taken_at: toLocalISO(initialValues?.taken_at),
+    quantity_taken: initialValues?.quantity_taken || '',
+    notes: initialValues?.notes || ''
   })
   
   const [selectedPlanProtocols, setSelectedPlanProtocols] = useState([])
@@ -86,10 +96,16 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
         const dataToSave = {
           protocol_id: formData.protocol_id,
           medicine_id: protocol.medicine_id,
-          quantity_taken: protocol.dosage_per_intake,
+          quantity_taken: formData.quantity_taken ? parseFloat(formData.quantity_taken) : protocol.dosage_per_intake,
+          taken_at: new Date(formData.taken_at).toISOString(),
           notes: formData.notes.trim() || null
         }
-        await onSave(dataToSave)
+        
+        if (formData.id) {
+          await onSave({ ...dataToSave, id: formData.id })
+        } else {
+          await onSave(dataToSave)
+        }
       } else {
         // Plan bulk log
         const plan = treatmentPlans.find(p => p.id === formData.treatment_plan_id)
@@ -107,6 +123,7 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
           protocol_id: p.id,
           medicine_id: p.medicine_id,
           quantity_taken: p.dosage_per_intake,
+          taken_at: new Date(formData.taken_at).toISOString(),
           notes: `[Plan: ${plan.name}] ${formData.notes.trim()}`.trim()
         }))
         
@@ -136,10 +153,22 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
           type="button" 
           className={formData.type === 'plan' ? 'active' : ''}
           onClick={() => setFormData(prev => ({ ...prev, type: 'plan' }))}
-          disabled={treatmentPlans.length === 0}
+          disabled={treatmentPlans.length === 0 || formData.id}
         >
           📁 Plano Completo
         </button>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="taken_at">Data e Hora do Registro <span className="required">*</span></label>
+        <input
+          type="datetime-local"
+          id="taken_at"
+          name="taken_at"
+          value={formData.taken_at}
+          onChange={handleChange}
+          required
+        />
       </div>
 
       {formData.type === 'protocol' ? (
@@ -188,15 +217,22 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
 
       {selectedProtocol && formData.type === 'protocol' && (
         <div className="protocol-info">
-          <div className="info-item">
+          <div className="form-group">
+            <label htmlFor="quantity_taken">Quantidade Tomada</label>
+            <input
+              type="number"
+              id="quantity_taken"
+              name="quantity_taken"
+              value={formData.quantity_taken || (selectedProtocol ? selectedProtocol.dosage_per_intake : '')}
+              onChange={handleChange}
+              step="0.1"
+              min="0.1"
+              required
+            />
+          </div>
+          <div className="info-item" style={{ marginTop: 'var(--space-2)' }}>
             <span className="info-label">💊 Medicamento:</span>
             <span className="info-value">{selectedProtocol.medicine?.name}</span>
-          </div>
-          <div className="info-item">
-            <span className="info-label">📊 Quantidade:</span>
-            <span className="info-value">
-              {selectedProtocol.dosage_per_intake} {selectedProtocol.dosage_per_intake === 1 ? 'comprimido' : 'comprimidos'}
-            </span>
           </div>
         </div>
       )}
@@ -260,7 +296,8 @@ export default function LogForm({ protocols, treatmentPlans = [], onSave, onCanc
             (formData.type === 'protocol' ? !formData.protocol_id : (!formData.treatment_plan_id || selectedPlanProtocols.length === 0))
           }
         >
-          {isSubmitting ? 'Registrando...' : 
+          {isSubmitting ? 'Salvando...' : 
+            formData.id ? '💾 Atualizar Registro' :
             formData.type === 'plan' && selectedPlanProtocols.length > 0 
               ? `✅ Registrar (${selectedPlanProtocols.length})` 
               : '✅ Registrar Dose'

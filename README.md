@@ -4,23 +4,22 @@
 
 Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com suporte a **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-0.6.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 🎯 Funcionalidades (V0.6.0)
+## 🎯 Funcionalidades (V1.0.0)
 
-- ✅ **UX Unificada de Doses**: Experiência visual consistente entre Dashboard e Modal para registro de medicamentos.
-- ✅ **Ações Inteligentes**: Botões dinâmicos que indicam a quantidade exata de itens selecionados para registro.
-- ✅ **Precisão Financeira**: Suporte a 3 casas decimais para controle preciso de custos unitários.
-- ✅ **Fluxo Otimizado**: Criação de protocolos sugerida automaticamente após o cadastro de medicamentos.
-- ✅ **Dashboard Inteligente**: Interface premium Neo-Glass com indicadores live e saudações dinâmicas.
-- ✅ **Garantia de Qualidade**: Suíte de testes unitários com Vitest (Services e UI).
-- ✅ **Custo de Oportunidade**: Regra de estoque baixo baseada em dias de cobertura.
-- ✅ **Suporte à Titulação**: Defina doses alvo e acompanhe o status de ajuste medicamentoso.
-- ✅ **Planos de Tratamento**: Agrupe medicamentos em protocolos complexos.
-- ✅ **Interface Premium**: Design neon com glass-morphism e tema escuro nativo.
+- ✅ **Calendário Interativo**: Visualização mensal de doses tomadas com navegação e seleção de data.
+- ✅ **Histórico Completo**: Visualização detalhada integrada ao calendário com suporte a edições rápidas.
+- ✅ **Edição e Exclusão**: Flexibilidade total para ajustar registros passados com restauração automática de estoque.
+- ✅ **Registros Retroativos**: Registro de doses em qualquer data/hora com ajuste de fuso horário local.
+- ✅ **UX Unificada**: Experiência consistente entre Dashboard, Calendário e Modais.
+- ✅ **Ações Inteligentes**: Botões dinâmicos e registro em lote para planos de tratamento.
+- ✅ **Precisão Financeira**: Suporte a 3 casas decimais para controle rigoroso de custos.
+- ✅ **Dashboard Premium**: Interface Neo-Glass com indicadores live e saudações dinâmicas.
+- ✅ **Garantia de Qualidade**: Suíte de testes unitários com Vitest.
 
 ## 🚀 Roadmap Futuro
 
@@ -198,5 +197,5 @@ Para dúvidas ou problemas:
 
 ---
 
-**Versão**: 0.6.0 (Piloto)  
-**Última atualização**: Dezembro 2025
+**Versão**: 1.0.0 (Official Release)  
+**Última atualização**: Janeiro 2026

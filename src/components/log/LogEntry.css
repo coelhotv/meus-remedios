@@ -52,6 +52,46 @@
   text-transform: uppercase;
 }
 
+.actions-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.btn-edit-log {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-tertiary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-edit-log:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.btn-delete-log {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+  opacity: 0.5;
+}
+
+.btn-delete-log:hover {
+  opacity: 1;
+  background: rgba(255, 0, 110, 0.1);
+  border-color: var(--accent-error);
+}
+
 .log-content {
   display: flex;
   flex-direction: column;

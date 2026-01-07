@@ -13,6 +13,7 @@ export default function Stock({ initialParams, onClearParams }) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedMedicineId, setSelectedMedicineId] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
 
 
@@ -93,11 +94,12 @@ export default function Stock({ initialParams, onClearParams }) {
     }
   }, [initialParams, medicines])
 
-  const handleAddStock = () => {
+  const handleAddStock = (medicineId = null) => {
     if (medicines.length === 0) {
       setError('Cadastre um medicamento antes de adicionar estoque')
       return
     }
+    setSelectedMedicineId(typeof medicineId === 'string' ? medicineId : null)
     setIsModalOpen(true)
   }
 
@@ -106,6 +108,7 @@ export default function Stock({ initialParams, onClearParams }) {
       await stockService.add(stockData)
       showSuccess('Estoque adicionado com sucesso!')
       setIsModalOpen(false)
+      setSelectedMedicineId(null)
       if (onClearParams) onClearParams()
       await loadData()
     } catch (err) {
@@ -195,6 +198,7 @@ export default function Stock({ initialParams, onClearParams }) {
                     totalQuantity={stock.total}
                     daysRemaining={stock.daysRemaining}
                     isLow={true}
+                    onClick={() => handleAddStock(medicine.id)}
                   />
                 ))}
               </div>
@@ -218,6 +222,7 @@ export default function Stock({ initialParams, onClearParams }) {
                     daysRemaining={stock.daysRemaining}
                     isLow={true}
                     dailyIntake={stock.dailyIntake}
+                    onClick={() => handleAddStock(medicine.id)}
                   />
                 ))}
               </div>
@@ -258,10 +263,11 @@ export default function Stock({ initialParams, onClearParams }) {
       >
         <StockForm
           medicines={medicines}
-          initialValues={initialParams ? { medicine_id: initialParams.medicineId } : null}
+          initialValues={selectedMedicineId ? { medicine_id: selectedMedicineId } : (initialParams ? { medicine_id: initialParams.medicineId } : null)}
           onSave={handleSaveStock}
           onCancel={() => {
              setIsModalOpen(false)
+             setSelectedMedicineId(null)
              if (onClearParams) onClearParams()
           }}
         />

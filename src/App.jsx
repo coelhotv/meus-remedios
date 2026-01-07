@@ -95,7 +95,14 @@ function App() {
   // Default: Dashboard
   return (
     <div className="app-container">
-      <Dashboard onNavigate={(view) => setCurrentView(view)} />
+      <Dashboard onNavigate={(view, params) => {
+        if (view === 'stock' && params?.medicineId) {
+          setInitialStockParams({ medicineId: params.medicineId })
+        } else if (view === 'protocols' && params?.medicineId) {
+          setInitialProtocolParams({ medicineId: params.medicineId })
+        }
+        setCurrentView(view)
+      }} />
       
       {showDebug && (
         <div style={{ padding: '0 var(--space-6)', marginBottom: 'var(--space-8)' }}>
@@ -110,7 +117,7 @@ function App() {
         color: 'var(--text-tertiary)',
         fontSize: 'var(--font-size-sm)'
       }}>
-        <p>Meus Remédios v0.6.0 - Piloto</p>
+        <p>Meus Remédios v1.0.0</p>
         
         <span 
           onClick={() => setShowDebug(!showDebug)} 

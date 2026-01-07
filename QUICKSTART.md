@@ -13,7 +13,7 @@
 - ✅ Glass-morphism effects e animações suaves
 - ✅ Responsivo mobile-first
 
-### 3. Features Ativas (V0.5.0)
+### 3. Features Ativas (V1.0.0)
 - ✅ **Testes Unitários**: Suíte Vitest garantindo integridade dos cálculos.
 - ✅ **Planos de Tratamento**: Agrupamento de medicamentos complexos.
 - ✅ **Titulação de Dose**: Controle de Dose Alvo e Status.

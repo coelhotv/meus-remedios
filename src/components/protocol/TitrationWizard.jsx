@@ -4,8 +4,6 @@ import './TitrationWizard.css'
 
 export default function TitrationWizard({ schedule = [], onChange }) {
   const [stages, setStages] = useState(schedule)
-  const [editingIndex, setEditingIndex] = useState(null)
-  
   // Form state for a stage
   const [currentStage, setCurrentStage] = useState({
     days: 7,

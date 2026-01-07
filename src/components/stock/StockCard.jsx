@@ -2,7 +2,9 @@ import Card from '../ui/Card'
 import StockIndicator from './StockIndicator'
 import './StockCard.css'
 
-export default function StockCard({ medicine, stockEntries, totalQuantity, daysRemaining, isLow, dailyIntake }) {
+export default function StockCard({ medicine, stockEntries, totalQuantity, daysRemaining, isLow, dailyIntake, onClick }) {
+  const isOutOfStock = totalQuantity === 0;
+
   const formatDate = (dateString) => {
     if (!dateString) return '-'
     const date = new Date(dateString)
@@ -25,7 +27,10 @@ export default function StockCard({ medicine, stockEntries, totalQuantity, daysR
   }
 
   return (
-    <Card className={`stock-card-detail ${isLow ? 'low-stock-card' : ''}`}>
+    <Card 
+      className={`stock-card-detail ${isLow ? 'low-stock-card' : ''} ${isOutOfStock ? 'out-of-stock-card' : ''} ${onClick ? 'clickable' : ''}`}
+      onClick={onClick}
+    >
       <div className="stock-card-header">
         <div className="medicine-info-top">
           <h4 className="medicine-name">{medicine.name}</h4>
