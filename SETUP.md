@@ -52,6 +52,8 @@ CREATE TABLE medicines (
   laboratory TEXT,
   active_ingredient TEXT,
   dosage_per_pill NUMERIC,
+  dosage_unit TEXT DEFAULT 'mg',
+  type TEXT DEFAULT 'medicine',
   price_paid NUMERIC,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
@@ -76,8 +78,11 @@ CREATE TABLE protocols (
   frequency TEXT,
   time_schedule JSONB,
   dosage_per_intake NUMERIC,
-  target_dosage NUMERIC,        -- Novo campo para titulação
-  titration_status TEXT DEFAULT 'estável', -- 'estável', 'titulando', 'alvo_atingido'
+  target_dosage NUMERIC,
+  titration_status TEXT DEFAULT 'estável',
+  titration_schedule JSONB,
+  current_stage_index INTEGER DEFAULT 0,
+  stage_started_at TIMESTAMP WITH TIME ZONE,
   notes TEXT,
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -88,9 +93,11 @@ CREATE TABLE protocols (
 CREATE TABLE stock (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medicine_id UUID REFERENCES medicines(id) ON DELETE CASCADE,
-  quantity INTEGER NOT NULL,
+  quantity NUMERIC NOT NULL,
   purchase_date DATE,
   expiration_date DATE,
+  unit_price NUMERIC DEFAULT 0,
+  notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
