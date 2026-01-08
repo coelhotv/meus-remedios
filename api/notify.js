@@ -23,6 +23,11 @@ export default async function handler(req, res) {
   const currentHHMM = brTime.getUTCHours().toString().padStart(2, '0') + ':' + 
                       brTime.getUTCMinutes().toString().padStart(2, '0');
 
+  // Protection against unauthorized calls
+  if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   if (!token) {
     return res.status(200).json({ error: 'Token missing' });
   }

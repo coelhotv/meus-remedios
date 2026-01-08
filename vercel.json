@@ -5,11 +5,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/notify",
-      "schedule": "* * * * *"
-    }
   ]
 }

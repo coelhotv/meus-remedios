@@ -226,6 +226,10 @@ git push -u origin main
    - **Value**: Cole seu token do bot do Telegram
    - Clique em "Add"
 
+   - **Name**: `CRON_SECRET`
+   - **Value**: Crie uma senha qualquer (ex: `super-secreto-123`)
+   - Clique em "Add"
+
 3. Clique em "Deploy"
 
 ### 4.4 Ativar Notificações (Telegram Webhook)
@@ -233,13 +237,24 @@ git push -u origin main
 Após o deploy no Vercel, você precisa avisar ao Telegram para onde enviar as mensagens:
 
 1. Copie a URL gerada pelo Vercel (ex: `https://seu-app.vercel.app`)
-2. Execute o seguinte comando no seu terminal local (substituindo a URL):
+2. Execute o seguinte comando no seu terminal local (substituindo a URL e o TOKEN se não tiver o .env configurado):
    ```bash
    curl "https://api.telegram.org/bot$(grep TELEGRAM_BOT_TOKEN .env | cut -d '=' -f2)/setWebhook?url=https://SEU-APP.vercel.app/api/telegram"
    ```
 3. No Telegram, abra seu bot e envie o comando `/start`.
 
-### 4.4 Aguardar deploy
+### 4.5 Configurar Agendamento Externo (Grátis)
+
+Como o plano gratuito do Vercel tem limites de Cron Jobs, usaremos um serviço externo gratuito para "apertar" o gatilho a cada minuto:
+
+1. Crie uma conta em **[cron-job.org](https://cron-job.org/en/)** (é grátis).
+2. Clique em **"Create Cronjob"**.
+3. **URL**: `https://seu-app.vercel.app/api/notify`
+4. **Execution schedule**: Every minute (`* * * * *`).
+5. Em **Advanced**, seção **Headers**:
+   - Key: `Authorization`
+   - Value: `Bearer super-secreto-123` (a mesma senha que você colocou no Vercel no passo 4.3)
+6. Salve o job.
 
 1. O Vercel vai começar a fazer o build e deploy
 2. Aguarde ~1-2 minutos
