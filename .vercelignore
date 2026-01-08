@@ -1,0 +1,6 @@
+server/
+docs/
+supabase_setup.sql
+.env
+.env.example
+*.md
