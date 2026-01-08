@@ -4,8 +4,14 @@
 
 Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com suporte a **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-1.1.0-blue?style=for-the-badge)
+![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
 
 ---
 
@@ -25,7 +31,6 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 
 ## 🚀 Roadmap Futuro
 
-- 🤖 **IA Médico-Assistente**: Insights sobre os protocolos com base em diretrizes médicas.
 - 🤖 **IA Médico-Assistente**: Insights sobre os protocolos com base em diretrizes médicas.
 - 📊 **Relatórios de Titulação**: Gráficos de evolução da dosagem ao longo do tempo.
 - 🔒 **Backup Criptografado**: Exportação e importação de dados de forma segura.
