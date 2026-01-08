@@ -258,12 +258,15 @@ export default function Dashboard({ onNavigate }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header-premium">
-        <div className="greeting-section">
-          <h1>{getGreeting()}</h1>
-          <p className="dashboard-subtitle">
-            <span className="live-indicator"></span> 
-            Atualizado em {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-          </p>
+        <div className="greeting-section" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+          <img src="/logo.png" alt="Logo" style={{ width: '64px', height: '64px', borderRadius: '16px', boxShadow: '0 0 20px rgba(0, 240, 255, 0.3)' }} />
+          <div>
+            <h1>{getGreeting()}</h1>
+            <p className="dashboard-subtitle">
+              <span className="live-indicator"></span> 
+              Atualizado em {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          </div>
         </div>
         <div className="quick-actions">
           <Button variant="primary" className="btn-log-dose" onClick={handleOpenNewLog}>

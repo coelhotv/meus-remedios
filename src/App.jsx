@@ -32,8 +32,11 @@ function App() {
       <Button variant="ghost" onClick={() => setCurrentView('dashboard')}>
         ← Voltar ao Dashboard
       </Button>
-      <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--accent-primary)' }}>
-        Meus Remédios Piloto
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+        <img src="/logo.png" alt="Logo" style={{ width: '30px', height: '30px', borderRadius: '6px' }} />
+        <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--accent-primary)' }}>
+          Meus Remédios
+        </div>
       </div>
     </div>
   )
@@ -117,7 +120,8 @@ function App() {
         color: 'var(--text-tertiary)',
         fontSize: 'var(--font-size-sm)'
       }}>
-        <p>Meus Remédios v1.0.0</p>
+        <img src="/logo.png" alt="Logo" style={{ width: '40px', marginBottom: 'var(--space-2)', borderRadius: '10px', opacity: 0.8 }} />
+        <p>Meus Remédios v1.1.0</p>
         
         <span 
           onClick={() => setShowDebug(!showDebug)} 

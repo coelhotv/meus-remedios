@@ -13,6 +13,8 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 ![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
 
+![Cron job status](https://api.cron-job.org/jobs/7138089/fd84db3734b009c6/status-1.svg)
+
 ---
 
 ## 🎯 Funcionalidades (V1.1.0)
