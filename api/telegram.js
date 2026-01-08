@@ -1,4 +1,3 @@
-import TelegramBot from 'node-telegram-bot-api';
 import { createClient } from '@supabase/supabase-js';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -6,8 +5,16 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 const MOCK_USER_ID = '00000000-0000-0000-0000-000000000001';
 
-const bot = new TelegramBot(token);
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+async function telegramFetch(method, body) {
+  const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,6 +22,10 @@ export default async function handler(req, res) {
   }
 
   const update = req.body;
+  if (!token) {
+    console.error('Missing TELEGRAM_BOT_TOKEN');
+    return res.status(200).json({ error: 'Bot token not configured' });
+  }
 
   try {
     // 1. Comando /start
@@ -26,11 +37,12 @@ export default async function handler(req, res) {
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
 
-      await bot.sendMessage(chatId, 
-        `Olá! 👋 Vínculo com Meus Remédios realizado com sucesso.\n\n` +
-        `Vou te avisar por aqui quando chegar a hora das suas medicações.\n` +
-        `Use /status para ver sua rotina.`
-      );
+      await telegramFetch('sendMessage', {
+        chat_id: chatId,
+        text: `Olá! 👋 Vínculo com Meus Remédios realizado com sucesso.\n\n` +
+               `Vou te avisar por aqui quando chegar a hora das suas medicações.\n` +
+               `Use /status para ver sua rotina.`,
+      });
     }
 
     // 2. Comando /status
@@ -43,13 +55,20 @@ export default async function handler(req, res) {
         .eq('active', true);
 
       if (!protocols || protocols.length === 0) {
-        await bot.sendMessage(chatId, 'Você não possui protocolos ativos.');
+        await telegramFetch('sendMessage', {
+          chat_id: chatId,
+          text: 'Você não possui protocolos ativos.',
+        });
       } else {
         let text = '📋 *Sua Rotina Ativa:*\n\n';
         protocols.forEach(p => {
           text += `💊 *${p.medicine.name}*\n⏰ ${p.time_schedule.join(', ')}\n📏 ${p.dosage_per_intake}x\n\n`;
         });
-        await bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+        await telegramFetch('sendMessage', {
+          chat_id: chatId,
+          text: text,
+          parse_mode: 'Markdown',
+        });
       }
     }
 
@@ -89,10 +108,11 @@ export default async function handler(req, res) {
           }
         }
 
-        await bot.answerCallbackQuery(id, { text: 'Dose registrada!' });
-        await bot.editMessageText(`✅ Dose de *${message.text.split('\n')[2]?.replace('💊 ', '') || 'Medicamento'}* registrada!`, {
+        await telegramFetch('answerCallbackQuery', { callback_query_id: id, text: 'Dose registrada!' });
+        await telegramFetch('editMessageText', {
           chat_id: chatId,
           message_id: message.message_id,
+          text: `✅ Dose de *${message.text.split('\n')[2]?.replace('💊 ', '') || 'Medicamento'}* registrada!`,
           parse_mode: 'Markdown'
         });
       }
@@ -101,6 +121,6 @@ export default async function handler(req, res) {
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('Webhook Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(200).json({ error: 'Internal Error', details: error.message });
   }
 }

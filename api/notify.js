@@ -1,4 +1,3 @@
-import TelegramBot from 'node-telegram-bot-api';
 import { createClient } from '@supabase/supabase-js';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -6,20 +5,27 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 const MOCK_USER_ID = '00000000-0000-0000-0000-000000000001';
 
-const bot = new TelegramBot(token);
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default async function handler(req, res) {
-  // Opcional: Adicionar proteção via header secreto do Vercel
-  // if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) { ... }
+async function telegramFetch(method, body) {
+  const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
 
+export default async function handler(req, res) {
   const now = new Date();
   // Ajuste para Horário de Brasília (UTC-3)
   const brTime = new Date(now.getTime() - (3 * 60 * 60 * 1000));
   const currentHHMM = brTime.getUTCHours().toString().padStart(2, '0') + ':' + 
                       brTime.getUTCMinutes().toString().padStart(2, '0');
 
-  console.log(`[Cron] Verificando remédios para ${currentHHMM}`);
+  if (!token) {
+    return res.status(200).json({ error: 'Token missing' });
+  }
 
   try {
     const { data: settings } = await supabase
@@ -56,7 +62,9 @@ export default async function handler(req, res) {
           ]
         };
 
-        await bot.sendMessage(settings.telegram_chat_id, message, { 
+        await telegramFetch('sendMessage', {
+          chat_id: settings.telegram_chat_id,
+          text: message,
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
@@ -71,6 +79,6 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Cron Error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(200).json({ error: error.message });
   }
 }
