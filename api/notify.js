@@ -1,0 +1,76 @@
+import TelegramBot from 'node-telegram-bot-api';
+import { createClient } from '@supabase/supabase-js';
+
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const MOCK_USER_ID = '00000000-0000-0000-0000-000000000001';
+
+const bot = new TelegramBot(token);
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export default async function handler(req, res) {
+  // Opcional: Adicionar proteção via header secreto do Vercel
+  // if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) { ... }
+
+  const now = new Date();
+  // Ajuste para Horário de Brasília (UTC-3)
+  const brTime = new Date(now.getTime() - (3 * 60 * 60 * 1000));
+  const currentHHMM = brTime.getUTCHours().toString().padStart(2, '0') + ':' + 
+                      brTime.getUTCMinutes().toString().padStart(2, '0');
+
+  console.log(`[Cron] Verificando remédios para ${currentHHMM}`);
+
+  try {
+    const { data: settings } = await supabase
+      .from('user_settings')
+      .select('telegram_chat_id')
+      .eq('user_id', MOCK_USER_ID)
+      .single();
+
+    if (!settings?.telegram_chat_id) {
+      return res.status(200).json({ status: 'no_chat_id' });
+    }
+
+    const { data: protocols } = await supabase
+      .from('protocols')
+      .select('*, medicine:medicines(*)')
+      .eq('user_id', MOCK_USER_ID)
+      .eq('active', true);
+
+    const notificationsSent = [];
+
+    for (const p of protocols) {
+      if (p.time_schedule.includes(currentHHMM)) {
+        const message = `🔔 *HORA DO REMÉDIO*\n\n` +
+                        `💊 *${p.medicine.name}*\n` +
+                        `📏 Dose: ${p.dosage_per_intake}x\n` +
+                        `${p.notes ? `📝 _${p.notes}_` : ''}`;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              { text: 'Tomei ✅', callback_data: `take_:${p.id}:${p.medicine_id}:${p.dosage_per_intake}` },
+              { text: 'Pular ❌', callback_data: `skip_:${p.id}` }
+            ]
+          ]
+        };
+
+        await bot.sendMessage(settings.telegram_chat_id, message, { 
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+        notificationsSent.push(p.medicine.name);
+      }
+    }
+
+    res.status(200).json({ 
+      status: 'ok', 
+      time: currentHHMM, 
+      sent: notificationsSent 
+    });
+  } catch (error) {
+    console.error('Cron Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+}

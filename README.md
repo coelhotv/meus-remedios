@@ -4,12 +4,12 @@
 
 Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com suporte a **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 🎯 Funcionalidades (V1.0.0)
+## 🎯 Funcionalidades (V1.1.0)
 
 - ✅ **Calendário Interativo**: Visualização mensal de doses tomadas com navegação e seleção de data.
 - ✅ **Histórico Completo**: Visualização detalhada integrada ao calendário com suporte a edições rápidas.
@@ -19,11 +19,13 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 - ✅ **Ações Inteligentes**: Botões dinâmicos e registro em lote para planos de tratamento.
 - ✅ **Precisão Financeira**: Suporte a 3 casas decimais para controle rigoroso de custos.
 - ✅ **Dashboard Premium**: Interface Neo-Glass com indicadores live e saudações dinâmicas.
+- ✅ **Notificações via Telegram**: Lembretes em tempo real com botões interativos para registro de dose.
+- ✅ **Agendamento Inteligente**: Sistema de checagem a cada minuto via Vercel Cron.
 - ✅ **Garantia de Qualidade**: Suíte de testes unitários com Vitest.
 
 ## 🚀 Roadmap Futuro
 
-- 🔔 **Notificações**: Alertas para lembrar de tomar os medicamentos.
+- 🤖 **IA Médico-Assistente**: Insights sobre os protocolos com base em diretrizes médicas.
 - 🤖 **IA Médico-Assistente**: Insights sobre os protocolos com base em diretrizes médicas.
 - 📊 **Relatórios de Titulação**: Gráficos de evolução da dosagem ao longo do tempo.
 - 🔒 **Backup Criptografado**: Exportação e importação de dados de forma segura.
@@ -35,7 +37,7 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 - **Frontend**: React 18 + Vite
 - **Backend**: Supabase (PostgreSQL + REST API)
 - **Styling**: CSS Vanilla com design system customizado
-- **Deployment**: Vercel (frontend) + Supabase (backend)
+- **Deployment**: Vercel (Frontend, API Webhooks & Cron Jobs) + Supabase (Database)
 - **Custo**: R$ 0 (tier gratuito)
 
 ---
@@ -154,6 +156,7 @@ npm run build        # Build de produção
 npm run preview      # Preview do build
 npm run lint         # Linter ESLint
 npm test             # Executa a suíte de testes unitários (Vitest)
+npm run bot          # Inicia o bot do Telegram localmente (para desenvolvimento)
 ```
 
 ---
@@ -197,5 +200,5 @@ Para dúvidas ou problemas:
 
 ---
 
-**Versão**: 1.0.0 (Official Release)  
+**Versão**: 1.1.0 (Official Release)  
 **Última atualização**: Janeiro 2026

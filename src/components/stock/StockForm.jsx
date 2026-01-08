@@ -55,7 +55,7 @@ export default function StockForm({ medicines, initialValues, onSave, onCancel }
     try {
       const dataToSave = {
         medicine_id: formData.medicine_id,
-        quantity: parseInt(formData.quantity),
+        quantity: parseFloat(formData.quantity),
         unit_price: formData.unit_price ? parseFloat(formData.unit_price) : 0,
         purchase_date: formData.purchase_date || null,
         expiration_date: formData.expiration_date || null
@@ -108,7 +108,8 @@ export default function StockForm({ medicines, initialValues, onSave, onCancel }
             onChange={handleChange}
             className={errors.quantity ? 'error' : ''}
             placeholder="30"
-            min="1"
+            min="0.1"
+            step="0.1"
           />
           {errors.quantity && <span className="error-message">{errors.quantity}</span>}
         </div>

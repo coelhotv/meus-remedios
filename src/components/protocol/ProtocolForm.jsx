@@ -214,8 +214,8 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
             onChange={handleChange}
             className={errors.dosage_per_intake ? 'error' : ''}
             placeholder="1"
-            min="0.5"
-            step="0.5"
+            min="0.1"
+            step="0.1"
           />
           {errors.dosage_per_intake && <span className="error-message">{errors.dosage_per_intake}</span>}
         </div>
@@ -253,7 +253,8 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
                 value={formData.target_dosage}
                 onChange={handleChange}
                 placeholder="Ex: 50"
-                step="0.5"
+                step="0.1"
+                min="0"
               />
             </div>
             <div className="form-group">

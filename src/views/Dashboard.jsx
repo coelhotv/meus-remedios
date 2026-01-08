@@ -9,6 +9,7 @@ import Calendar from '../components/ui/Calendar'
 import LogEntry from '../components/log/LogEntry'
 import StockIndicator from '../components/stock/StockIndicator'
 import ProtocolChecklistItem from '../components/protocol/ProtocolChecklistItem'
+import TitrationTransitionAlert from '../components/protocol/TitrationTransitionAlert'
 import { calculateTitrationData } from '../utils/titrationUtils'
 import './Dashboard.css'
 
@@ -27,6 +28,7 @@ export default function Dashboard({ onNavigate }) {
   const [successMessage, setSuccessMessage] = useState('')
   const [lastUpdated, setLastUpdated] = useState(new Date())
   const [selectedProtocols, setSelectedProtocols] = useState({}) // { planId: [protocolIds] }
+  const [dismissedTransitions, setDismissedTransitions] = useState(new Set()) // Track dismissed alerts
 
 
   const togglePlan = (planId) => {
@@ -197,6 +199,34 @@ export default function Dashboard({ onNavigate }) {
     await handleLogMedicine(logs)
   }
 
+  const handleAdvanceTitration = async (protocolId, isFinalStage) => {
+    try {
+      await protocolService.advanceTitrationStage(protocolId, isFinalStage)
+      
+      if (isFinalStage) {
+        showSuccess('🎯 Protocolo de titulação concluído com sucesso!')
+      } else {
+        showSuccess('🚀 Avançado para a próxima etapa de titulação!')
+      }
+      
+      // Remove from dismissed list if it was there
+      setDismissedTransitions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(protocolId)
+        return newSet
+      })
+      
+      await loadDashboardData()
+    } catch (err) {
+      setError('Erro ao avançar etapa: ' + err.message)
+      console.error(err)
+    }
+  }
+
+  const handleDismissTransition = (protocolId) => {
+    setDismissedTransitions(prev => new Set(prev).add(protocolId))
+  }
+
   const showSuccess = (message) => {
     setSuccessMessage(message)
     setTimeout(() => setSuccessMessage(''), 3000)
@@ -277,6 +307,22 @@ export default function Dashboard({ onNavigate }) {
           ❌ {error}
         </div>
       )}
+
+      {/* Titration Transition Alerts */}
+      {activeProtocols
+        .filter(p => 
+          p.titration_scheduler_data?.isTransitionDue && 
+          !dismissedTransitions.has(p.id)
+        )
+        .map(protocol => (
+          <TitrationTransitionAlert
+            key={protocol.id}
+            protocol={protocol}
+            onAdvance={handleAdvanceTitration}
+            onDismiss={handleDismissTransition}
+          />
+        ))
+      }
 
 
       <div className="dashboard-grid">

@@ -13,12 +13,13 @@
 - ✅ Glass-morphism effects e animações suaves
 - ✅ Responsivo mobile-first
 
-### 3. Features Ativas (V1.0.0)
+### 3. Features Ativas (V1.1.0)
 - ✅ **Testes Unitários**: Suíte Vitest garantindo integridade dos cálculos.
 - ✅ **Planos de Tratamento**: Agrupamento de medicamentos complexos.
 - ✅ **Titulação de Dose**: Controle de Dose Alvo e Status.
 - ✅ **Ações em Lote**: Botão "Tomar Todas" para planos.
 - ✅ **Estoque Inteligente**: Cálculo de custo médio ponderado.
+- ✅ **Notificações Telegram**: Lembretes 24/7 via Vercel Cron + Webhooks (Beta).
 
 ---
 
@@ -101,6 +102,18 @@ CREATE TABLE medicine_logs (
   notes TEXT,
   user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
 );
+
+-- 6. Configurações de Usuário (Telegram)
+CREATE TABLE user_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001' UNIQUE,
+  telegram_chat_id TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Insere configuração padrão
+INSERT INTO user_settings (user_id) VALUES ('00000000-0000-0000-0000-000000000001') ON CONFLICT DO NOTHING;
 
 -- Índices
 CREATE INDEX idx_protocols_medicine ON protocols(medicine_id);

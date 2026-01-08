@@ -120,6 +120,18 @@ CREATE INDEX idx_stock_medicine ON stock(medicine_id);
 CREATE INDEX idx_logs_protocol ON medicine_logs(protocol_id);
 CREATE INDEX idx_logs_medicine ON medicine_logs(medicine_id);
 CREATE INDEX idx_logs_taken_at ON medicine_logs(taken_at DESC);
+
+-- 6. Tabela de configurações de usuário (Telegram)
+CREATE TABLE user_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001' UNIQUE,
+  telegram_chat_id TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Insere configuração padrão para o usuário piloto
+INSERT INTO user_settings (user_id) VALUES ('00000000-0000-0000-0000-000000000001') ON CONFLICT DO NOTHING;
 ```
 
 4. Clique em **Run** (ou pressione Ctrl+Enter)
@@ -140,7 +152,12 @@ CREATE INDEX idx_logs_taken_at ON medicine_logs(taken_at DESC);
    VITE_SUPABASE_ANON_KEY=eyJ...
    ```
 
-3. Salve o arquivo
+3. Adicione também a configuração do Telegram (obtenha seu token com o [@BotFather](https://t.me/botfather)):
+   ```
+   TELEGRAM_BOT_TOKEN=seu_token_aqui
+   ```
+
+4. Salve o arquivo
 
 ---
 
@@ -205,7 +222,22 @@ git push -u origin main
    - **Value**: Cole a chave anon do Supabase
    - Clique em "Add"
 
+   - **Name**: `TELEGRAM_BOT_TOKEN`
+   - **Value**: Cole seu token do bot do Telegram
+   - Clique em "Add"
+
 3. Clique em "Deploy"
+
+### 4.4 Ativar Notificações (Telegram Webhook)
+
+Após o deploy no Vercel, você precisa avisar ao Telegram para onde enviar as mensagens:
+
+1. Copie a URL gerada pelo Vercel (ex: `https://seu-app.vercel.app`)
+2. Execute o seguinte comando no seu terminal local (substituindo a URL):
+   ```bash
+   curl "https://api.telegram.org/bot$(grep TELEGRAM_BOT_TOKEN .env | cut -d '=' -f2)/setWebhook?url=https://SEU-APP.vercel.app/api/telegram"
+   ```
+3. No Telegram, abra seu bot e envie o comando `/start`.
 
 ### 4.4 Aguardar deploy
 

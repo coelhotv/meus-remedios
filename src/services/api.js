@@ -215,6 +215,71 @@ export const protocolService = {
       .eq('user_id', MOCK_USER_ID)
     
     if (error) throw error
+  },
+
+  /**
+   * Advance to the next titration stage
+   * @param {string} id - Protocol ID
+   * @param {boolean} markAsCompleted - If true, marks the protocol as completed (final stage reached)
+   */
+  async advanceTitrationStage(id, markAsCompleted = false) {
+    // 1. Get current protocol
+    const protocol = await this.getById(id)
+    
+    if (!protocol.titration_schedule || protocol.titration_schedule.length === 0) {
+      throw new Error('Este protocolo não possui regime de titulação')
+    }
+
+    const currentStageIndex = protocol.current_stage_index || 0
+    const nextStageIndex = currentStageIndex + 1
+
+    // 2. Check if there's a next stage
+    if (nextStageIndex >= protocol.titration_schedule.length) {
+      // No more stages - mark as completed
+      const { data, error } = await supabase
+        .from('protocols')
+        .update({
+          titration_status: 'alvo_atingido',
+          current_stage_index: protocol.titration_schedule.length - 1, // Keep at last stage
+          stage_started_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .eq('user_id', MOCK_USER_ID)
+        .select(`
+          *,
+          medicine:medicines(*),
+          treatment_plan:treatment_plans(*)
+        `)
+        .single()
+      
+      if (error) throw error
+      return data
+    }
+
+    // 3. Advance to next stage
+    const nextStage = protocol.titration_schedule[nextStageIndex]
+    
+    const updates = {
+      current_stage_index: nextStageIndex,
+      stage_started_at: new Date().toISOString(),
+      dosage_per_intake: nextStage.dosage,
+      titration_status: markAsCompleted ? 'alvo_atingido' : 'titulando'
+    }
+
+    const { data, error } = await supabase
+      .from('protocols')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', MOCK_USER_ID)
+      .select(`
+        *,
+        medicine:medicines(*),
+        treatment_plan:treatment_plans(*)
+      `)
+      .single()
+    
+    if (error) throw error
+    return data
   }
 }
 

@@ -1,17 +1,20 @@
 {
   "name": "meus-remedios",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "bot": "cd server && npm run dev"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.89.0",
+    "@supabase/supabase-js": "^2.90.1",
+    "dotenv": "^17.2.3",
+    "node-telegram-bot-api": "^0.67.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
