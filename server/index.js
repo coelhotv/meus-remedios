@@ -61,6 +61,13 @@ bot.onText(/\/status/, async (msg) => {
       return bot.sendMessage(chatId, 'Você não possui protocolos ativos no momento.');
     }
 
+    // Fallback: Vincular chat_id se ainda não estiver vinculado
+    await supabase.from('user_settings').upsert({ 
+      user_id: MOCK_USER_ID, 
+      telegram_chat_id: chatId.toString(),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
     let message = '📋 *Seus Protocolos Ativos:*\n\n';
     protocols.forEach(p => {
       message += `💊 *${p.medicines.name}*\n`;
@@ -153,7 +160,10 @@ cron.schedule('* * * * *', async () => {
       .eq('user_id', MOCK_USER_ID)
       .single();
 
-    if (!settings?.telegram_chat_id) return;
+    if (!settings?.telegram_chat_id) {
+      console.log(`[${currentHHMM}] Agendamento ignorado: telegram_chat_id não configurado para o usuário.`);
+      return;
+    }
 
     const { data: protocols } = await supabase
       .from('protocols')

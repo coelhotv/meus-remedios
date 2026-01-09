@@ -60,6 +60,13 @@ export default async function handler(req, res) {
           text: 'Você não possui protocolos ativos.',
         });
       } else {
+        // Fallback: Vincular chat_id se ainda não estiver vinculado
+        await supabase.from('user_settings').upsert({
+          user_id: MOCK_USER_ID,
+          telegram_chat_id: chatId.toString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
         let text = '📋 *Sua Rotina Ativa:*\n\n';
         protocols.forEach(p => {
           text += `💊 *${p.medicine.name}*\n⏰ ${p.time_schedule.join(', ')}\n📏 ${p.dosage_per_intake}x\n\n`;

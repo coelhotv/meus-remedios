@@ -40,6 +40,7 @@ export default async function handler(req, res) {
       .single();
 
     if (!settings?.telegram_chat_id) {
+      console.log(`[${currentHHMM}] Notificação ignorada: telegram_chat_id não configurado.`);
       return res.status(200).json({ status: 'no_chat_id' });
     }
 
