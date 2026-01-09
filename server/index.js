@@ -146,10 +146,13 @@ bot.on('callback_query', async (callbackQuery) => {
 cron.schedule('* * * * *', async () => {
   const now = new Date();
   
-  // Ajuste para fuso horário de Brasília (UTC-3)
-  const brTime = new Date(now.getTime() - (3 * 60 * 60 * 1000));
-  const currentHHMM = brTime.getUTCHours().toString().padStart(2, '0') + ':' + 
-                      brTime.getUTCMinutes().toString().padStart(2, '0');
+  // Robust timezone handling using Intl
+  const currentHHMM = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).format(now).replace(/^24/, '00');
   
   console.log(`[${currentHHMM}] Verificando agendamentos...`);
 

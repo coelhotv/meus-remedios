@@ -18,10 +18,13 @@ async function telegramFetch(method, body) {
 
 export default async function handler(req, res) {
   const now = new Date();
-  // Ajuste para Horário de Brasília (UTC-3)
-  const brTime = new Date(now.getTime() - (3 * 60 * 60 * 1000));
-  const currentHHMM = brTime.getUTCHours().toString().padStart(2, '0') + ':' + 
-                      brTime.getUTCMinutes().toString().padStart(2, '0');
+  // Robust timezone handling using Intl
+  const currentHHMM = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).format(now).replace(/^24/, '00');
 
   // Protection against unauthorized calls
   if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) {
