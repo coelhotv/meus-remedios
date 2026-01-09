@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Button from '../ui/Button'
 import TitrationWizard from './TitrationWizard'
 import './ProtocolForm.css'
@@ -25,6 +25,16 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
   const [timeInput, setTimeInput] = useState('')
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Sync initial dosage with first stage if titration is enabled for new protocols
+  useEffect(() => {
+    if (!protocol && enableTitration && formData.titration_schedule?.length > 0) {
+      const firstStage = formData.titration_schedule[0]
+      if (firstStage.dosage && !formData.dosage_per_intake) {
+        setFormData(prev => ({ ...prev, dosage_per_intake: firstStage.dosage }))
+      }
+    }
+  }, [enableTitration, formData.titration_schedule, protocol, formData.dosage_per_intake])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target

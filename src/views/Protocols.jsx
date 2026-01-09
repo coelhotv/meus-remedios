@@ -7,6 +7,7 @@ import ProtocolForm from '../components/protocol/ProtocolForm'
 import ProtocolCard from '../components/protocol/ProtocolCard'
 import TreatmentPlanForm from '../components/protocol/TreatmentPlanForm'
 import Card from '../components/ui/Card'
+import { calculateTitrationData } from '../utils/titrationUtils'
 import './Protocols.css'
 
 export default function Protocols({ initialParams, onClearParams, onNavigateToStock }) {
@@ -33,8 +34,14 @@ export default function Protocols({ initialParams, onClearParams, onNavigateToSt
         treatmentPlanService.getAll()
       ])
       
+      // Enrich protocols with titration data
+      const enrichedProtocols = protocolsData.map(p => ({
+        ...p,
+        titration_scheduler_data: calculateTitrationData(p)
+      }))
+
       setMedicines(medicinesData)
-      setProtocols(protocolsData)
+      setProtocols(enrichedProtocols)
       setTreatmentPlans(plansData)
     } catch (err) {
       setError('Erro ao carregar dados: ' + err.message)

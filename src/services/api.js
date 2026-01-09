@@ -598,7 +598,25 @@ export const logService = {
     
     if (fetchError) throw fetchError
 
-    // 2. Perform update
+    // 2. Adjust stock if quantity changed BEFORE updating the log
+    // This ensures that if stock logic fails (e.g. schema error), the original log is preserved
+    if (updates.quantity_taken !== undefined && updates.quantity_taken !== oldLog.quantity_taken) {
+      const delta = updates.quantity_taken - oldLog.quantity_taken
+      try {
+        if (delta > 0) {
+          // More medicine taken -> decrease stock
+          await stockService.decrease(oldLog.medicine_id, delta)
+        } else if (delta < 0) {
+          // Less medicine taken -> increase (refund) stock
+          await stockService.increase(oldLog.medicine_id, Math.abs(delta), `Ajuste de dose (ID: ${id})`)
+        }
+      } catch (stockError) {
+        console.error('Erro ao ajustar estoque no update:', stockError)
+        throw new Error('Não foi possível atualizar o estoque: ' + stockError.message)
+      }
+    }
+
+    // 3. Perform update
     const { data, error } = await supabase
       .from('medicine_logs')
       .update(updates)
@@ -612,16 +630,6 @@ export const logService = {
       .single()
     
     if (error) throw error
-
-    // 3. Adjust stock if quantity changed
-    if (updates.quantity_taken !== undefined && updates.quantity_taken !== oldLog.quantity_taken) {
-      const delta = updates.quantity_taken - oldLog.quantity_taken
-      if (delta > 0) {
-        await stockService.decrease(oldLog.medicine_id, delta)
-      } else if (delta < 0) {
-        await stockService.increase(oldLog.medicine_id, Math.abs(delta), `Ajuste de dose (ID: ${id})`)
-      }
-    }
     
     return data
   },
@@ -640,7 +648,16 @@ export const logService = {
     
     if (fetchError) throw fetchError
 
-    // 2. Delete log
+    // 2. Restore stock FIRST (it's the most likely to fail due to schema/logic)
+    // If it fails, the log is still there and the process stops.
+    try {
+      await stockService.increase(log.medicine_id, log.quantity_taken, `Dose excluída (ID: ${id})`)
+    } catch (stockError) {
+      console.error('Erro ao restaurar estoque na exclusão:', stockError)
+      throw new Error('Não foi possível devolver o remédio ao estoque: ' + stockError.message)
+    }
+
+    // 3. Delete log
     const { error } = await supabase
       .from('medicine_logs')
       .delete()
@@ -648,8 +665,5 @@ export const logService = {
       .eq('user_id', MOCK_USER_ID)
     
     if (error) throw error
-
-    // 3. Restore stock
-    await stockService.increase(log.medicine_id, log.quantity_taken, `Dose excluída (ID: ${id})`)
   }
 }

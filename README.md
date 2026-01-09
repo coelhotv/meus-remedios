@@ -100,6 +100,8 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 ## 📚 Documentação
 
 - **[SETUP.md](./SETUP.md)**: Guia completo de configuração do Supabase, GitHub e Vercel
+- **[docs/GUIA_TITULACAO.md](./docs/GUIA_TITULACAO.md)**: Tutorial prático de como cadastrar protocolos em titulação.
+- **[docs/TRANSICAO_AUTOMATICA.md](./docs/TRANSICAO_AUTOMATICA.md)**: Explicação técnica do sistema de transição automática.
 - **[docs/database-schema.md](./docs/database-schema.md)**: Esquema do banco de dados (em breve)
 - **[docs/user-guide.md](./docs/user-guide.md)**: Guia do usuário em português (em breve)
 

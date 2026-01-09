@@ -43,6 +43,38 @@ export default function ProtocolCard({ protocol, onEdit, onToggleActive, onDelet
             <span className={`titration-badge ${protocol.titration_status}`}>
               {protocol.titration_status === 'titulando' ? '📈 Titulando' : '🎯 Alvo Atingido'}
             </span>
+            
+            {protocol.titration_scheduler_data && (
+              <div className="titration-card-progress">
+                <div className="titration-progress-stats">
+                  <span>Etapa {protocol.titration_scheduler_data.currentStep}/{protocol.titration_scheduler_data.totalSteps}</span>
+                  <span>Dia {protocol.titration_scheduler_data.day}/{protocol.titration_scheduler_data.totalDays}</span>
+                </div>
+                <div className="titration-progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${protocol.titration_scheduler_data.progressPercent}%` }}
+                  />
+                </div>
+                {protocol.titration_scheduler_data.stageNote && (
+                  <p className="stage-objective">Objetivo: {protocol.titration_scheduler_data.stageNote}</p>
+                )}
+              </div>
+            )}
+
+            {protocol.titration_schedule?.length > 0 && (
+              <div className="titration-schedule-preview">
+                <h5>Cronograma Planejado:</h5>
+                <div className="stages-timeline">
+                  {protocol.titration_schedule.map((stage, idx) => (
+                    <div key={idx} className={`timeline-stage ${idx === protocol.current_stage_index ? 'current' : (idx < (protocol.current_stage_index || 0) ? 'past' : 'future')}`}>
+                      <span className="stage-dose-mini">{stage.dosage} comp.</span>
+                      <span className="stage-days-mini">{stage.days}d</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
         
