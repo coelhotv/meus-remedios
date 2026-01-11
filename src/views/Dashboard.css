@@ -38,13 +38,19 @@
   position: relative;
 }
 
-.avatar-circle {
-  width: 48px;
-  height: 48px;
+.avatar-logo {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00C6FF, #0072FF);
+  object-fit: cover;
   box-shadow: 0 0 15px rgba(0, 114, 255, 0.4);
-  border: 2px solid rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.15);
+  transition: transform 0.3s ease;
+}
+
+.avatar-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
 }
 
 /* Top Cards Grid */
@@ -456,15 +462,25 @@
   padding: 8px 16px !important;
   height: auto !important;
   background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)) !important;
-  box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+  color: #000 !important; /* Force black text for better contrast on neon background */
+  font-weight: 700 !important;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4) !important;
+  border: none !important;
+}
+
+.btn-take-bundle:disabled {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: none !important;
 }
 
 .expand-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6); /* Increased contrast */
   font-size: 12px;
   transition: transform 0.3s;
+  cursor: pointer;
 }
 
 .expand-btn.rotated {

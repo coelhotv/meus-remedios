@@ -7,8 +7,11 @@
 
   /* Neon Color Palette - Reference Match */
   --neon-cyan: #00E5FF;
+  --neon-blue: #0072FF;
   --neon-magenta: #D500F9;
   --neon-purple: #AA00FF;
+  --neon-green: #00FF88;
+  --neon-pink: #FF006E;
   
   /* Text Colors */
   --text-primary: #ffffff;

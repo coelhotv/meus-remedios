@@ -221,7 +221,7 @@ export default function Dashboard() {
           <h1 className="user-name">Antonio <span className="dot">.</span></h1>
         </div>
         <div className="profile-indicator">
-          <div className="avatar-circle"></div>
+          <img src="/logo.png" className="avatar-logo" alt="Logo" />
         </div>
       </header>
 
