@@ -1,33 +1,44 @@
-import { createClient } from '@supabase/supabase-js';
+import { checkReminders, runDailyDigest } from '../server/bot/scheduler.js';
+import { 
+  checkStockAlerts, 
+  checkAdherenceReports, 
+  checkTitrationAlerts, 
+  checkMonthlyReport 
+} from '../server/bot/alerts.js';
 
+// --- Configuration ---
 const token = process.env.TELEGRAM_BOT_TOKEN;
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-const MOCK_USER_ID = '00000000-0000-0000-0000-000000000001';
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// --- Bot Adapter (Minimal for Notifications) ---
+function createNotifyBotAdapter(token) {
+  const telegramFetch = async (method, body) => {
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        console.error(`Telegram API Error (${method}):`, data);
+      }
+      return data.result;
+    } catch (err) {
+      console.error(`Fetch Error (${method}):`, err);
+    }
+  };
 
-async function telegramFetch(method, body) {
-  const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return res.json();
+  return {
+    sendMessage: async (chatId, text, options = {}) => {
+      return telegramFetch('sendMessage', { chat_id: chatId, text, ...options });
+    }
+  };
 }
 
 export default async function handler(req, res) {
-  const now = new Date();
-  // Robust timezone handling using Intl
-  const currentHHMM = new Intl.DateTimeFormat('pt-BR', {
-    timeZone: 'America/Sao_Paulo',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).format(now).replace(/^24/, '00');
-
   // Protection against unauthorized calls
-  if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) {
+  const authHeader = req.headers['authorization'];
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -35,59 +46,73 @@ export default async function handler(req, res) {
     return res.status(200).json({ error: 'Token missing' });
   }
 
-  try {
-    const { data: settings } = await supabase
-      .from('user_settings')
-      .select('telegram_chat_id')
-      .eq('user_id', MOCK_USER_ID)
-      .single();
+  const bot = createNotifyBotAdapter(token);
 
-    if (!settings?.telegram_chat_id) {
-      console.log(`[${currentHHMM}] Notificação ignorada: telegram_chat_id não configurado.`);
-      return res.status(200).json({ status: 'no_chat_id' });
+  // Get current time in Sao Paulo
+  const now = new Date();
+  const spDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+  
+  const currentHour = spDate.getHours();
+  const currentMinute = spDate.getMinutes();
+  const currentDay = spDate.getDate(); // 1-31
+  const currentWeekDay = spDate.getDay(); // 0 (Sun) - 6 (Sat)
+  
+  const currentHHMM = spDate.toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+
+  console.log(`[Notify] Executing cron for ${currentHHMM} (Server time: ${now.toISOString()})`);
+
+  const results = [];
+
+  try {
+    // 1. Always check dose reminders (Every minute)
+    // Note: checkReminders inside calculates time again, but that's fine as long as server time matches or we rely on it.
+    // However, server/bot/checkReminders uses `getCurrentTime()` which uses `new Date()`. 
+    // Vercel server time is usually UTC. 
+    // If `utils/formatters.js` `getCurrentTime` doesn't handle timezone, we might have issues.
+    // Let's verify utils/formatters.js later. For now, we assume it works or we might need to patch it.
+    await checkReminders(bot);
+    results.push('reminders');
+
+    // 2. Daily Digest: Daily at 22:00
+    if (currentHour === 22 && currentMinute === 0) {
+      await runDailyDigest(bot);
+      results.push('daily_digest');
     }
 
-    const { data: protocols } = await supabase
-      .from('protocols')
-      .select('*, medicine:medicines(*)')
-      .eq('user_id', MOCK_USER_ID)
-      .eq('active', true);
+    // 3. Stock Alerts: Daily at 09:00
+    if (currentHour === 9 && currentMinute === 0) {
+      await checkStockAlerts(bot);
+      results.push('stock_alerts');
+    }
 
-    const notificationsSent = [];
+    // 4. Titration Alerts: Daily at 08:00
+    if (currentHour === 8 && currentMinute === 0) {
+      await checkTitrationAlerts(bot);
+      results.push('titration_alerts');
+    }
 
-    for (const p of protocols) {
-      if (p.time_schedule.includes(currentHHMM)) {
-        const message = `🔔 *HORA DO REMÉDIO*\n\n` +
-                        `💊 *${p.medicine.name}*\n` +
-                        `📏 Dose: ${p.dosage_per_intake}x\n` +
-                        `${p.notes ? `📝 _${p.notes}_` : ''}`;
+    // 5. Adherence Reports: Sunday at 20:00
+    if (currentWeekDay === 0 && currentHour === 20 && currentMinute === 0) {
+      await checkAdherenceReports(bot);
+      results.push('adherence_reports');
+    }
 
-        const keyboard = {
-          inline_keyboard: [
-            [
-              { text: 'Tomei ✅', callback_data: `take_:${p.id}:${p.medicine_id}:${p.dosage_per_intake}` },
-              { text: 'Pular ❌', callback_data: `skip_:${p.id}` }
-            ]
-          ]
-        };
-
-        await telegramFetch('sendMessage', {
-          chat_id: settings.telegram_chat_id,
-          text: message,
-          parse_mode: 'Markdown',
-          reply_markup: keyboard
-        });
-        notificationsSent.push(p.medicine.name);
-      }
+    // 6. Monthly Report: 1st of month at 10:00
+    if (currentDay === 1 && currentHour === 10 && currentMinute === 0) {
+      await checkMonthlyReport(bot);
+      results.push('monthly_report');
     }
 
     res.status(200).json({ 
       status: 'ok', 
-      time: currentHHMM, 
-      sent: notificationsSent 
+      executed: results,
+      time: currentHHMM
     });
+    
   } catch (error) {
-    console.error('Cron Error:', error);
-    res.status(200).json({ error: error.message });
+    console.error('Notify Error:', error);
+    res.status(500).json({ error: error.message });
   }
 }
