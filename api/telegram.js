@@ -61,6 +61,9 @@ function createBotAdapter(token) {
     deleteMessage: async (chatId, messageId) => {
       return telegramFetch('deleteMessage', { chat_id: chatId, message_id: messageId });
     },
+    getMe: async () => {
+      return telegramFetch('getMe', {});
+    },
     
     // Event listener registration (used by conversational callbacks)
     on: (event, handler) => {

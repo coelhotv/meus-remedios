@@ -23,8 +23,9 @@ export function calculateDaysRemaining(totalQuantity, dailyUsage) {
  * Format stock status message
  */
 export function formatStockStatus(medicine, totalQuantity, daysRemaining) {
+  const unit = medicine.dosage_unit || 'unidades';
   let status = `💊 *${medicine.name}*\n`;
-  status += `📦 Estoque: ${totalQuantity} ${medicine.dosage_unit || 'unidades'}\n`;
+  status += `📦 Estoque: ${totalQuantity} ${unit}\n`;
   
   if (daysRemaining !== null) {
     if (daysRemaining <= 0) {

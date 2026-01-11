@@ -25,8 +25,16 @@ export async function handleHistorico(bot, msg) {
 
     logs.forEach(log => {
       const date = new Date(log.taken_at);
-      const dateStr = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-      const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = date.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit',
+        timeZone: 'America/Sao_Paulo'
+      });
+      const timeStr = date.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'America/Sao_Paulo'
+      });
       
       message += `📅 ${dateStr} às ${timeStr}\n`;
       message += `💊 ${log.medicine.name} - ${log.quantity_taken}x\n\n`;

@@ -17,14 +17,17 @@ export async function handleHoje(bot, msg) {
       return await bot.sendMessage(chatId, 'Você não possui protocolos ativos.');
     }
 
-    // Get today's logs to mark taken doses
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's date in SP timezone
+    const today = new Intl.DateTimeFormat('en-CA', { 
+      timeZone: 'America/Sao_Paulo' 
+    }).format(new Date());
+
     const { data: logs } = await supabase
       .from('medicine_logs')
       .select('protocol_id, taken_at')
       .eq('user_id', MOCK_USER_ID)
-      .gte('taken_at', `${today}T00:00:00`)
-      .lte('taken_at', `${today}T23:59:59`);
+      .gte('taken_at', `${today}T00:00:00.000Z`)
+      .lte('taken_at', `${today}T23:59:59.999Z`);
 
     // Build schedule for today
     const schedule = [];
@@ -36,13 +39,16 @@ export async function handleHoje(bot, msg) {
           const logTime = new Date(log.taken_at).toLocaleTimeString('pt-BR', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false
+            hour12: false,
+            timeZone: 'America/Sao_Paulo'
           });
-          // Consider taken if within 30 min window
-          return logProtocol && Math.abs(
-            new Date(`2000-01-01T${time}`).getTime() - 
-            new Date(`2000-01-01T${logTime}`).getTime()
-          ) < 30 * 60 * 1000;
+          
+          // Use a fixed date for comparison of times
+          const scheduledTime = new Date(`2000-01-01T${time}:00`);
+          const actualTime = new Date(`2000-01-01T${logTime}:00`);
+          
+          // Consider taken if within 60 min window (more generous)
+          return logProtocol && Math.abs(scheduledTime.getTime() - actualTime.getTime()) < 60 * 60 * 1000;
         });
 
         schedule.push({
@@ -58,7 +64,7 @@ export async function handleHoje(bot, msg) {
     schedule.sort((a, b) => a.time.localeCompare(b.time));
 
     const currentTime = getCurrentTime();
-    let message = `📅 *Doses de Hoje* (${new Date().toLocaleDateString('pt-BR')})\n\n`;
+    let message = `📅 *Doses de Hoje* (${new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' }).format(new Date())})\n\n`;
 
     schedule.forEach(item => {
       const status = item.taken ? '✅' : (item.time <= currentTime ? '⏰' : '⏱️');
