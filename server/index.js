@@ -40,14 +40,14 @@ bot.onText(/\/start/, async (msg) => {
 
     if (error) throw error;
 
-    bot.sendMessage(chatId, 
+    await bot.sendMessage(chatId, 
       `Olá! 👋 Eu sou o assistente do Meus Remédios.\n\n` +
       `Acabei de vincular este chat ao seu perfil. Agora vou te avisar nos horários das suas medicações.\n\n` +
       `Use /status para ver seus próximos remédios.`
     );
   } catch (err) {
     console.error('Erro ao salvar chat_id:', err);
-    bot.sendMessage(chatId, 'Ops, tive um erro ao configurar seu perfil. Tente novamente mais tarde.');
+    await bot.sendMessage(chatId, 'Ops, tive um erro ao configurar seu perfil. Tente novamente mais tarde.');
   }
 });
 
@@ -64,7 +64,7 @@ bot.onText(/\/status/, async (msg) => {
     if (error) throw error;
 
     if (!protocols || protocols.length === 0) {
-      return bot.sendMessage(chatId, 'Você não possui protocolos ativos no momento.');
+      return await bot.sendMessage(chatId, 'Você não possui protocolos ativos no momento.');
     }
 
     // Fallback: Vincular chat_id se ainda não estiver vinculado
@@ -81,10 +81,10 @@ bot.onText(/\/status/, async (msg) => {
       message += `📏 Dose: ${p.dosage_per_intake}x\n\n`;
     });
 
-    bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
   } catch (err) {
     console.error('Erro ao buscar protocolos:', err);
-    bot.sendMessage(chatId, 'Erro ao buscar seus dados.');
+    await bot.sendMessage(chatId, 'Erro ao buscar seus dados.');
   }
 });
 
@@ -94,10 +94,22 @@ bot.on('callback_query', async (callbackQuery) => {
   const chatId = message.chat.id;
 
   if (data.startsWith('take_')) {
-    const [_, protocolId, medicineId, quantity] = data.split(':');
+    // New format: take_:{protocolId}:{quantity}
+    const [_, protocolId, quantity] = data.split(':');
     
     try {
-      // 1. Criar Log
+      // 1. Fetch medicine_id from protocol
+      const { data: protocol, error: protocolError } = await supabase
+        .from('protocols')
+        .select('medicine_id')
+        .eq('id', protocolId)
+        .single();
+
+      if (protocolError || !protocol) throw new Error('Protocolo não encontrado');
+
+      const medicineId = protocol.medicine_id;
+
+      // 2. Criar Log
       const { error: logError } = await supabase
         .from('medicine_logs')
         .insert([{
@@ -110,8 +122,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
       if (logError) throw logError;
 
-      // 2. Decrementar Estoque
-      // Busca entradas de estoque com quantidade > 0, ordenadas pela data mais antiga
+      // 3. Decrementar Estoque
       const { data: stockEntries, error: fetchError } = await supabase
         .from('stock')
         .select('*')
@@ -134,16 +145,32 @@ bot.on('callback_query', async (callbackQuery) => {
       }
 
       // Update the message
-      bot.editMessageText(`✅ Dose de *${message.text.split('\n')[2]?.replace('💊 ', '') || 'Medicamento'}* registrada!`, {
+      await bot.editMessageText(`✅ Dose de *${message.text.split('\n')[2]?.replace('💊 ', '') || 'Medicamento'}* registrada!`, {
         chat_id: chatId,
         message_id: message.message_id,
         parse_mode: 'Markdown'
       });
       
-      bot.answerCallbackQuery(id, { text: 'Dose registrada!' });
+      await bot.answerCallbackQuery(id, { text: 'Dose registrada!' });
     } catch (err) {
       console.error('Erro ao registrar dose:', err);
-      bot.answerCallbackQuery(id, { text: 'Erro ao registrar dose.', show_alert: true });
+      // Even if error, try to answer query to stop loading state
+      try {
+        await bot.answerCallbackQuery(id, { text: 'Erro ao registrar dose.', show_alert: true });
+      } catch (e) { /* ignore */ }
+    }
+  } else if (data.startsWith('skip_')) {
+    // Just acknowledge to stop the loading spinner
+    await bot.answerCallbackQuery(id, { text: 'Dose pulada.' });
+    
+    try {
+      await bot.editMessageText(`❌ Dose de *${message.text.split('\n')[2]?.replace('💊 ', '') || 'Medicamento'}* pulada.`, {
+        chat_id: chatId,
+        message_id: message.message_id,
+        parse_mode: 'Markdown'
+      });
+    } catch (err) {
+      console.error('Erro ao editar mensagem de pular:', err);
     }
   }
 });
@@ -190,13 +217,13 @@ cron.schedule('* * * * *', async () => {
         const keyboard = {
           inline_keyboard: [
             [
-              { text: 'Tomei ✅', callback_data: `take_:${p.id}:${p.medicine_id}:${p.dosage_per_intake}` },
+              { text: 'Tomei ✅', callback_data: `take_:${p.id}:${p.dosage_per_intake}` },
               { text: 'Pular ❌', callback_data: `skip_:${p.id}` }
             ]
           ]
         };
 
-        bot.sendMessage(settings.telegram_chat_id, message, { 
+        await bot.sendMessage(settings.telegram_chat_id, message, { 
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
