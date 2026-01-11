@@ -5,231 +5,64 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 import TelegramBot from 'node-telegram-bot-api';
-import { createClient } from '@supabase/supabase-js';
-import cron from 'node-cron';
+import { handleStart } from './bot/commands/start.js';
+import { handleStatus } from './bot/commands/status.js';
+import { handleEstoque } from './bot/commands/estoque.js';
+import { handleHoje } from './bot/commands/hoje.js';
+import { handleProxima } from './bot/commands/proxima.js';
+import { handleHistorico } from './bot/commands/historico.js';
+import { handleAjuda } from './bot/commands/ajuda.js';
+import { handleRegistrar } from './bot/commands/registrar.js';
+import { handleAdicionarEstoque, handleReporShortcut } from './bot/commands/adicionar_estoque.js';
+import { handlePausar, handleRetomar } from './bot/commands/protocols.js';
+import { handleCallbacks } from './bot/callbacks/doseActions.js';
+import { handleConversationalCallbacks } from './bot/callbacks/conversational.js';
+import { handleInlineQueries } from './bot/inlineQuery.js';
+import { startScheduler, startDailyDigest } from './bot/scheduler.js';
+import { startStockAlerts, startAdherenceReports, startTitrationAlerts, startMonthlyReport } from './bot/alerts.js';
 
-// 1. Configurações
+// Validate environment
 const token = process.env.TELEGRAM_BOT_TOKEN;
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-const MOCK_USER_ID = '00000000-0000-0000-0000-000000000001';
-
 if (!token) {
   console.error('ERRO: TELEGRAM_BOT_TOKEN não definido no .env');
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize bot
 const bot = new TelegramBot(token, { polling: true });
 
 console.log('🚀 Bot de Remédios iniciado com sucesso!');
+console.log('📋 Comandos disponíveis: /start, /status, /estoque, /hoje, /proxima, /historico, /ajuda');
 
-// 2. Comandos do Bot
-bot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
-  
-  try {
-    const { error } = await supabase
-      .from('user_settings')
-      .upsert({ 
-        user_id: MOCK_USER_ID, 
-        telegram_chat_id: chatId.toString(),
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id' });
+// Register command handlers
+bot.onText(/\/start/, (msg) => handleStart(bot, msg));
+bot.onText(/\/status/, (msg) => handleStatus(bot, msg));
+bot.onText(/\/estoque/, (msg) => handleEstoque(bot, msg));
+bot.onText(/\/hoje/, (msg) => handleHoje(bot, msg));
+bot.onText(/\/proxima/, (msg) => handleProxima(bot, msg));
+bot.onText(/\/historico/, (msg) => handleHistorico(bot, msg));
+bot.onText(/\/ajuda/, (msg) => handleAjuda(bot, msg));
+bot.onText(/\/registrar/, (msg) => handleRegistrar(bot, msg));
+bot.onText(/\/adicionar_estoque/, (msg) => handleAdicionarEstoque(bot, msg));
+bot.onText(/\/repor\s+(.+)\s+(\d+[\.,]?\d*)/, (msg, match) => handleReporShortcut(bot, msg, match));
+bot.onText(/\/pausar(?:\s+(.+))?/, (msg, match) => handlePausar(bot, msg, match));
+bot.onText(/\/retomar(?:\s+(.+))?/, (msg, match) => handleRetomar(bot, msg, match));
 
-    if (error) throw error;
+// Register callback handlers
+handleCallbacks(bot);
+handleConversationalCallbacks(bot);
 
-    await bot.sendMessage(chatId, 
-      `Olá! 👋 Eu sou o assistente do Meus Remédios.\n\n` +
-      `Acabei de vincular este chat ao seu perfil. Agora vou te avisar nos horários das suas medicações.\n\n` +
-      `Use /status para ver seus próximos remédios.`
-    );
-  } catch (err) {
-    console.error('Erro ao salvar chat_id:', err);
-    await bot.sendMessage(chatId, 'Ops, tive um erro ao configurar seu perfil. Tente novamente mais tarde.');
-  }
-});
+// Register inline query handler (Phase 2.2)
+handleInlineQueries(bot);
 
-bot.onText(/\/status/, async (msg) => {
-  const chatId = msg.chat.id;
-  
-  try {
-    const { data: protocols, error } = await supabase
-      .from('protocols')
-      .select('*, medicines(*)')
-      .eq('user_id', MOCK_USER_ID)
-      .eq('active', true);
+// Start scheduler
+startScheduler(bot);
+startDailyDigest(bot);
 
-    if (error) throw error;
-
-    if (!protocols || protocols.length === 0) {
-      return await bot.sendMessage(chatId, 'Você não possui protocolos ativos no momento.');
-    }
-
-    // Fallback: Vincular chat_id se ainda não estiver vinculado
-    await supabase.from('user_settings').upsert({ 
-      user_id: MOCK_USER_ID, 
-      telegram_chat_id: chatId.toString(),
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'user_id' });
-
-    let message = '📋 *Seus Protocolos Ativos:*\n\n';
-    protocols.forEach(p => {
-      message += `💊 *${p.medicines.name}*\n`;
-      message += `⏰ Horários: ${p.time_schedule.join(', ')}\n`;
-      message += `📏 Dose: ${p.dosage_per_intake}x\n\n`;
-    });
-
-    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-  } catch (err) {
-    console.error('Erro ao buscar protocolos:', err);
-    await bot.sendMessage(chatId, 'Erro ao buscar seus dados.');
-  }
-});
-
-// 3. Callback para botões interativos (Tomei ✅)
-bot.on('callback_query', async (callbackQuery) => {
-  const { data, message, id } = callbackQuery;
-  const chatId = message.chat.id;
-
-  if (data.startsWith('take_')) {
-    // New format: take_:{protocolId}:{quantity}
-    const [_, protocolId, quantity] = data.split(':');
-    
-    try {
-      // 1. Fetch medicine_id from protocol
-      const { data: protocol, error: protocolError } = await supabase
-        .from('protocols')
-        .select('medicine_id')
-        .eq('id', protocolId)
-        .single();
-
-      if (protocolError || !protocol) throw new Error('Protocolo não encontrado');
-
-      const medicineId = protocol.medicine_id;
-
-      // 2. Criar Log
-      const { error: logError } = await supabase
-        .from('medicine_logs')
-        .insert([{
-          user_id: MOCK_USER_ID,
-          protocol_id: protocolId,
-          medicine_id: medicineId,
-          quantity_taken: parseFloat(quantity),
-          taken_at: new Date().toISOString()
-        }]);
-
-      if (logError) throw logError;
-
-      // 3. Decrementar Estoque
-      const { data: stockEntries, error: fetchError } = await supabase
-        .from('stock')
-        .select('*')
-        .eq('medicine_id', medicineId)
-        .eq('user_id', MOCK_USER_ID)
-        .gt('quantity', 0)
-        .order('purchase_date', { ascending: true });
-      
-      if (!fetchError && stockEntries.length > 0) {
-        let remaining = parseFloat(quantity);
-        for (const entry of stockEntries) {
-          if (remaining <= 0) break;
-          const toDecrease = Math.min(entry.quantity, remaining);
-          await supabase
-            .from('stock')
-            .update({ quantity: entry.quantity - toDecrease })
-            .eq('id', entry.id);
-          remaining -= toDecrease;
-        }
-      }
-
-      // Update the message
-      await bot.editMessageText(`✅ Dose de *${message.text.split('\n')[2]?.replace('💊 ', '') || 'Medicamento'}* registrada!`, {
-        chat_id: chatId,
-        message_id: message.message_id,
-        parse_mode: 'Markdown'
-      });
-      
-      await bot.answerCallbackQuery(id, { text: 'Dose registrada!' });
-    } catch (err) {
-      console.error('Erro ao registrar dose:', err);
-      // Even if error, try to answer query to stop loading state
-      try {
-        await bot.answerCallbackQuery(id, { text: 'Erro ao registrar dose.', show_alert: true });
-      } catch (e) { /* ignore */ }
-    }
-  } else if (data.startsWith('skip_')) {
-    // Just acknowledge to stop the loading spinner
-    await bot.answerCallbackQuery(id, { text: 'Dose pulada.' });
-    
-    try {
-      await bot.editMessageText(`❌ Dose de *${message.text.split('\n')[2]?.replace('💊 ', '') || 'Medicamento'}* pulada.`, {
-        chat_id: chatId,
-        message_id: message.message_id,
-        parse_mode: 'Markdown'
-      });
-    } catch (err) {
-      console.error('Erro ao editar mensagem de pular:', err);
-    }
-  }
-});
-
-// 4. Scheduler (Verifica a cada minuto)
-cron.schedule('* * * * *', async () => {
-  const now = new Date();
-  
-  // Robust timezone handling using Intl
-  const currentHHMM = new Intl.DateTimeFormat('pt-BR', {
-    timeZone: 'America/Sao_Paulo',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).format(now).replace(/^24/, '00');
-  
-  console.log(`[${currentHHMM}] Verificando agendamentos...`);
-
-  try {
-    const { data: settings } = await supabase
-      .from('user_settings')
-      .select('telegram_chat_id')
-      .eq('user_id', MOCK_USER_ID)
-      .single();
-
-    if (!settings?.telegram_chat_id) {
-      console.log(`[${currentHHMM}] Agendamento ignorado: telegram_chat_id não configurado para o usuário.`);
-      return;
-    }
-
-    const { data: protocols } = await supabase
-      .from('protocols')
-      .select('*, medicine:medicines(*)')
-      .eq('user_id', MOCK_USER_ID)
-      .eq('active', true);
-
-    for (const p of protocols) {
-      if (p.time_schedule.includes(currentHHMM)) {
-        const message = `🔔 *HORA DO REMÉDIO*\n\n` +
-                        `💊 *${p.medicine.name}*\n` +
-                        `📏 Dose: ${p.dosage_per_intake}x\n` +
-                        `${p.notes ? `📝 _${p.notes}_` : ''}`;
-
-        const keyboard = {
-          inline_keyboard: [
-            [
-              { text: 'Tomei ✅', callback_data: `take_:${p.id}:${p.dosage_per_intake}` },
-              { text: 'Pular ❌', callback_data: `skip_:${p.id}` }
-            ]
-          ]
-        };
-
-        await bot.sendMessage(settings.telegram_chat_id, message, { 
-          parse_mode: 'Markdown',
-          reply_markup: keyboard
-        });
-      }
-    }
-  } catch (err) {
-    console.error('Erro no scheduler:', err);
-  }
-});
+// Start intelligent alerts (Phase 4)
+startStockAlerts(bot);
+startAdherenceReports(bot);
+startTitrationAlerts(bot);
+startMonthlyReport(bot);
