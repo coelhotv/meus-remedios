@@ -1,10 +1,11 @@
-import { checkReminders, runDailyDigest } from '../server/bot/scheduler.js';
 import { 
+  checkReminders, 
+  runDailyDigest,
   checkStockAlerts, 
   checkAdherenceReports, 
   checkTitrationAlerts, 
   checkMonthlyReport 
-} from '../server/bot/alerts.js';
+} from '../server/bot/tasks.js';
 
 // --- Configuration ---
 const token = process.env.TELEGRAM_BOT_TOKEN;
