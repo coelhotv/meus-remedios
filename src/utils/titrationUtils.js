@@ -33,6 +33,7 @@ export function calculateTitrationData(protocol) {
     totalDays: totalDays,
     progressPercent: progressPercent,
     isTransitionDue: isTransitionDue,
-    stageNote: currentStage.note
+    stageNote: currentStage.note,
+    daysRemaining: totalDays - currentDay
   }
 }

@@ -1,17 +1,14 @@
 :root {
-  /* Neon Color Palette */
-  --neon-cyan: #00f0ff;
-  --neon-magenta: #ff00ff;
-  --neon-purple: #b000ff;
-  --neon-pink: #ff006e;
-  --neon-blue: #0066ff;
-  --neon-green: #00ff88;
-  
-  /* Dark Theme Base Colors */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #151520;
-  --bg-tertiary: #1f1f2e;
-  --bg-glass: rgba(31, 31, 46, 0.7);
+  /* Dark Theme Base Colors - Reference Match */
+  --bg-primary: #050505; /* Blacker background */
+  --bg-secondary: #121212; /* Dark card background */
+  --bg-tertiary: #1E1E1E; /* Slightly lighter elements */
+  --bg-glass: rgba(18, 18, 18, 0.8);
+
+  /* Neon Color Palette - Reference Match */
+  --neon-cyan: #00E5FF;
+  --neon-magenta: #D500F9;
+  --neon-purple: #AA00FF;
   
   /* Text Colors */
   --text-primary: #ffffff;
