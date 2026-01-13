@@ -43,5 +43,16 @@ Digite \`@${botUsername} <nome>\` em qualquer chat para buscar seus medicamentos
 • Alertas de titulação (diariamente às 8h)
   `.trim();
 
-  await bot.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });
+  try {
+    // send as plain text to avoid Markdown entity parsing errors
+    await bot.sendMessage(chatId, helpMessage, { disable_web_page_preview: true });
+  } catch (err) {
+    console.error('handleAjuda: sendMessage error', err);
+    // fallback: send minimal help so user gets a response
+    try {
+      await bot.sendMessage(chatId, '/ajuda — comandos disponíveis. Se continuar vendo erros, verifique os logs.');
+    } catch (e) {
+      console.error('handleAjuda fallback failed', e);
+    }
+  }
 }
