@@ -8,8 +8,8 @@ export function startScheduler(bot) {
 }
 
 export function startDailyDigest(bot) {
-  cron.schedule('0 22 * * *', () => runDailyDigest(bot));
-  console.log('✅ Daily Digest configurado (diariamente às 22h)');
+  cron.schedule('0 23 * * *', () => runDailyDigest(bot));
+  console.log('✅ Daily Digest configurado (diariamente às 23h)');
 }
 
 // Re-export for compatibility if needed elsewhere

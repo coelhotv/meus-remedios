@@ -13,9 +13,9 @@ export function startStockAlerts(bot) {
 }
 
 export function startAdherenceReports(bot) {
-  // Run every Sunday at 8:00 PM
-  cron.schedule('0 20 * * 0', () => checkAdherenceReports(bot));
-  console.log('✅ Relatórios de adesão configurados (domingos às 20h)');
+  // Run every Sunday at 10:00 PM
+  cron.schedule('0 22 * * 0', () => checkAdherenceReports(bot));
+  console.log('✅ Relatórios de adesão configurados (domingos às 22h)');
 }
 
 export function startTitrationAlerts(bot) {
