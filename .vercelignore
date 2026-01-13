@@ -3,3 +3,5 @@ docs/
 .env
 .env.example
 *.md
+package-lock.json
+node_modules/
