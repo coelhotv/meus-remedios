@@ -1,18 +1,31 @@
 import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
 import { setSession } from '../state.js';
 
+// Helper function to fetch medicines
+async function fetchMedicines(userId, medicineName = null) {
+  let query = supabase
+    .from('medicines')
+    .select('id, name, dosage_unit');
+
+  query = query.eq('user_id', userId);
+
+  if (medicineName) {
+    query = query.ilike('name', `%${medicineName}%`);
+  } else {
+    query = query.order('name'); //Only order when fetching all
+  }
+
+  const { data: medicines, error } = await query;
+  if (error) throw error;
+  return medicines;
+}
+
+
 export async function handleAdicionarEstoque(bot, msg) {
   const chatId = msg.chat.id;
 
   try {
-    // Fetch active medicines
-    const { data: medicines, error } = await supabase
-      .from('medicines')
-      .select('id, name, dosage_unit')
-      .eq('user_id', MOCK_USER_ID)
-      .order('name');
-
-    if (error) throw error;
+    const medicines = await fetchMedicines(MOCK_USER_ID);
 
     if (!medicines || medicines.length === 0) {
       return bot.sendMessage(chatId, 'Você não possui medicamentos cadastrados. Use o app web para cadastrar.');
@@ -20,9 +33,9 @@ export async function handleAdicionarEstoque(bot, msg) {
 
     // Create keyboard
     const keyboard = medicines.map(m => ([
-      { 
-        text: m.name, 
-        callback_data: `add_stock_med:${m.id}` 
+      {
+        text: m.name,
+        callback_data: `add_stock_med:${m.id}`
       }
     ]));
 
@@ -51,14 +64,7 @@ export async function handleReporShortcut(bot, msg, match) {
   }
 
   try {
-    // Search for medicine by name (case-insensitive)
-    const { data: medicines, error } = await supabase
-      .from('medicines')
-      .select('id, name')
-      .eq('user_id', MOCK_USER_ID)
-      .ilike('name', `%${medicineName}%`);
-
-    if (error) throw error;
+    const medicines = await fetchMedicines(MOCK_USER_ID, medicineName);
 
     if (!medicines || medicines.length === 0) {
       return bot.sendMessage(chatId, `❌ Medicamento "${medicineName}" não encontrado.`);

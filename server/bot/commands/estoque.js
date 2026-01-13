@@ -3,7 +3,7 @@ import { calculateDaysRemaining, formatStockStatus } from '../../utils/formatter
 
 export async function handleEstoque(bot, msg) {
   const chatId = msg.chat.id;
-  
+
   try {
     // Get all medicines with their stock and active protocols
     const { data: medicines, error: medError } = await supabase
@@ -24,13 +24,23 @@ export async function handleEstoque(bot, msg) {
 
     let message = '📦 *Estoque de Medicamentos:*\n\n';
     let hasLowStock = false;
+    let hasMedicinesToShow = false;
 
     for (const medicine of medicines) {
-      const activeStock = (medicine.stock || []).filter(s => s.quantity > 0);
-      const totalQuantity = activeStock.reduce((sum, s) => sum + s.quantity, 0);
-      
-      // Calculate daily usage from active protocols
       const activeProtocols = (medicine.protocols || []).filter(p => p.active);
+
+      // Only show medicines with active protocols
+      if (activeProtocols.length === 0) {
+        continue;
+      }
+
+      hasMedicinesToShow = true;
+
+      // Assuming each entry in stock represents a number of pills
+      const totalQuantity = (medicine.stock || []).reduce((sum, s) => sum + s.quantity, 0);
+
+
+      // Calculate daily usage from active protocols
       const dailyUsage = activeProtocols.reduce((sum, p) => {
         const timesPerDay = p.time_schedule?.length || 0;
         const dosagePerIntake = p.dosage_per_intake || 0;
@@ -38,12 +48,16 @@ export async function handleEstoque(bot, msg) {
       }, 0);
 
       const daysRemaining = calculateDaysRemaining(totalQuantity, dailyUsage);
-      
+
       message += formatStockStatus(medicine, totalQuantity, daysRemaining) + '\n';
-      
+
       if (daysRemaining !== null && daysRemaining <= 7) {
         hasLowStock = true;
       }
+    }
+
+    if (!hasMedicinesToShow) {
+      return await bot.sendMessage(chatId, 'Não há medicamentos com protocolos ativos para exibir no estoque.');
     }
 
     if (hasLowStock) {

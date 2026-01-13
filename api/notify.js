@@ -76,8 +76,8 @@ export default async function handler(req, res) {
     await checkReminders(bot);
     results.push('reminders');
 
-    // 2. Daily Digest: Daily at 22:00
-    if (currentHour === 22 && currentMinute === 0) {
+    // 2. Daily Digest: Daily at 23:00
+    if (currentHour === 23 && currentMinute === 0) {
       await runDailyDigest(bot);
       results.push('daily_digest');
     }
@@ -94,8 +94,8 @@ export default async function handler(req, res) {
       results.push('titration_alerts');
     }
 
-    // 5. Adherence Reports: Sunday at 20:00
-    if (currentWeekDay === 0 && currentHour === 20 && currentMinute === 0) {
+    // 5. Adherence Reports: Sunday at 23:00
+    if (currentWeekDay === 0 && currentHour === 23 && currentMinute === 0) {
       await checkAdherenceReports(bot);
       results.push('adherence_reports');
     }
