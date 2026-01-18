@@ -135,7 +135,7 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
   }
 
   return (
-    <form className="protocol-form" onSubmit={handleSubmit}>
+    <form className="protocol-form" onSubmit={handleSubmit} style={{ paddingBottom: '80px' }}>
       <h3>{protocol ? 'Editar Protocolo' : 'Novo Protocolo'}</h3>
       
       <div className="form-group">
