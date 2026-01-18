@@ -1,28 +1,18 @@
+import { setSession, getSession, clearSession } from '../services/sessionManager.js';
+
 /**
- * Simple in-memory state manager for conversational flows.
- * Maps chatId to current context.
+ * Simple state manager for conversational flows.
+ * Now backed by Supabase for persistence across restarts.
  */
-const sessions = new Map();
 
-export function setSession(chatId, data) {
-  sessions.set(chatId, {
-    ...data,
-    updatedAt: Date.now()
-  });
+export async function setState(chatId, data) {
+  return setSession(chatId, data);
 }
 
-export function getSession(chatId) {
-  const session = sessions.get(chatId);
-  
-  // Basic TTL: sessions expire after 10 minutes of inactivity
-  if (session && Date.now() - session.updatedAt > 10 * 60 * 1000) {
-    sessions.delete(chatId);
-    return null;
-  }
-  
-  return session;
+export async function getState(chatId) {
+  return getSession(chatId);
 }
 
-export function clearSession(chatId) {
-  sessions.delete(chatId);
+export async function clearState(chatId) {
+  return clearSession(chatId);
 }

@@ -1,14 +1,11 @@
+import { getCurrentTimeInTimezone } from './timezone.js';
+
 /**
- * Format time in HH:MM format for Brazil timezone
+ * Format time in HH:MM format for Brazil timezone (legacy)
+ * @deprecated Use getCurrentTimeInTimezone from timezone.js instead
  */
 export function getCurrentTime() {
-  const now = new Date();
-  return new Intl.DateTimeFormat('pt-BR', {
-    timeZone: 'America/Sao_Paulo',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).format(now).replace(/^24/, '00');
+  return getCurrentTimeInTimezone('America/Sao_Paulo');
 }
 
 /**
