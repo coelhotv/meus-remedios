@@ -127,8 +127,9 @@ export default function ProtocolForm({ medicines, treatmentPlans = [], protocol,
       
       await onSave(dataToSave)
     } catch (error) {
-      console.error('Erro ao salvar:', error)
-      setErrors({ submit: error.message })
+      console.error('Erro ao salvar protocolo:', error)
+      const errorMessage = error?.message || 'Erro desconhecido ao salvar protocolo'
+      setErrors({ submit: errorMessage })
     } finally {
       setIsSubmitting(false)
     }

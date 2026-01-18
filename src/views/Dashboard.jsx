@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react'
 import { protocolService, logService, stockService, medicineService, treatmentPlanService } from '../services/api'
 import Button from '../components/ui/Button'
@@ -8,7 +7,7 @@ import LogForm from '../components/log/LogForm'
 import { calculateTitrationData } from '../utils/titrationUtils'
 import './Dashboard.css'
 
-import Calendar from '../components/ui/Calendar'
+import CalendarWithMonthCache from '../components/ui/CalendarWithMonthCache'
 import ProtocolChecklistItem from '../components/protocol/ProtocolChecklistItem'
 
 export default function Dashboard() {
@@ -20,6 +19,9 @@ export default function Dashboard() {
   const [recentLogs, setRecentLogs] = useState([])
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(null)
   
+  // Month cache for calendar
+  const [currentMonthLogs, setCurrentMonthLogs] = useState([])
+  
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -28,12 +30,14 @@ export default function Dashboard() {
   const loadDashboardData = useCallback(async () => {
     try {
       setIsLoading(true)
-      const [protocols, plans, medicines, logs] = await Promise.all([
+      const [protocols, plans, medicines, logsResponse] = await Promise.all([
         protocolService.getActive(),
         treatmentPlanService.getAll(),
         medicineService.getAll(),
-        logService.getAll(100)
+        logService.getAllPaginated(100, 0) // Dashboard shows last 100 recent logs
       ])
+      
+      const logs = logsResponse.data || []
       
       const enrichedProtocols = protocols.map(p => ({
         ...p,
@@ -202,8 +206,19 @@ export default function Dashboard() {
     return 'BOA NOITE,'
   }
   
+  const handleCalendarLoadMonth = useCallback(async (year, month) => {
+    const result = await logService.getByMonth(year, month)
+    
+    // Update current month logs for display
+    if (year === new Date().getFullYear() && month === new Date().getMonth()) {
+      setCurrentMonthLogs(result.data || [])
+    }
+    
+    return result
+  }, [])
+
   const displayDate = selectedCalendarDate || new Date()
-  const logsForSelectedDate = recentLogs.filter(log => {
+  const logsForSelectedDate = currentMonthLogs.filter(log => {
     const d = new Date(log.taken_at)
     return d.getFullYear() === displayDate.getFullYear() &&
            d.getMonth() === displayDate.getMonth() &&
@@ -297,8 +312,6 @@ export default function Dashboard() {
           </div>
        )}
 
-
-
       {/* Success Message Banner */}
       {successMessage && (
         <div className="success-banner fade-in" style={{ 
@@ -322,12 +335,6 @@ export default function Dashboard() {
           <div className="treatment-plans-list-interactive">
             {treatmentPlans.map(plan => {
                const isExpanded = expandedPlans[plan.id];
-               // Initialize selection state for this plan if not set
-               if (!selectedProtocols[plan.id] && plan.protocols) {
-                   const initialSelection = plan.protocols.filter(p => p.active).map(p => p.id);
-                   // We can't setState inside render, so we'll handle this in useEffect or assume all selected if undefined
-               }
-               
                const currentSelection = selectedProtocols[plan.id] ?? plan.protocols?.filter(p => p.active).map(p => p.id) ?? [];
                const hasSelection = currentSelection.length > 0;
 
@@ -404,8 +411,9 @@ export default function Dashboard() {
      <div className="history-section">
         <h3 className="section-title">HISTÓRICO DE DOSES</h3>
         <div className="calendar-card">
-           <Calendar 
-              markedDates={recentLogs.map(log => log.taken_at)} 
+           <CalendarWithMonthCache
+              onLoadMonth={handleCalendarLoadMonth}
+              markedDates={currentMonthLogs.map(log => log.taken_at)}
               selectedDate={selectedCalendarDate}
               onDayClick={(date) => setSelectedCalendarDate(date)}
             />

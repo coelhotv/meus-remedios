@@ -4,12 +4,11 @@ import Button from '../components/ui/Button'
 import Loading from '../components/ui/Loading'
 import Modal from '../components/ui/Modal'
 import LogForm from '../components/log/LogForm'
-import Calendar from '../components/ui/Calendar'
+import CalendarWithMonthCache from '../components/ui/CalendarWithMonthCache'
 import LogEntry from '../components/log/LogEntry'
 import './History.css'
 
 export default function History() {
-  const [logs, setLogs] = useState([])
   const [protocols, setProtocols] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -17,23 +16,40 @@ export default function History() {
   const [editingLog, setEditingLog] = useState(null)
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(new Date())
   const [successMessage, setSuccessMessage] = useState('')
+  
+  // Month-based navigation
+  const [monthCache, setMonthCache] = useState({})
+  const [currentMonthLogs, setCurrentMonthLogs] = useState([])
+  const [totalLogs, setTotalLogs] = useState(0)
 
+  // Get cache key for a month
+  const getMonthKey = (date) => {
+    return `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`
+  }
 
-  const loadData = useCallback(async () => {
+  // Initial load - load current month
+  const loadInitialData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
       
-      const [logsData, protocolsData] = await Promise.all([
-        logService.getAll(100), // Últimos 100 registros
-        protocolService.getActive()
+      const [protocolsData, logsForMonth] = await Promise.all([
+        protocolService.getActive(),
+        logService.getByMonth(new Date().getFullYear(), new Date().getMonth())
       ])
       
-      setLogs(logsData)
       setProtocols(protocolsData)
       
-      if (logsData.length > 0) {
-        setSelectedCalendarDate(new Date(logsData[0].taken_at))
+      const monthKey = getMonthKey(new Date())
+      setMonthCache(prev => ({
+        ...prev,
+        [monthKey]: logsForMonth.data || []
+      }))
+      setCurrentMonthLogs(logsForMonth.data || [])
+      setTotalLogs(logsForMonth.total || 0)
+      
+      if (logsForMonth.data?.length > 0) {
+        setSelectedCalendarDate(new Date(logsForMonth.data[0].taken_at))
       }
     } catch (err) {
       setError('Erro ao carregar histórico: ' + err.message)
@@ -44,8 +60,23 @@ export default function History() {
   }, [])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    loadInitialData()
+  }, [loadInitialData])
+
+  const handleCalendarLoadMonth = useCallback(async (year, month) => {
+    const monthKey = `${year}-${String(month).padStart(2, '0')}`
+    
+    // Update current month logs for display
+    const logsForMonth = await logService.getByMonth(year, month)
+    
+    setMonthCache(prev => ({
+      ...prev,
+      [monthKey]: logsForMonth.data || []
+    }))
+    setCurrentMonthLogs(logsForMonth.data || [])
+    
+    return logsForMonth
+  }, [])
 
   const handleLogMedicine = async (logData) => {
     try {
@@ -58,7 +89,7 @@ export default function History() {
       }
       setIsModalOpen(false)
       setEditingLog(null)
-      await loadData()
+      await loadInitialData()
     } catch (err) {
       throw new Error(err.message)
     }
@@ -68,7 +99,8 @@ export default function History() {
     try {
       await logService.delete(id)
       showSuccess('Registro removido e estoque restabelecido!')
-      await loadData()
+      setTotalLogs(prev => prev - 1)
+      setCurrentMonthLogs(prev => prev.filter(log => log.id !== id))
     } catch (err) {
       setError('Erro ao remover registro: ' + err.message)
     }
@@ -89,8 +121,7 @@ export default function History() {
     setTimeout(() => setSuccessMessage(''), 3000)
   }
 
-  // Agrupar logs por data
-  const groupLogsByDate = () => {
+  const groupLogsByDate = (logs) => {
     const grouped = {}
     
     logs.forEach(log => {
@@ -104,10 +135,12 @@ export default function History() {
     return grouped
   }
 
-  const groupedLogs = groupLogsByDate()
+  const groupedLogs = groupLogsByDate(currentMonthLogs)
   const dates = Object.keys(groupedLogs).sort((a, b) => {
-    const dateA = new Date(a.split('/').reverse().join('-'))
-    const dateB = new Date(b.split('/').reverse().join('-'))
+    const [dayA, monthA, yearA] = a.split('/')
+    const [dayB, monthB, yearB] = b.split('/')
+    const dateA = new Date(yearA, monthA - 1, dayA)
+    const dateB = new Date(yearB, monthB - 1, dayB)
     return dateB - dateA
   })
 
@@ -119,13 +152,21 @@ export default function History() {
     )
   }
 
+  const displayDate = selectedCalendarDate || new Date()
+  const dayLogs = currentMonthLogs.filter(log => {
+    const d = new Date(log.taken_at)
+    return d.getFullYear() === displayDate.getFullYear() &&
+           d.getMonth() === displayDate.getMonth() &&
+           d.getDate() === displayDate.getDate()
+  })
+
   return (
     <div className="history-view">
       <div className="history-header">
         <div>
           <h2>📝 Histórico</h2>
           <p className="history-subtitle">
-            Registro completo de medicamentos tomados
+            Registro completo de medicamentos tomados ({totalLogs} total)
           </p>
         </div>
         <Button variant="primary" onClick={handleOpenNewLog}>
@@ -145,7 +186,7 @@ export default function History() {
         </div>
       )}
 
-      {logs.length === 0 ? (
+      {Object.values(monthCache).flat().length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📝</div>
           <h3>Nenhum registro ainda</h3>
@@ -158,18 +199,18 @@ export default function History() {
         <div className="history-content">
           <div className="history-stats">
             <div className="stat-card">
-              <span className="stat-value">{logs.length}</span>
+              <span className="stat-value">{totalLogs}</span>
               <span className="stat-label">Doses Registradas</span>
             </div>
             <div className="stat-card">
               <span className="stat-value">{dates.length}</span>
-              <span className="stat-label">Dias com Registro</span>
+              <span className="stat-label">Dias com Registro (mês)</span>
             </div>
             <div className="stat-card">
               <span className="stat-value">
-                {logs.reduce((sum, log) => sum + log.quantity_taken, 0)}
+                {currentMonthLogs.reduce((sum, log) => sum + log.quantity_taken, 0)}
               </span>
-              <span className="stat-label">Comprimidos Tomados</span>
+              <span className="stat-label">Comprimidos (mês)</span>
             </div>
           </div>
 
@@ -182,56 +223,48 @@ export default function History() {
             border: '1px solid var(--border-color)'
           }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 'var(--space-8)', alignItems: 'start' }}>
-              <Calendar 
-                markedDates={logs.map(log => log.taken_at)} 
+              <CalendarWithMonthCache
+                onLoadMonth={handleCalendarLoadMonth}
+                markedDates={currentMonthLogs.map(log => log.taken_at)}
                 selectedDate={selectedCalendarDate}
                 onDayClick={(date) => setSelectedCalendarDate(date)}
               />
               
               <div className="day-details">
                 <h4 style={{ marginBottom: 'var(--space-4)', fontSize: '13px', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
-                  Doses de {selectedCalendarDate.toLocaleDateString('pt-BR')}
+                  Doses de {displayDate.toLocaleDateString('pt-BR')}
                 </h4>
                 
-                {(() => {
-                  const dayLogs = logs.filter(log => {
-                    const d = new Date(log.taken_at)
-                    return d.getFullYear() === selectedCalendarDate.getFullYear() &&
-                           d.getMonth() === selectedCalendarDate.getMonth() &&
-                           d.getDate() === selectedCalendarDate.getDate()
-                  })
-
-                  return dayLogs.length === 0 ? (
-                    <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
-                      Nenhum registro selecionado
-                    </p>
-                  ) : (
-                    <div className="day-logs-mini">
-                      {dayLogs.map(log => (
-                        <div 
-                          key={log.id} 
-                          onClick={() => handleEditClick(log)}
-                          style={{ 
-                            padding: 'var(--space-3)', 
-                            background: 'rgba(255,255,255,0.03)', 
-                            borderRadius: 'var(--radius-md)',
-                            marginBottom: 'var(--space-2)',
-                            borderLeft: '3px solid var(--accent-success)',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <div style={{ fontWeight: 600, fontSize: '13px', display: 'flex', justifyContent: 'space-between' }}>
-                            <span>{log.medicine?.name}</span>
-                            <span>✏️</span>
-                          </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
-                            {new Date(log.taken_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                          </div>
+                {dayLogs.length === 0 ? (
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                    Nenhum registro selecionado
+                  </p>
+                ) : (
+                  <div className="day-logs-mini">
+                    {dayLogs.map(log => (
+                      <div 
+                        key={log.id} 
+                        onClick={() => handleEditClick(log)}
+                        style={{ 
+                          padding: 'var(--space-3)', 
+                          background: 'rgba(255,255,255,0.03)', 
+                          borderRadius: 'var(--radius-md)',
+                          marginBottom: 'var(--space-2)',
+                          borderLeft: '3px solid var(--accent-success)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div style={{ fontWeight: 600, fontSize: '13px', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{log.medicine?.name}</span>
+                          <span>✏️</span>
                         </div>
-                      ))}
-                    </div>
-                  )
-                })()}
+                        <div style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
+                          {new Date(log.taken_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

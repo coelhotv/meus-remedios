@@ -112,7 +112,9 @@ export default function Stock({ initialParams, onClearParams }) {
       if (onClearParams) onClearParams()
       await loadData()
     } catch (err) {
-      throw new Error('Erro ao adicionar estoque: ' + err.message)
+      const errorMessage = err?.message || 'Erro desconhecido ao adicionar estoque'
+      console.error('Stock add error:', err)
+      throw new Error(errorMessage)
     }
   }
 

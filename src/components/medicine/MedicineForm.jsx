@@ -67,8 +67,9 @@ export default function MedicineForm({ medicine, onSave, onCancel }) {
       
       await onSave(dataToSave)
     } catch (error) {
-      console.error('Erro ao salvar:', error)
-      setErrors({ submit: error.message })
+      console.error('Erro ao salvar medicamento:', error)
+      const errorMessage = error?.message || 'Erro desconhecido ao salvar medicamento'
+      setErrors({ submit: errorMessage })
     } finally {
       setIsSubmitting(false)
     }

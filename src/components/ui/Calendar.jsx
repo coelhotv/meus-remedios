@@ -44,9 +44,8 @@ export default function Calendar({ markedDates = [], selectedDate, onDayClick })
     // Verificar se há doses registradas neste dia
     const hasLog = markedDates.some(dateStr => {
       const dLog = new Date(dateStr)
-      return dLog.getFullYear() === year && 
-             dLog.getMonth() === month && 
-             dLog.getDate() === d
+      dLog.setHours(0, 0, 0, 0)
+      return dLog.getTime() === dayDate.getTime()
     })
 
     days.push(

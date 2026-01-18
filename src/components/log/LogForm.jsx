@@ -93,6 +93,10 @@ export default function LogForm({ protocols, treatmentPlans = [], initialValues,
     try {
       if (formData.type === 'protocol') {
         const protocol = protocols.find(p => p.id === formData.protocol_id)
+        if (!protocol) {
+          throw new Error('Protocolo não encontrado')
+        }
+
         const dataToSave = {
           protocol_id: formData.protocol_id,
           medicine_id: protocol.medicine_id,
@@ -109,6 +113,9 @@ export default function LogForm({ protocols, treatmentPlans = [], initialValues,
       } else {
         // Plan bulk log
         const plan = treatmentPlans.find(p => p.id === formData.treatment_plan_id)
+        if (!plan) {
+          throw new Error('Plano não encontrado')
+        }
         
         // Filter only selected protocols
         const protocolsToLog = plan.protocols?.filter(p => 
@@ -130,8 +137,9 @@ export default function LogForm({ protocols, treatmentPlans = [], initialValues,
         await onSave(logsToSave)
       }
     } catch (error) {
-      console.error('Erro ao salvar:', error)
-      setErrors({ submit: error.message })
+      console.error('Erro ao registrar medicamento:', error)
+      const errorMessage = error?.message || 'Erro desconhecido ao registrar medicamento'
+      setErrors({ submit: errorMessage })
     } finally {
       setIsSubmitting(false)
     }

@@ -390,14 +390,31 @@ export const stockService = {
    * Add stock
    */
   async add(stock) {
-    const { data, error } = await supabase
-      .from('stock')
-      .insert([{ ...stock, user_id: MOCK_USER_ID }])
-      .select()
-      .single()
-    
-    if (error) throw error
-    return data
+    // Validate required fields
+    if (!stock.medicine_id) {
+      throw new Error('ID do medicamento é obrigatório')
+    }
+    if (stock.quantity === undefined || stock.quantity === null || stock.quantity <= 0) {
+      throw new Error('Quantidade deve ser maior que zero')
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('stock')
+        .insert([{ ...stock, user_id: MOCK_USER_ID }])
+        .select()
+        .single()
+      
+      if (error) {
+        // Parse Supabase error for better messaging
+        const errorMsg = error.message || error.details || 'Erro desconhecido ao adicionar estoque'
+        throw new Error(errorMsg)
+      }
+      return data
+    } catch (err) {
+      // Re-throw with context
+      throw new Error(err.message || 'Falha ao conectar com o servidor')
+    }
   },
 
   /**
@@ -665,5 +682,92 @@ export const logService = {
       .eq('user_id', MOCK_USER_ID)
     
     if (error) throw error
+  },
+
+  /**
+   * Get logs with pagination support
+   * @param {number} limit - Items per page
+   * @param {number} offset - Starting position
+   * @returns {Promise} { data: [], total, hasMore }
+   */
+  getAllPaginated: async (limit = 50, offset = 0) => {
+    // 1. Get paginated data
+    const { data, error, count } = await supabase
+      .from('medicine_logs')
+      .select(`
+        *,
+        protocol:protocols(*),
+        medicine:medicines(*)
+      `, { count: 'exact' })
+      .eq('user_id', MOCK_USER_ID)
+      .order('taken_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+    
+    if (error) throw error
+    
+    return {
+      data: data || [],
+      total: count || 0,
+      hasMore: (offset + limit) < (count || 0)
+    }
+  },
+
+  /**
+   * Get logs by date range
+   * @param {string} startDate - ISO format YYYY-MM-DD
+   * @param {string} endDate - ISO format YYYY-MM-DD
+   * @returns {Promise}
+   */
+  getByDateRange: async (startDate, endDate, limit = 50, offset = 0) => {
+    const { data, error, count } = await supabase
+      .from('medicine_logs')
+      .select(`
+        *,
+        protocol:protocols(*),
+        medicine:medicines(*)
+      `, { count: 'exact' })
+      .eq('user_id', MOCK_USER_ID)
+      .gte('taken_at', `${startDate}T00:00:00`)
+      .lte('taken_at', `${endDate}T23:59:59`)
+      .order('taken_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+    
+    if (error) throw error
+    
+    return {
+      data: data || [],
+      total: count || 0,
+      hasMore: (offset + limit) < (count || 0)
+    }
+  },
+
+  /**
+   * Get logs for a specific month
+   * @param {number} year - Year (e.g., 2024)
+   * @param {number} month - Month (0-11, where 0 is January)
+   * @returns {Promise} { data: [], total }
+   */
+  getByMonth: async (year, month) => {
+    const startDate = new Date(year, month, 1).toISOString().split('T')[0]
+    const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0]
+    
+    const { data, error, count } = await supabase
+      .from('medicine_logs')
+      .select(`
+        *,
+        protocol:protocols(*),
+        medicine:medicines(*)
+      `, { count: 'exact' })
+      .eq('user_id', MOCK_USER_ID)
+      .gte('taken_at', `${startDate}T00:00:00`)
+      .lte('taken_at', `${endDate}T23:59:59`)
+      .order('taken_at', { ascending: false })
+    
+    if (error) throw error
+    
+    return {
+      data: data || [],
+      total: count || 0
+    }
   }
 }

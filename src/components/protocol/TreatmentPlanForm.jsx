@@ -42,8 +42,9 @@ export default function TreatmentPlanForm({ plan, onSave, onCancel }) {
         objective: formData.objective.trim() || null
       })
     } catch (error) {
-      console.error('Erro ao salvar plano:', error)
-      setErrors({ submit: error.message })
+      console.error('Erro ao salvar plano de tratamento:', error)
+      const errorMessage = error?.message || 'Erro desconhecido ao salvar plano'
+      setErrors({ submit: errorMessage })
     } finally {
       setIsSubmitting(false)
     }
