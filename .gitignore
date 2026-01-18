@@ -24,6 +24,7 @@ dist-ssr
 *.sln
 *.sw?
 *.code-workspace
+screenshots/
 
 # Environment variables
 .env
