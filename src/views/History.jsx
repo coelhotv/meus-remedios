@@ -16,38 +16,23 @@ export default function History() {
   const [editingLog, setEditingLog] = useState(null)
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(new Date())
   const [successMessage, setSuccessMessage] = useState('')
-  
-  // Month-based navigation
-  const [monthCache, setMonthCache] = useState({})
   const [currentMonthLogs, setCurrentMonthLogs] = useState([])
   const [totalLogs, setTotalLogs] = useState(0)
 
-  // Get cache key for a month
-  const getMonthKey = (date) => {
-    return `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`
-  }
-
-  // Initial load - load current month
   const loadInitialData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const [protocolsData, logsForMonth] = await Promise.all([
         protocolService.getActive(),
         logService.getByMonth(new Date().getFullYear(), new Date().getMonth())
       ])
-      
+
       setProtocols(protocolsData)
-      
-      const monthKey = getMonthKey(new Date())
-      setMonthCache(prev => ({
-        ...prev,
-        [monthKey]: logsForMonth.data || []
-      }))
       setCurrentMonthLogs(logsForMonth.data || [])
       setTotalLogs(logsForMonth.total || 0)
-      
+
       if (logsForMonth.data?.length > 0) {
         setSelectedCalendarDate(new Date(logsForMonth.data[0].taken_at))
       }
@@ -64,18 +49,20 @@ export default function History() {
   }, [loadInitialData])
 
   const handleCalendarLoadMonth = useCallback(async (year, month) => {
-    const monthKey = `${year}-${String(month).padStart(2, '0')}`
-    
-    // Update current month logs for display
-    const logsForMonth = await logService.getByMonth(year, month)
-    
-    setMonthCache(prev => ({
-      ...prev,
-      [monthKey]: logsForMonth.data || []
-    }))
-    setCurrentMonthLogs(logsForMonth.data || [])
-    
-    return logsForMonth
+    try {
+      const logsForMonth = await logService.getByMonth(year, month)
+      setCurrentMonthLogs(logsForMonth.data || [])
+      setTotalLogs(logsForMonth.total || 0)
+      if (logsForMonth.data?.length > 0) {
+        setSelectedCalendarDate(new Date(logsForMonth.data[0].taken_at))
+      } else {
+        setSelectedCalendarDate(new Date(year, month, 1))
+      }
+      return logsForMonth
+    } catch (err) {
+      console.error('Erro ao carregar mês:', err)
+      return { data: [], total: 0 }
+    }
   }, [])
 
   const handleLogMedicine = async (logData) => {
@@ -99,8 +86,8 @@ export default function History() {
     try {
       await logService.delete(id)
       showSuccess('Registro removido e estoque restabelecido!')
-      setTotalLogs(prev => prev - 1)
       setCurrentMonthLogs(prev => prev.filter(log => log.id !== id))
+      setTotalLogs(prev => Math.max(0, prev - 1))
     } catch (err) {
       setError('Erro ao remover registro: ' + err.message)
     }
@@ -186,7 +173,7 @@ export default function History() {
         </div>
       )}
 
-      {Object.values(monthCache).flat().length === 0 ? (
+      {currentMonthLogs.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📝</div>
           <h3>Nenhum registro ainda</h3>
@@ -214,7 +201,6 @@ export default function History() {
             </div>
           </div>
 
-          {/* Calendar Section */}
           <div className="history-calendar-section" style={{ 
             background: 'var(--bg-glass)', 
             borderRadius: 'var(--radius-lg)', 

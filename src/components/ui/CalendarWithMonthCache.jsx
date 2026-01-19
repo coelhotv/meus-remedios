@@ -3,12 +3,7 @@ import './Calendar.css'
 
 /**
  * CalendarWithMonthCache - Reusable calendar with month-based lazy loading
- * Handles all caching and month navigation logic internally
- * 
- * @param {Function} onLoadMonth - Called when a month needs to be loaded: (year, month) => Promise
- * @param {Array} markedDates - Current month's marked dates (ISO strings)
- * @param {Date} selectedDate - Currently selected date
- * @param {Function} onDayClick - Callback when a day is clicked
+ * Now: no internal month caching; calls onLoadMonth on every month change.
  */
 export default function CalendarWithMonthCache({
   onLoadMonth,
@@ -17,65 +12,46 @@ export default function CalendarWithMonthCache({
   onDayClick
 }) {
   const [viewDate, setViewDate] = useState(new Date())
-  const [monthCache, setMonthCache] = useState({})
-  const [loadedMonths, setLoadedMonths] = useState(new Set())
   const [isLoading, setIsLoading] = useState(false)
 
-  // Get cache key for a month
+  // Get cache key for a month (same format as parent expects: year-monthIndex)
   const getMonthKey = (date) => {
     return `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`
   }
 
-  // Load a specific month
+  // Load a specific month via parent callback (always call)
   const loadMonth = useCallback(async (year, month) => {
-    const monthKey = `${year}-${String(month).padStart(2, '0')}`
-    
-    // Return if already loaded
-    if (loadedMonths.has(monthKey)) {
-      return
-    }
-    
     try {
       setIsLoading(true)
       const result = await onLoadMonth(year, month)
-      
-      if (result && result.data) {
-        setMonthCache(prev => ({
-          ...prev,
-          [monthKey]: result.data
-        }))
-        setLoadedMonths(prev => new Set(prev).add(monthKey))
-      }
+      return result
     } catch (err) {
-      console.error(`Error loading month ${monthKey}:`, err)
+      console.error('Error in onLoadMonth:', err)
+      return null
     } finally {
       setIsLoading(false)
     }
-  }, [loadedMonths, onLoadMonth])
+  }, [onLoadMonth])
+
+  // When viewDate changes, always fetch that month's data
+  useEffect(() => {
+    const year = viewDate.getFullYear()
+    const month = viewDate.getMonth()
+    loadMonth(year, month)
+  }, [viewDate, loadMonth])
 
   // Handle month navigation
   const handlePreviousMonth = useCallback(() => {
     const newDate = new Date(viewDate)
     newDate.setMonth(newDate.getMonth() - 1)
     setViewDate(newDate)
-    
-    // Lazy load the previous month
-    loadMonth(newDate.getFullYear(), newDate.getMonth())
-  }, [viewDate, loadMonth])
+  }, [viewDate])
 
   const handleNextMonth = useCallback(() => {
     const newDate = new Date(viewDate)
     newDate.setMonth(newDate.getMonth() + 1)
     setViewDate(newDate)
-    
-    // Lazy load the next month
-    loadMonth(newDate.getFullYear(), newDate.getMonth())
-  }, [viewDate, loadMonth])
-
-  // Initial load of current month
-  useEffect(() => {
-    loadMonth(viewDate.getFullYear(), viewDate.getMonth())
-  }, []) // Only on mount
+  }, [viewDate])
 
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
   const firstDayOfMonth = (year, month) => new Date(year, month, 1).getDay()
@@ -92,7 +68,6 @@ export default function CalendarWithMonthCache({
   const totalDays = daysInMonth(year, month)
   const firstDay = firstDayOfMonth(year, month)
 
-  // Fill empty days
   for (let i = 0; i < firstDay; i++) {
     days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>)
   }
@@ -100,7 +75,6 @@ export default function CalendarWithMonthCache({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Fill month days
   for (let d = 1; d <= totalDays; d++) {
     const dayDate = new Date(year, month, d)
     dayDate.setHours(0, 0, 0, 0)
@@ -111,7 +85,6 @@ export default function CalendarWithMonthCache({
                       dayDate.getMonth() === selectedDate.getMonth() && 
                       dayDate.getDate() === selectedDate.getDate()
     
-    // Check marked dates from current month
     const hasLog = markedDates.some(dateStr => {
       const dLog = new Date(dateStr)
       dLog.setHours(0, 0, 0, 0)
