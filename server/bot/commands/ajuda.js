@@ -6,7 +6,7 @@ export async function handleAjuda(bot, msg) {
       const me = await bot.getMe();
       if (me && me.username) botUsername = me.username;
     } catch (e) {
-      console.warn('Could not get bot username:', e);
+      console.warn('Não foi possível obter nome do bot:', e);
     }
 
     const helpMessage = `
@@ -47,12 +47,12 @@ Digite \`@${botUsername} <nome>\` em qualquer chat para buscar seus medicamentos
     // send as plain text to avoid Markdown entity parsing errors
     await bot.sendMessage(chatId, helpMessage, { disable_web_page_preview: true });
   } catch (err) {
-    console.error('handleAjuda: sendMessage error', err);
+    console.error('handleAjuda: erro ao enviar mensagem', err);
     // fallback: send minimal help so user gets a response
     try {
       await bot.sendMessage(chatId, '/ajuda — comandos disponíveis. Se continuar vendo erros, verifique os logs.');
     } catch (e) {
-      console.error('handleAjuda fallback failed', e);
+      console.error('handleAjuda: fallback falhou', e);
     }
   }
 }

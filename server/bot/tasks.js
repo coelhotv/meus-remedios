@@ -43,13 +43,13 @@ export async function checkReminders(bot) {
     // Get user settings (cached)
     const settings = await getUserSettings(true);
     if (!settings?.telegram_chat_id) {
-      console.log('[Reminders] No chat ID configured');
+      console.log('[Lembretes] Nenhum Chat ID configurado');
       return;
     }
 
     const timezone = settings.timezone || 'America/Sao_Paulo';
     const currentHHMM = getCurrentTimeInTimezone(timezone);
-    console.log(`[Reminders] Checking at ${currentHHMM} (${timezone})`);
+    console.log(`[Lembretes] Verificando às ${currentHHMM} (${timezone})`);
 
     // Get active protocols (cached)
     const protocols = await getActiveProtocols(true);
@@ -116,7 +116,7 @@ export async function checkReminders(bot) {
         }
 
         if (alreadyTaken) {
-          console.log(`[Reminders] Dose for ${p.medicine.name} at ${currentHHMM} already taken. Skipping.`);
+          console.log(`[Lembretes] Dose de ${p.medicine.name} às ${currentHHMM} já tomada. Pulando.`);
           continue;
         }
 
@@ -153,7 +153,7 @@ export async function checkReminders(bot) {
           .gte('taken_at', p.last_notified_at);
 
         if (!logs || logs.length === 0) {
-          console.log(`[Reminders] Soft reminder for ${p.medicine.name}`);
+          console.log(`[Lembretes] Lembrete rápido para ${p.medicine.name}`);
           
           await bot.sendMessage(settings.telegram_chat_id, 
             `⏳ *Lembrete:* Esqueceu de registrar sua dose de *${p.medicine.name}* (${p.dosage_per_intake}x)?\n\n` +
@@ -177,12 +177,12 @@ export async function checkReminders(bot) {
       }
     }
   } catch (err) {
-    console.error('[Reminders] Error:', err);
+    console.error('[Lembretes] Erro:', err);
   }
 }
 
 export async function runDailyDigest(bot) {
-  console.log('[Daily Digest] Generating...');
+  console.log('[Resumo diário] Gerando...');
     
   try {
     const settings = await getUserSettings(true);
@@ -232,14 +232,14 @@ export async function runDailyDigest(bot) {
     await bot.sendMessage(settings.telegram_chat_id, message, { parse_mode: 'Markdown' });
     
   } catch (err) {
-    console.error('[Daily Digest] Error:', err);
+    console.error('[Resumo diário] Erro:', err);
   }
 }
 
 // --- Alerts Tasks ---
 
 export async function checkStockAlerts(bot) {
-  console.log('[Stock Alert] Checking...');
+  console.log('[Alerta Estoque] Verificando...');
     
   try {
     const settings = await getUserSettings(true);
@@ -305,14 +305,14 @@ export async function checkStockAlerts(bot) {
       await bot.sendMessage(settings.telegram_chat_id, message, { parse_mode: 'Markdown' });
     }
 
-    console.log(`[Stock Alert] Complete. Low: ${lowStockMedicines.length}, Out: ${outOfStockMedicines.length}`);
+    console.log(`[Alerta Estoque] Completo. Baixo: ${lowStockMedicines.length}, Sem: ${outOfStockMedicines.length}`);
   } catch (err) {
-    console.error('[Stock Alert] Error:', err);
+    console.error('[Alerta Estoque] Erro:', err);
   }
 }
 
 export async function checkAdherenceReports(bot) {
-  console.log('[Adherence Report] Generating...');
+  console.log('[Relatório Adesão] Gerando...');
     
   try {
     const settings = await getUserSettings(true);
@@ -381,12 +381,12 @@ export async function checkAdherenceReports(bot) {
 
     await bot.sendMessage(settings.telegram_chat_id, message, { parse_mode: 'Markdown' });
   } catch (err) {
-    console.error('[Adherence Report] Error:', err);
+    console.error('[Relatório Adesão] Erro:', err);
   }
 }
 
 export async function checkTitrationAlerts(bot) {
-  console.log('[Titration Alert] Checking...');
+  console.log('[Alerta Titulação] Verificando...');
     
   try {
     const settings = await getUserSettings(true);
@@ -446,14 +446,14 @@ export async function checkTitrationAlerts(bot) {
       }
     }
 
-    console.log('[Titration Alert] Check complete');
+    console.log('[Alerta Titulação] Verificação completa');
   } catch (err) {
-    console.error('[Titration Alert] Error:', err);
+    console.error('[Alerta Titulação] Erro:', err);
   }
 }
 
 export async function checkMonthlyReport(bot) {
-  console.log('[Monthly Report] Analyzing...');
+  console.log('[Relatório Mensal] Analisando...');
     
   try {
     const settings = await getUserSettings(true);
@@ -513,6 +513,7 @@ export async function checkMonthlyReport(bot) {
     await bot.sendMessage(settings.telegram_chat_id, message, { parse_mode: 'Markdown' });
 
   } catch (err) {
-    console.error('[Monthly Report] Error:', err);
+    console.error('[Relatório Mensal] Erro:', err);
   }
 }
+

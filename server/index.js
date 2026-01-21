@@ -34,7 +34,7 @@ if (!token) {
 const bot = new TelegramBot(token, { polling: true });
 
 console.log('🚀 Bot de Remédios iniciado com sucesso!');
-console.log('📋 Comandos disponíveis: /start, /status, /estoque, /hoje, /proxima, /historico, /ajuda');
+console.log('📋 Comandos disponíveis: /start, /status, /estoque, /hoje, /proxima, /historico, /ajuda, /registrar, /adicionar_estoque, /repor, /pausar, /retomar');
 
 // Register command handlers
 bot.onText(/\/start/, (msg) => handleStart(bot, msg));
