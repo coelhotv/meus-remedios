@@ -1,6 +1,6 @@
 import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
 import { getSession, setSession, clearSession } from '../state.js';
-import { calculateDaysRemaining, calculateStreak } from '../../utils/formatters.js';
+import { calculateStreak } from '../../utils/formatters.js';
 
 export async function handleConversationalCallbacks(bot) {
   bot.on('callback_query', async (callbackQuery) => {

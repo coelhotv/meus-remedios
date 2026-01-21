@@ -14,10 +14,7 @@ export default function CalendarWithMonthCache({
   const [viewDate, setViewDate] = useState(new Date())
   const [isLoading, setIsLoading] = useState(false)
 
-  // Get cache key for a month (same format as parent expects: year-monthIndex)
-  const getMonthKey = (date) => {
-    return `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`
-  }
+
 
   // Load a specific month via parent callback (always call)
   const loadMonth = useCallback(async (year, month) => {

@@ -3,8 +3,7 @@ import { calculateDaysRemaining, calculateStreak } from '../../utils/formatters.
 
 export async function handleCallbacks(bot) {
   bot.on('callback_query', async (callbackQuery) => {
-    const { data, message, id } = callbackQuery;
-    const chatId = message.chat.id;
+    const { data } = callbackQuery;
 
     if (data.startsWith('take_')) {
       await handleTakeDose(bot, callbackQuery);
@@ -129,12 +128,12 @@ async function handleTakeDose(bot, callbackQuery) {
     console.error('Erro ao registrar dose:', err);
     try {
       await bot.answerCallbackQuery(id, { text: 'Erro ao registrar dose.', show_alert: true });
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
   }
 }
 
 async function handleSkipDose(bot, callbackQuery) {
-  const { data, message, id } = callbackQuery;
+  const { message, id } = callbackQuery;
   const chatId = message.chat.id;
   
   await bot.answerCallbackQuery(id, { text: 'Dose pulada.' });

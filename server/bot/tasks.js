@@ -1,8 +1,8 @@
 import { supabase, MOCK_USER_ID } from '../services/supabase.js';
-import { getCurrentTimeInTimezone, getCurrentTimeComponents, getCurrentDateInTimezone } from '../utils/timezone.js';
+import { getCurrentTimeInTimezone, getCurrentDateInTimezone, formatTimeInTimezone } from '../utils/timezone.js';
 import { calculateDaysRemaining } from '../utils/formatters.js';
 import { shouldSendNotification } from '../services/notificationDeduplicator.js';
-import { getActiveProtocols, getUserSettings, invalidateCache } from '../services/protocolCache.js';
+import { getActiveProtocols, getUserSettings } from '../services/protocolCache.js';
 
 // --- Helper Functions ---
 
@@ -57,6 +57,70 @@ export async function checkReminders(bot) {
     for (const p of protocols) {
       // --- 1. Main Notifications ---
       if (p.time_schedule.includes(currentHHMM)) {
+        // --- Check if already taken ---
+        // Fetch logs for the last 24h to see if this slot is already covered
+        const { data: recentLogs } = await supabase
+          .from('medicine_logs')
+          .select('taken_at')
+          .eq('protocol_id', p.id)
+          .gte('taken_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+        const todayYYYYMMDD = getCurrentDateInTimezone(timezone);
+        
+        // Helper to convert HH:MM to minutes
+        const timeToMinutes = (time) => {
+          const [h, m] = time.split(':').map(Number);
+          return h * 60 + m;
+        };
+
+        const currentMinutes = timeToMinutes(currentHHMM);
+        let alreadyTaken = false;
+
+        if (recentLogs && recentLogs.length > 0) {
+          // Filter logs that are "Today" in user's timezone
+          const todaysLogs = recentLogs.filter(l => {
+            const logDateVal = new Date(l.taken_at);
+            const logDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(logDateVal);
+            return logDateStr === todayYYYYMMDD;
+          });
+
+          for (const log of todaysLogs) {
+            const logHHMM = formatTimeInTimezone(log.taken_at, timezone);
+            const logMinutes = timeToMinutes(logHHMM);
+            
+            // Find closest schedule for this log
+            let minDiff = Infinity;
+            let closestSchedule = null;
+            
+            // Compare against all schedule times for this protocol
+            p.time_schedule.forEach(schedule => {
+                const schedMinutes = timeToMinutes(schedule);
+                const diff = Math.abs(logMinutes - schedMinutes);
+                
+                // If diffs are equal, we could use a tie-breaker. 
+                // Simple < minDiff works: first one wins if equal.
+                // Usually schedules are distinct enough.
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestSchedule = schedule;
+                }
+            });
+            
+            // If the closest schedule for this log is the CURRENT checking time, 
+            // then we consider it taken.
+            // (Use a small tolerance if needed, but strict matching of 'closest' is robust)
+            if (closestSchedule === currentHHMM) {
+                alreadyTaken = true;
+                break;
+            }
+          }
+        }
+
+        if (alreadyTaken) {
+          console.log(`[Reminders] Dose for ${p.medicine.name} at ${currentHHMM} already taken. Skipping.`);
+          continue;
+        }
+
         // Check deduplication
         const shouldSend = await shouldSendNotification(p.id, 'dose_reminder');
         if (!shouldSend) continue;
@@ -283,7 +347,7 @@ export async function checkAdherenceReports(bot) {
     const adherenceRate = expectedDoses > 0 ? Math.round((takenDoses / expectedDoses) * 100) : 0;
 
     let message = '📊 *Relatório Semanal de Adesão*\n\n';
-    message += `📅 ${sevenDaysAgo.toLocaleDateString('pt-BR')} - ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+    message += `📅 ${sevenDaysAgo.toLocaleDateString('pt-BR', { timeZone: timezone })} - ${new Date().toLocaleDateString('pt-BR', { timeZone: timezone })}\n\n`;
     message += `✅ Doses: ${takenDoses}/${expectedDoses}\n`;
     message += `📈 Adesão: *${adherenceRate}%*\n\n`;
 

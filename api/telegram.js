@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import { handleStart } from '../server/bot/commands/start.js';
 import { handleStatus } from '../server/bot/commands/status.js';
 import { handleEstoque } from '../server/bot/commands/estoque.js';
@@ -8,7 +7,7 @@ import { handleHistorico } from '../server/bot/commands/historico.js';
 import { handleAjuda } from '../server/bot/commands/ajuda.js';
 import { handleRegistrar } from '../server/bot/commands/registrar.js';
 import { handleAdicionarEstoque, handleReporShortcut } from '../server/bot/commands/adicionar_estoque.js';
-import { handlePausar, handleRetomar, handleProtocolCallback } from '../server/bot/commands/protocols.js';
+import { handlePausar, handleRetomar } from '../server/bot/commands/protocols.js';
 import { handleCallbacks } from '../server/bot/callbacks/doseActions.js';
 import { handleConversationalCallbacks } from '../server/bot/callbacks/conversational.js';
 
@@ -119,7 +118,7 @@ export default async function handler(req, res) {
       
       // Arguments regex commands
       else if (text.startsWith('/repor')) {
-        const match = text.match(/\/repor\s+(.+)\s+(\d+[\.,]?\d*)/);
+        const match = text.match(/\/repor\s+(.+)\s+(\d+[.,]?\d*)/);
         if (match) await handleReporShortcut(bot, msg, match);
         else bot.sendMessage(msg.chat.id, 'Formato inválido. Use: /repor Nome Quantidade');
       }

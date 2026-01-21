@@ -46,7 +46,7 @@ bot.onText(/\/historico/, (msg) => handleHistorico(bot, msg));
 bot.onText(/\/ajuda/, (msg) => handleAjuda(bot, msg));
 bot.onText(/\/registrar/, (msg) => handleRegistrar(bot, msg));
 bot.onText(/\/adicionar_estoque/, (msg) => handleAdicionarEstoque(bot, msg));
-bot.onText(/\/repor\s+(.+)\s+(\d+[\.,]?\d*)/, (msg, match) => handleReporShortcut(bot, msg, match));
+bot.onText(/\/repor\s+(.+)\s+(\d+[.,]?\d*)/, (msg, match) => handleReporShortcut(bot, msg, match));
 bot.onText(/\/pausar(?:\s+(.+))?/, (msg, match) => handlePausar(bot, msg, match));
 bot.onText(/\/retomar(?:\s+(.+))?/, (msg, match) => handleRetomar(bot, msg, match));
 

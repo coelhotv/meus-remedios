@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [stockSummary, setStockSummary] = useState([])
   const [nextDose, setNextDose] = useState(null)
   const [activeTitration, setActiveTitration] = useState(null)
-  const [recentLogs, setRecentLogs] = useState([])
+  // recentLogs state removed as it was unused
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(null)
   
   // Month cache for calendar
@@ -46,10 +46,11 @@ export default function Dashboard() {
 
       setActiveProtocols(enrichedProtocols)
       setTreatmentPlans(plans)
-      setRecentLogs(logs)
+      // setRecentLogs removed
 
-      if (logs.length > 0 && !selectedCalendarDate) {
-        setSelectedCalendarDate(new Date(logs[0].taken_at))
+      if (logs.length > 0) {
+        // Use functional update to check current state without adding dependency
+        setSelectedCalendarDate(prev => prev || new Date(logs[0].taken_at))
       }
 
       // Calculate Stock
