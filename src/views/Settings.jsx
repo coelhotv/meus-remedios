@@ -178,7 +178,7 @@ export default function Settings() {
                   /start {telegramToken}
                 </div>
                 <a 
-                  href={`https://t.me/MeusRemediosBot?start=${telegramToken}`}
+                  href={`https://t.me/meus_remedios_bot?start=${telegramToken}`}
                   target="_blank"
                   rel="noreferrer"
                   className="telegram-link"
