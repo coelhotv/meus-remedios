@@ -1,14 +1,22 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
+import { getUserIdByChatId } from '../../services/userService.js';
 import { getCurrentTime } from '../../utils/formatters.js';
 
 export async function handleHoje(bot, msg) {
   const chatId = msg.chat.id;
   
   try {
+    let userId;
+    try {
+      userId = await getUserIdByChatId(chatId);
+    } catch (e) {
+      return await bot.sendMessage(chatId, '⚠️ Você precisa vincular sua conta primeiro. Use /start para instruções.');
+    }
+
     const { data: protocols, error } = await supabase
       .from('protocols')
       .select('*, medicine:medicines(*)')
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .eq('active', true);
 
     if (error) throw error;
@@ -27,7 +35,7 @@ export async function handleHoje(bot, msg) {
     const { data: allLogs } = await supabase
       .from('medicine_logs')
       .select('protocol_id, taken_at')
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .gte('taken_at', new Date(now.getTime() - 36 * 60 * 60 * 1000).toISOString());
 
     const todayLogs = allLogs?.filter(log => {

@@ -1,10 +1,13 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
+import { getUserIdByChatId } from '../../services/userService.js';
 import { calculateDaysRemaining, formatStockStatus } from '../../utils/formatters.js';
 
 export async function handleEstoque(bot, msg) {
   const chatId = msg.chat.id;
 
   try {
+    const userId = await getUserIdByChatId(chatId);
+
     // Get all medicines with their stock and active protocols
     const { data: medicines, error: medError } = await supabase
       .from('medicines')
@@ -13,7 +16,7 @@ export async function handleEstoque(bot, msg) {
         stock(*),
         protocols!protocols_medicine_id_fkey(*)
       `)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .order('name');
 
     if (medError) throw medError;

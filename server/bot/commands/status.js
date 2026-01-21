@@ -1,14 +1,17 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
+import { getUserIdByChatId } from '../../services/userService.js';
 import { formatProtocol } from '../../utils/formatters.js';
 
 export async function handleStatus(bot, msg) {
   const chatId = msg.chat.id;
   
   try {
+    const userId = await getUserIdByChatId(chatId);
+
     const { data: protocols, error } = await supabase
       .from('protocols')
       .select('*, medicine:medicines(*)')
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .eq('active', true);
 
     if (error) throw error;
@@ -16,13 +19,9 @@ export async function handleStatus(bot, msg) {
     if (!protocols || protocols.length === 0) {
       return await bot.sendMessage(chatId, 'Você não possui protocolos ativos no momento.');
     }
+    
+    // Fallback removed
 
-    // Fallback: Vincular chat_id se ainda não estiver vinculado
-    await supabase.from('user_settings').upsert({ 
-      user_id: MOCK_USER_ID, 
-      telegram_chat_id: chatId.toString(),
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'user_id' });
 
     let message = '📋 *Seus Protocolos Ativos:*\n\n';
     protocols.forEach(p => {

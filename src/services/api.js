@@ -1,4 +1,4 @@
-import { supabase, MOCK_USER_ID } from '../lib/supabase'
+import { supabase, getUserId } from '../lib/supabase'
 
 /**
  * Medicine Service - CRUD operations for medicines
@@ -14,7 +14,7 @@ export const medicineService = {
         *,
         stock(*)
       `)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .order('created_at', { ascending: false })
     
     if (error) throw error
@@ -45,7 +45,7 @@ export const medicineService = {
         stock(*)
       `)
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .single()
     
     if (error) throw error
@@ -64,7 +64,7 @@ export const medicineService = {
   async create(medicine) {
     const { data, error } = await supabase
       .from('medicines')
-      .insert([{ ...medicine, user_id: MOCK_USER_ID }])
+      .insert([{ ...medicine, user_id: await getUserId() }])
       .select()
       .single()
     
@@ -80,7 +80,7 @@ export const medicineService = {
       .from('medicines')
       .update(updates)
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .select()
       .single()
     
@@ -96,7 +96,7 @@ export const medicineService = {
       .from('medicines')
       .delete()
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
     
     if (error) throw error
   }
@@ -116,7 +116,7 @@ export const protocolService = {
         *,
         medicine:medicines(*)
       `)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .order('created_at', { ascending: false })
     
     if (error) throw error
@@ -133,7 +133,7 @@ export const protocolService = {
         *,
         medicine:medicines(*)
       `)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .eq('active', true)
       .order('created_at', { ascending: false })
     
@@ -152,7 +152,7 @@ export const protocolService = {
         medicine:medicines(*)
       `)
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .single()
     
     if (error) throw error
@@ -167,7 +167,7 @@ export const protocolService = {
       .from('protocols')
       .insert([{ 
         ...protocol, 
-        user_id: MOCK_USER_ID,
+        user_id: await getUserId(),
         // Ensure defaults for titration
         titration_schedule: protocol.titration_schedule || [],
         current_stage_index: protocol.current_stage_index || 0,
@@ -192,7 +192,7 @@ export const protocolService = {
       .from('protocols')
       .update(updates)
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .select(`
         *,
         medicine:medicines(*),
@@ -212,7 +212,7 @@ export const protocolService = {
       .from('protocols')
       .delete()
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
     
     if (error) throw error
   },
@@ -244,7 +244,7 @@ export const protocolService = {
           stage_started_at: new Date().toISOString()
         })
         .eq('id', id)
-        .eq('user_id', MOCK_USER_ID)
+        .eq('user_id', await getUserId())
         .select(`
           *,
           medicine:medicines(*),
@@ -270,7 +270,7 @@ export const protocolService = {
       .from('protocols')
       .update(updates)
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .select(`
         *,
         medicine:medicines(*),
@@ -300,7 +300,7 @@ export const treatmentPlanService = {
           medicine:medicines(*)
         )
       `)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .order('created_at', { ascending: false })
     
     if (error) throw error
@@ -313,7 +313,7 @@ export const treatmentPlanService = {
   async create(plan) {
     const { data, error } = await supabase
       .from('treatment_plans')
-      .insert([{ ...plan, user_id: MOCK_USER_ID }])
+      .insert([{ ...plan, user_id: await getUserId() }])
       .select()
       .single()
     
@@ -329,7 +329,7 @@ export const treatmentPlanService = {
       .from('treatment_plans')
       .update(updates)
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .select()
       .single()
     
@@ -346,7 +346,7 @@ export const treatmentPlanService = {
       .from('treatment_plans')
       .delete()
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
     
     if (error) throw error
   }
@@ -364,7 +364,7 @@ export const stockService = {
       .from('stock')
       .select('*')
       .eq('medicine_id', medicineId)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .order('created_at', { ascending: false })
     
     if (error) throw error
@@ -379,7 +379,7 @@ export const stockService = {
       .from('stock')
       .select('quantity')
       .eq('medicine_id', medicineId)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
     
     if (error) throw error
     
@@ -401,7 +401,7 @@ export const stockService = {
     try {
       const { data, error } = await supabase
         .from('stock')
-        .insert([{ ...stock, user_id: MOCK_USER_ID }])
+        .insert([{ ...stock, user_id: await getUserId() }])
         .select()
         .single()
       
@@ -427,7 +427,7 @@ export const stockService = {
       .from('stock')
       .select('*')
       .eq('medicine_id', medicineId)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .gt('quantity', 0)
       .order('purchase_date', { ascending: true })
     
@@ -468,7 +468,7 @@ export const stockService = {
         quantity: quantity,
         purchase_date: new Date().toISOString().split('T')[0],
         unit_price: 0,
-        user_id: MOCK_USER_ID,
+        user_id: await getUserId(),
         notes: reason
       }])
       .select()
@@ -486,7 +486,7 @@ export const stockService = {
       .from('stock')
       .delete()
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
     
     if (error) throw error
   }
@@ -507,7 +507,7 @@ export const logService = {
         protocol:protocols(*),
         medicine:medicines(*)
       `)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .order('taken_at', { ascending: false })
       .limit(limit)
     
@@ -527,7 +527,7 @@ export const logService = {
         medicine:medicines(*)
       `)
       .eq('protocol_id', protocolId)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .order('taken_at', { ascending: false })
       .limit(limit)
     
@@ -543,7 +543,7 @@ export const logService = {
     // First, create the log entry
     const { data, error } = await supabase
       .from('medicine_logs')
-      .insert([{ ...log, user_id: MOCK_USER_ID }])
+      .insert([{ ...log, user_id: await getUserId() }])
       .select(`
         *,
         protocol:protocols(*),
@@ -571,7 +571,8 @@ export const logService = {
    */
   async createBulk(logs) {
     // 1. Create all logs
-    const logsWithUser = logs.map(log => ({ ...log, user_id: MOCK_USER_ID }))
+    const userId = await getUserId()
+    const logsWithUser = logs.map(log => ({ ...log, user_id: userId }))
     const { data, error } = await supabase
       .from('medicine_logs')
       .insert(logsWithUser)
@@ -638,7 +639,7 @@ export const logService = {
       .from('medicine_logs')
       .update(updates)
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .select(`
         *,
         protocol:protocols(*),
@@ -679,7 +680,7 @@ export const logService = {
       .from('medicine_logs')
       .delete()
       .eq('id', id)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
     
     if (error) throw error
   },
@@ -699,7 +700,7 @@ export const logService = {
         protocol:protocols(*),
         medicine:medicines(*)
       `, { count: 'exact' })
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .order('taken_at', { ascending: false })
       .range(offset, offset + limit - 1)
     
@@ -726,7 +727,7 @@ export const logService = {
         protocol:protocols(*),
         medicine:medicines(*)
       `, { count: 'exact' })
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .gte('taken_at', `${startDate}T00:00:00`)
       .lte('taken_at', `${endDate}T23:59:59`)
       .order('taken_at', { ascending: false })
@@ -758,7 +759,7 @@ export const logService = {
         protocol:protocols(*),
         medicine:medicines(*)
       `, { count: 'exact' })
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', await getUserId())
       .gte('taken_at', `${startDate}T00:00:00`)
       .lte('taken_at', `${endDate}T23:59:59`)
       .order('taken_at', { ascending: false })
@@ -771,3 +772,14 @@ export const logService = {
     }
   }
 }
+
+/**
+ * Migration Service
+ */
+export const migrationService = {
+  async migratePilotData() {
+    const { error } = await supabase.rpc('migrate_pilot_data')
+    if (error) throw error
+  }
+}
+

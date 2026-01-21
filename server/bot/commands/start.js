@@ -1,29 +1,58 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
 
 export async function handleStart(bot, msg) {
   const chatId = msg.chat.id;
+  const token = msg.text.split(' ')[1]?.trim();
   
   try {
-    const { error } = await supabase
-      .from('user_settings')
-      .upsert({ 
-        user_id: MOCK_USER_ID, 
-        telegram_chat_id: chatId.toString(),
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id' });
+    if (!token) {
+      // Check if already linked
+      const { data: existing } = await supabase
+        .from('user_settings')
+        .select('user_id')
+        .eq('telegram_chat_id', chatId.toString())
+        .single();
 
-    if (error) throw error;
+      if (existing) {
+        await bot.sendMessage(chatId, '✅ Você já está conectado! Use /ajuda para ver os comandos.');
+      } else {
+        await bot.sendMessage(chatId, 
+          'Olá! 👋 Para conectar o bot à sua conta:\n\n' +
+          '1. Abra o app Meus Remédios\n' +
+          '2. Vá em **Configurações > Integração Telegram**\n' +
+          '3. Clique em "Gerar Código"\n' +
+          '4. Envie o código aqui: `/start SEU_CODIGO`',
+          { parse_mode: 'Markdown' }
+        );
+      }
+      return;
+    }
+
+    // Try to link using token
+    const { data: linked, error } = await supabase
+      .from('user_settings')
+      .update({ 
+        telegram_chat_id: chatId.toString(),
+        verification_token: null, // Consume token
+        updated_at: new Date().toISOString()
+      })
+      .eq('verification_token', token)
+      .select()
+      .single();
+
+    if (error || !linked) {
+      console.warn('Falha ao vincular:', error);
+      await bot.sendMessage(chatId, '❌ Código inválido ou expirado. Por favor, gere um novo código no app.');
+      return;
+    }
 
     await bot.sendMessage(chatId, 
-      `Olá! 👋 Eu sou o assistente do *Meus Remédios*.\n\n` +
-      `Acabei de vincular este chat ao seu perfil. Agora vou te avisar nos horários das suas medicações.\n\n` +
-      `*Comandos disponíveis:*\n` +
-      `/status - Ver protocolos ativos\n` +
-      `/estoque - Verificar estoque\n` +
-      `/hoje - Doses de hoje\n` +
-      `/proxima - Próxima dose\n` +
-      `/historico - Últimas doses registradas\n` +
-      `/ajuda - Ver todos os comandos`,
+      `🎉 *Conta vinculada com sucesso!*\n\n` +
+      `Agora você receberá notificações e poderá gerenciar seus remédios por aqui.\n\n` +
+      `*Comandos úteis:*\n` +
+      `/hoje - O que tomar hoje\n` +
+      `/status - Status dos tratamentos\n` +
+      `/estoque - Compras necessárias`,
       { parse_mode: 'Markdown' }
     );
   } catch (err) {

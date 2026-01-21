@@ -236,7 +236,11 @@ export default function Dashboard() {
           <span className="greeting-label">{getGreeting()}</span>
           <h1 className="user-name">Antonio <span className="dot">.</span></h1>
         </div>
-        <div className="profile-indicator">
+        <div 
+          className="profile-indicator" 
+          onClick={() => onNavigate('settings')}
+          style={{ cursor: 'pointer' }}
+        >
           <img src="/logo.png" className="avatar-logo" alt="Logo" />
         </div>
       </header>
