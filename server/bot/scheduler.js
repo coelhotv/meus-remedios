@@ -4,12 +4,12 @@ import { checkReminders, runDailyDigest } from './tasks.js';
 export function startScheduler(bot) {
   // Main notification scheduler - runs every minute
   cron.schedule('* * * * *', () => checkReminders(bot));
-  console.log('✅ Scheduler de notificações iniciado');
+  console.log('✅ Notificador de lembretes iniciado');
 }
 
 export function startDailyDigest(bot) {
   cron.schedule('0 23 * * *', () => runDailyDigest(bot));
-  console.log('✅ Daily Digest configurado (diariamente às 23h)');
+  console.log('✅ Resumo diário configurado (diariamente às 23h)');
 }
 
 // Re-export for compatibility if needed elsewhere
