@@ -18,37 +18,48 @@ export async function handleHoje(bot, msg) {
     }
 
     // Get today's date in SP timezone
-    const today = new Intl.DateTimeFormat('en-CA', { 
-      timeZone: 'America/Sao_Paulo' 
-    }).format(new Date());
+    const timezone = 'America/Sao_Paulo';
+    const now = new Date();
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(now);
 
-    const { data: logs } = await supabase
+    // Fetch logs from last 24h to ensure we don't miss anything due to UTC shift
+    // Then filter accurately in memory
+    const { data: allLogs } = await supabase
       .from('medicine_logs')
       .select('protocol_id, taken_at')
       .eq('user_id', MOCK_USER_ID)
-      .gte('taken_at', `${today}T00:00:00.000Z`)
-      .lte('taken_at', `${today}T23:59:59.999Z`);
+      .gte('taken_at', new Date(now.getTime() - 36 * 60 * 60 * 1000).toISOString());
+
+    const todayLogs = allLogs?.filter(log => {
+      const logDate = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(new Date(log.taken_at));
+      return logDate === todayStr;
+    }) || [];
+
+    // Helper to convert HH:MM to minutes
+    const toMin = (t) => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
 
     // Build schedule for today
     const schedule = [];
     protocols.forEach(protocol => {
+      const protocolLogs = todayLogs.filter(l => l.protocol_id === protocol.id);
+      
       protocol.time_schedule.forEach(time => {
-        // Check if this dose was taken
-        const wasTaken = logs?.some(log => {
-          const logProtocol = log.protocol_id === protocol.id;
+        const scheduledMin = toMin(time);
+        
+        // Find if any log matches this slot (within 3h window)
+        const wasTaken = protocolLogs.some(log => {
           const logTime = new Date(log.taken_at).toLocaleTimeString('pt-BR', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false,
-            timeZone: 'America/Sao_Paulo'
-          });
+            timeZone: timezone
+          }).replace(/^24/, '00');
           
-          // Use a fixed date for comparison of times
-          const scheduledTime = new Date(`2000-01-01T${time}:00`);
-          const actualTime = new Date(`2000-01-01T${logTime}:00`);
-          
-          // Consider taken if within 60 min window (more generous)
-          return logProtocol && Math.abs(scheduledTime.getTime() - actualTime.getTime()) < 60 * 60 * 1000;
+          const actualMin = toMin(logTime);
+          return Math.abs(scheduledMin - actualMin) < 180; // 3 hour window
         });
 
         schedule.push({
