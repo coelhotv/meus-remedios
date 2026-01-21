@@ -10,7 +10,10 @@ import './Dashboard.css'
 import CalendarWithMonthCache from '../components/ui/CalendarWithMonthCache'
 import ProtocolChecklistItem from '../components/protocol/ProtocolChecklistItem'
 
-export default function Dashboard() {
+import { getCurrentUser } from '../lib/supabase'
+
+export default function Dashboard({ onNavigate }) {
+  const [userName, setUserName] = useState('')
   const [activeProtocols, setActiveProtocols] = useState([])
   const [treatmentPlans, setTreatmentPlans] = useState([])
   const [stockSummary, setStockSummary] = useState([])
@@ -30,13 +33,19 @@ export default function Dashboard() {
   const loadDashboardData = useCallback(async () => {
     try {
       setIsLoading(true)
-      const [protocols, plans, medicines, logsResponse] = await Promise.all([
+      const [user, protocols, plans, medicines, logsResponse] = await Promise.all([
+        getCurrentUser(),
         protocolService.getActive(),
         treatmentPlanService.getAll(),
         medicineService.getAll(),
-        logService.getAllPaginated(100, 0) // Dashboard shows last 100 recent logs
+        logService.getAllPaginated(100, 0)
       ])
       
+      if (user) {
+        const name = user.user_metadata?.full_name || user.email.split('@')[0]
+        setUserName(name.charAt(0).toUpperCase() + name.slice(1))
+      }
+
       const logs = logsResponse.data || []
       
       const enrichedProtocols = protocols.map(p => ({
@@ -234,7 +243,7 @@ export default function Dashboard() {
       <header className="dash-header">
         <div>
           <span className="greeting-label">{getGreeting()}</span>
-          <h1 className="user-name">Antonio <span className="dot">.</span></h1>
+          <h1 className="user-name">{userName} <span className="dot">.</span></h1>
         </div>
         <div 
           className="profile-indicator" 
