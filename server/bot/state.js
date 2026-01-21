@@ -16,3 +16,6 @@ export async function getState(chatId) {
 export async function clearState(chatId) {
   return clearSession(chatId);
 }
+
+export { setSession, getSession, clearSession };
+
