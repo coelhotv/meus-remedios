@@ -71,9 +71,6 @@ export default function Settings() {
     const token = Math.random().toString(36).substring(2, 8).toUpperCase()
     
     try {
-      // Logic: Save token to user_settings metadata (or a dedicated field if we add one)
-      // For now, let's assume we'll add a 'verification_token' column in the migration
-      
       const { error } = await supabase
         .from('user_settings')
         .upsert({ 
@@ -88,6 +85,31 @@ export default function Settings() {
     } catch (err) {
       console.error(err)
       setError('Erro ao gerar token. Tente novamente.')
+    }
+  }
+
+  const handleDisconnectTelegram = async () => {
+    if (!window.confirm('Deseja realmente desconectar o Telegram? Você parará de receber notificações.')) return
+
+    try {
+      const { error } = await supabase
+        .from('user_settings')
+        .update({ 
+          telegram_chat_id: null,
+          verification_token: null,
+          updated_at: new Date()
+        })
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      
+      setSettings(prev => ({ ...prev, telegram_chat_id: null }))
+      setTelegramToken(null)
+      setMessage('Telegram desconectado com sucesso!')
+      setTimeout(() => setMessage(null), 3000)
+    } catch (err) {
+      console.error(err)
+      setError('Erro ao desconectar Telegram.')
     }
   }
 
@@ -138,7 +160,14 @@ export default function Settings() {
           </span>
         </div>
 
-        {!settings?.telegram_chat_id && (
+        {settings?.telegram_chat_id ? (
+          <div className="connected-actions">
+            <p className="section-desc success-text">✅ Bot vinculado com sucesso!</p>
+            <Button variant="outline" className="btn-disconnect" onClick={handleDisconnectTelegram}>
+              Desconectar Telegram
+            </Button>
+          </div>
+        ) : (
           <div className="connect-telegram">
             {!telegramToken ? (
               <Button onClick={generateTelegramToken}>Gerar Código de Vínculo</Button>
@@ -156,6 +185,13 @@ export default function Settings() {
                 >
                   Abrir Bot no Telegram ↗
                 </a>
+                <Button 
+                  variant="ghost" 
+                  className="btn-cancel-token"
+                  onClick={() => setTelegramToken(null)}
+                >
+                  Cancelar
+                </Button>
               </div>
             )}
           </div>
@@ -164,23 +200,6 @@ export default function Settings() {
 
       {message && <div className="settings-message success">{message}</div>}
       {error && <div className="settings-message error">{error}</div>}
-
-      <div className="settings-section glass-card">
-        <h3>Migração de Dados</h3>
-        <p className="section-desc">
-          Se você usava o app antes de criar conta, clique abaixo para trazer seus dados.
-        </p>
-        <Button onClick={async () => {
-          try {
-            await migrationService.migratePilotData()
-            setMessage('Dados migrados com sucesso!')
-          } catch (err) {
-            setError('Erro na migração: ' + err.message)
-          }
-        }}>
-          Migrar Dados Antigos
-        </Button>
-      </div>
 
       <div className="logout-section">
         <Button variant="outline" className="logout-btn" onClick={handleLogout}>

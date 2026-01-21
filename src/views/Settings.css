@@ -155,6 +155,25 @@
   color: #ff3b30;
 }
 
+.btn-disconnect {
+  width: 100%;
+  border-color: rgba(255, 59, 48, 0.4);
+  color: #ff453a;
+  margin-top: var(--space-4);
+}
+
+.btn-cancel-token {
+  display: block;
+  margin: var(--space-4) auto 0;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.success-text {
+  color: #32d74b !important;
+  font-weight: 500;
+}
+
 .logout-section {
   display: flex;
   justify-content: center;
