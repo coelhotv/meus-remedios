@@ -73,7 +73,6 @@ export async function checkReminders(bot) {
           return h * 60 + m;
         };
 
-        const currentMinutes = timeToMinutes(currentHHMM);
         let alreadyTaken = false;
 
         if (recentLogs && recentLogs.length > 0) {
