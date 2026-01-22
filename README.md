@@ -4,7 +4,7 @@
 
 Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com **Autenticação Multi-usuário**, **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.0.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -15,7 +15,7 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 
 ---
 
-## 🎯 Funcionalidades (V1.2.0)
+## 🎯 Funcionalidades (V2.0.0)
 
 - ✅ **Autenticação Segura**: Login e registro via Supabase Auth (Email/Senha).
 - ✅ **Isolamento de Dados**: Sistema multi-usuário com Row-Level Security (RLS) rigoroso.
@@ -207,5 +207,5 @@ Para dúvidas ou problemas:
 
 ---
 
-**Versão**: 1.2.0 (Multi-User Auth)  
+**Versão**: 2.0.0 (Major Release - Multi-User Auth)  
 **Última atualização**: Janeiro 2026
