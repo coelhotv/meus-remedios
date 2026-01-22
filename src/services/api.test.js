@@ -21,7 +21,7 @@ vi.mock('../lib/supabase', () => ({
   supabase: {
     from: mocks.from
   },
-  MOCK_USER_ID: 'test-user-id'
+  getUserId: vi.fn().mockResolvedValue('test-user-id')
 }))
 
 import { medicineService } from './api'

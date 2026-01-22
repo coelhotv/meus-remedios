@@ -2,9 +2,9 @@
 
 **Aplicativo de gerenciamento de medicamentos em português brasileiro**
 
-Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com suporte a **Planos de Tratamento complexos** e **Titulação de Dose**.
+Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com **Autenticação Multi-usuário**, **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.2.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -12,23 +12,22 @@ Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples 
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
-![Cron job status](https://api.cron-job.org/jobs/7138089/fd84db3734b009c6/status-1.svg)
 
 ---
 
-## 🎯 Funcionalidades (V1.1.0)
+## 🎯 Funcionalidades (V1.2.0)
 
+- ✅ **Autenticação Segura**: Login e registro via Supabase Auth (Email/Senha).
+- ✅ **Isolamento de Dados**: Sistema multi-usuário com Row-Level Security (RLS) rigoroso.
+- ✅ **Perfil de Usuário**: Gerenciamento de conta, troca de senha e vínculo de Telegram.
+- ✅ **Migração Pilot-to-Auth**: Ferramenta automática para migrar dados da fase piloto para conta autenticada.
+- ✅ **Integração Telegram 2.0**: Vínculo seguro via token temporário e suporte multi-usuário no bot.
 - ✅ **Calendário Interativo**: Visualização mensal de doses tomadas com navegação e seleção de data.
 - ✅ **Histórico Completo**: Visualização detalhada integrada ao calendário com suporte a edições rápidas.
 - ✅ **Edição e Exclusão**: Flexibilidade total para ajustar registros passados com restauração automática de estoque.
 - ✅ **Registros Retroativos**: Registro de doses em qualquer data/hora com ajuste de fuso horário local.
-- ✅ **UX Unificada**: Experiência consistente entre Dashboard, Calendário e Modais.
-- ✅ **Ações Inteligentes**: Botões dinâmicos e registro em lote para planos de tratamento.
-- ✅ **Precisão Financeira**: Suporte a 3 casas decimais para controle rigoroso de custos.
-- ✅ **Dashboard Premium**: Interface Neo-Glass com indicadores live e saudações dinâmicas.
-- ✅ **Notificações via Telegram**: Lembretes em tempo real com botões interativos para registro de dose.
-- ✅ **Agendamento Inteligente**: Sistema de checagem a cada minuto via Vercel Cron.
-- ✅ **Garantia de Qualidade**: Suíte de testes unitários com Vitest.
+- ✅ **Dashboard Premium**: Interface Neo-Glass com saudações dinâmicas e indicadores em tempo real.
+- ✅ **Garantia de Qualidade**: Suíte de testes unitários com Vitest e linting rigoroso.
 
 ## 🚀 Roadmap Futuro
 
@@ -208,5 +207,5 @@ Para dúvidas ou problemas:
 
 ---
 
-**Versão**: 1.1.0 (Official Release)  
+**Versão**: 1.2.0 (Multi-User Auth)  
 **Última atualização**: Janeiro 2026

@@ -40,8 +40,18 @@ export async function handleStart(bot, msg) {
       .select()
       .single();
 
-    if (error || !linked) {
-      console.warn('Falha ao vincular:', error);
+    if (error) {
+      console.error('Database error during linking:', error);
+      // Check if it's an RLS issue or missing column
+      if (error.code === '42703') {
+        await bot.sendMessage(chatId, '❌ Erro técnico: Coluna de verificação não encontrada no banco. Execute o SQL de migração.');
+      } else {
+        await bot.sendMessage(chatId, '❌ Ops! Ocorreu um erro no banco de dados. Contate o suporte.');
+      }
+      return;
+    }
+
+    if (!linked) {
       await bot.sendMessage(chatId, '❌ Código inválido ou expirado. Por favor, gere um novo código no app.');
       return;
     }

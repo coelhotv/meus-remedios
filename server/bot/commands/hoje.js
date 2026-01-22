@@ -9,7 +9,7 @@ export async function handleHoje(bot, msg) {
     let userId;
     try {
       userId = await getUserIdByChatId(chatId);
-    } catch (e) {
+    } catch {
       return await bot.sendMessage(chatId, '⚠️ Você precisa vincular sua conta primeiro. Use /start para instruções.');
     }
 

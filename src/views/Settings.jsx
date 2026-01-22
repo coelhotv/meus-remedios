@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, signOut, getUserId, updatePassword } from '../lib/supabase'
-import { migrationService } from '../services/api'
+import { supabase, signOut, updatePassword } from '../lib/supabase'
 import Button from '../components/ui/Button'
 import Loading from '../components/ui/Loading'
 import './Settings.css'

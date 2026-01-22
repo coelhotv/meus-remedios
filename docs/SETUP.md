@@ -152,9 +152,10 @@ INSERT INTO user_settings (user_id) VALUES ('00000000-0000-0000-0000-00000000000
    VITE_SUPABASE_ANON_KEY=eyJ...
    ```
 
-3. Adicione também a configuração do Telegram (obtenha seu token com o [@BotFather](https://t.me/botfather)):
+3. Adicione também a configuração do Telegram (obtenha seu token com o [@BotFather](https://t.me/botfather)) e a chave master do Supabase (para o Bot):
    ```
    TELEGRAM_BOT_TOKEN=seu_token_aqui
+   SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key_aqui
    ```
 
 4. Salve o arquivo
