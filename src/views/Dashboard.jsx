@@ -250,7 +250,7 @@ export default function Dashboard({ onNavigate }) {
           onClick={() => onNavigate('settings')}
           style={{ cursor: 'pointer' }}
         >
-          <img src="/logo.png" className="avatar-logo" alt="Logo" />
+          <img src="/logo-new.svg" className="avatar-logo" alt="Logo" />
         </div>
       </header>
 

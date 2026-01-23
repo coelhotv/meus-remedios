@@ -41,7 +41,7 @@
 .avatar-logo {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: 25%;
   object-fit: cover;
   box-shadow: 0 0 15px rgba(0, 114, 255, 0.4);
   border: 2px solid rgba(255,255,255,0.15);

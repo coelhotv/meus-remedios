@@ -47,7 +47,7 @@ export default function Auth({ onAuthSuccess }) {
       <div className="auth-card glass-card">
         <div className="auth-header">
           <div className="logo-container">
-            <img src="/logo.png" alt="Meus Remédios" className="auth-logo" />
+            <img src="/logo-new.svg" alt="Meus Remédios" className="auth-logo" />
           </div>
           <h1>{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</h1>
           <p className="auth-subtitle">

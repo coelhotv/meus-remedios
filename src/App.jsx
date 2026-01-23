@@ -11,6 +11,7 @@ import Settings from './views/Settings'
 import TestConnection from './components/TestConnection'
 import BottomNav from './components/BottomNav'
 import Loading from './components/ui/Loading'
+import Landing from './views/Landing'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -19,6 +20,7 @@ function App() {
   const [showDebug, setShowDebug] = useState(false)
   const [initialProtocolParams, setInitialProtocolParams] = useState(null)
   const [initialStockParams, setInitialStockParams] = useState(null)
+  const [showAuth, setShowAuth] = useState(false) // toggles auth UI for unauthenticated visitors
 
   useEffect(() => {
     // Check initial session
@@ -43,6 +45,11 @@ function App() {
     setCurrentView('protocols')
   }
 
+  const navigateToStock = (medicineId) => {
+    setInitialStockParams({ medicineId })
+    setCurrentView('stock')
+  }
+
   if (isLoading) {
     return (
       <div className="app-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -51,17 +58,27 @@ function App() {
     )
   }
 
-  if (!session) {
-    return <Auth onAuthSuccess={() => {}} />
-  }
-
-  const navigateToStock = (medicineId) => {
-    setInitialStockParams({ medicineId })
-    setCurrentView('stock')
-  }
-
   const renderCurrentView = () => {
+    if (!session) {
+      return showAuth ? (
+        <Auth onAuthSuccess={() => { setShowAuth(false); setCurrentView('landing') }} />
+      ) : (
+        <Landing
+          isAuthenticated={false}
+          onOpenAuth={() => setShowAuth(true)}
+        />
+      )
+    }
+
     switch (currentView) {
+      case 'landing':
+        return (
+          <Landing
+            isAuthenticated={!!session}
+            onOpenAuth={() => setShowAuth(true)}
+            onContinue={() => setCurrentView('dashboard')}
+          />
+        )
       case 'medicines':
         return <Medicines onNavigateToProtocol={navigateToProtocol} />
       case 'stock':
@@ -116,7 +133,7 @@ function App() {
           color: 'var(--text-tertiary)',
           fontSize: 'var(--font-size-sm)'
         }}>
-          <span 
+{/*           <span 
             onClick={() => setShowDebug(!showDebug)} 
             style={{ 
               cursor: 'pointer', 
@@ -128,7 +145,7 @@ function App() {
           >
             {showDebug ? '[-] hide debug' : '[+] check system'}
           </span>
-        </footer>
+ */}        </footer>
       </main>
 
       <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
