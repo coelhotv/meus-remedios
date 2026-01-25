@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { medicineService } from '../services/api'
+import { medicineService, protocolService, stockService } from '../services/api' // Import protocolService and stockService
 import Button from '../components/ui/Button'
 import Loading from '../components/ui/Loading'
 import Modal from '../components/ui/Modal'
@@ -15,6 +15,7 @@ export default function Medicines({ onNavigateToProtocol }) {
   const [editingMedicine, setEditingMedicine] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [filterType, setFilterType] = useState('all') // 'all', 'medicine', 'supplement'
+  const [medicineDependencies, setMedicineDependencies] = useState({}) // { medicineId: { hasProtocols: boolean, hasStock: boolean } }
 
 
   const loadMedicines = async () => {
@@ -23,6 +24,9 @@ export default function Medicines({ onNavigateToProtocol }) {
       setError(null)
       const data = await medicineService.getAll()
       setMedicines(data)
+
+      // Load dependencies
+      await loadDependencies(data)
     } catch (err) {
       setError('Erro ao carregar medicamentos: ' + err.message)
       console.error(err)
@@ -30,6 +34,22 @@ export default function Medicines({ onNavigateToProtocol }) {
       setIsLoading(false)
     }
   }
+
+  const loadDependencies = async (medicines) => {
+    const dependencies = {};
+    for (const medicine of medicines) {
+      const [protocols, stock] = await Promise.all([
+        protocolService.getByMedicineId(medicine.id),
+        stockService.getByMedicine(medicine.id),
+      ]);
+      dependencies[medicine.id] = {
+        hasProtocols: protocols.length > 0,
+        hasStock: stock.length > 0,
+      };
+    }
+    setMedicineDependencies(dependencies);
+  };
+
 
   useEffect(() => {
     loadMedicines()
@@ -53,7 +73,7 @@ export default function Medicines({ onNavigateToProtocol }) {
       } else {
         const newMedicine = await medicineService.create(medicineData)
         showSuccess('Medicamento cadastrado com sucesso!')
-        
+
         // UX: Offer to create a protocol immediately
         if (window.confirm('✨ Medicamento criado! Deseja criar um protocolo de uso para ele agora?')) {
           if (onNavigateToProtocol) {
@@ -62,7 +82,7 @@ export default function Medicines({ onNavigateToProtocol }) {
           }
         }
       }
-      
+
       setIsModalOpen(false)
       setEditingMedicine(null)
       await loadMedicines()
@@ -72,6 +92,16 @@ export default function Medicines({ onNavigateToProtocol }) {
   }
 
   const handleDelete = async (medicine) => {
+    const hasDependencies = medicineDependencies[medicine.id]?.hasProtocols || medicineDependencies[medicine.id]?.hasStock;
+
+    if (hasDependencies) {
+      const confirmation = window.confirm(
+        `Este medicamento possui${medicineDependencies[medicine.id].hasProtocols ? 'protocolos e' : ''} ${medicineDependencies[medicine.id].hasStock ? 'estoque' : ''} associado(s).\nTem certeza que deseja excluí-lo?`
+      );
+      if (!confirmation) {
+        return;
+      }
+    }
     if (!window.confirm(`Tem certeza que deseja excluir "${medicine.name}"?`)) {
       return
     }
@@ -114,22 +144,22 @@ export default function Medicines({ onNavigateToProtocol }) {
       </div>
 
       <div className="filter-tabs" style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
-        <Button 
-          variant={filterType === 'all' ? 'primary' : 'outline'} 
+        <Button
+          variant={filterType === 'all' ? 'primary' : 'outline'}
           onClick={() => setFilterType('all')}
           size="sm"
         >
           Todos
         </Button>
-        <Button 
-          variant={filterType === 'medicine' ? 'primary' : 'outline'} 
+        <Button
+          variant={filterType === 'medicine' ? 'primary' : 'outline'}
           onClick={() => setFilterType('medicine')}
           size="sm"
         >
           Medicamentos
         </Button>
-        <Button 
-          variant={filterType === 'supplement' ? 'primary' : 'outline'} 
+        <Button
+          variant={filterType === 'supplement' ? 'primary' : 'outline'}
           onClick={() => setFilterType('supplement')}
           size="sm"
         >
@@ -162,14 +192,18 @@ export default function Medicines({ onNavigateToProtocol }) {
         <div className="medicines-grid">
           {medicines
             .filter(m => filterType === 'all' || m.type === filterType)
-            .map(medicine => (
-            <MedicineCard
-              key={medicine.id}
-              medicine={medicine}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+            .map(medicine => {
+              const hasDependencies = medicineDependencies[medicine.id]?.hasProtocols || medicineDependencies[medicine.id]?.hasStock;
+              return (
+                <MedicineCard
+                  key={medicine.id}
+                  medicine={medicine}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  hasDependencies={hasDependencies} // Pass this prop to MedicineCard
+                />
+              );
+            })}
         </div>
       )}
 

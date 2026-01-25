@@ -1,3 +1,4 @@
+/* MedicineCard.css */
 .medicine-card {
   display: flex;
   flex-direction: column;
@@ -7,7 +8,9 @@
 
 .medicine-header {
   display: flex;
-  flex-direction: column;
+  /*flex-direction: column;*/ /* Modified */
+  justify-content: space-between;
+  align-items: center; /* Added */
   gap: var(--space-2);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-color);
@@ -24,6 +27,13 @@
   font-size: var(--font-size-sm);
   color: var(--accent-primary);
   font-weight: 500;
+}
+
+/* Dependency indicator styling */
+.dependency-indicator {
+  color: orange;
+  font-size: 1.2em;
+  margin-left: var(--space-2); /* Add some spacing */
 }
 
 .medicine-details {

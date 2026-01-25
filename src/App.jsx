@@ -58,6 +58,8 @@ function App() {
     )
   }
 
+  const isAuthenticated = !!session;
+
   const renderCurrentView = () => {
     if (!session) {
       return showAuth ? (
@@ -74,7 +76,7 @@ function App() {
       case 'landing':
         return (
           <Landing
-            isAuthenticated={!!session}
+            isAuthenticated={isAuthenticated}
             onOpenAuth={() => setShowAuth(true)}
             onContinue={() => setCurrentView('dashboard')}
           />
@@ -148,7 +150,7 @@ function App() {
  */}        </footer>
       </main>
 
-      <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
+      {isAuthenticated && <BottomNav currentView={currentView} setCurrentView={setCurrentView} />}
     </div>
   )
 }

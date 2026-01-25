@@ -217,6 +217,18 @@ export const protocolService = {
     if (error) throw error
   },
 
+  //  API method fetches all protocols associated with a given medicine IDs
+  async getByMedicineId(medicineId) {
+    const { data, error } = await supabase
+      .from('protocols')
+      .select(`*`)
+      .eq('medicine_id', medicineId)
+      .eq('user_id', await getUserId());
+
+    if (error) throw error;
+    return data;
+  },
+
   /**
    * Advance to the next titration stage
    * @param {string} id - Protocol ID
