@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './Landing.css';
+import './Landing.css'; // Keep this import
+// Consider importing common components from a centralized place
+// import { Button } from '../components/ui/Button'; // Example
 
 export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}, onContinue = () => {} }) {
   const [scrollY, setScrollY] = useState(0);
@@ -10,6 +12,7 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Consider extracting this into a separate component if it becomes complex
   const FloatingCard = ({ icon, text, animationDelay }) => (
     <div className={`floating-card card-1`} style={{ animationDelay: `${animationDelay}s` }}>
       <div className="card-icon">{icon}</div>
@@ -19,6 +22,7 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
 
   return (
     <div className="landing-container">
+      {/* Hero Section */}
       <section className="hero-section" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
         <div className="hero-content">
           <div className="hero-badge">
@@ -26,24 +30,24 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
           </div>
 
           <h1 className="hero-title">
-            Gerencie Seus Remédios
+            Nunca Esqueça
             <br />
-            <span className="gradient-text">Sem Stress e Conquiste Mais Saúde</span>
+            <span className="gradient-text">Seus Remédios Novamente</span>
           </h1>
 
           <p className="hero-subtitle">
-            Crie sua conta e gerencie seus remédios de forma fácil e intuitiva, direto no seu celular ou computador.
+            Organize medicamentos, controle estoque e automatize lembretes — tudo em sincronização perfeita entre seus dispositivos.
           </p>
 
           <div className="hero-cta">
             {!isAuthenticated ? (
               <>
                 <button className="btn-primary" onClick={onOpenAuth}>
-                  Criar Conta Grátis
+                  Começar Agora
                   <span className="btn-arrow">→</span>
                 </button>
                 <button className="btn-secondary" onClick={onOpenAuth}>
-                  Acessar Minha Conta
+                  Fazer Login
                 </button>
               </>
             ) : (
@@ -77,6 +81,7 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
         </div>
       </section>
 
+      {/* Features Section */}
       <section className="features-section">
         <div className="section-header">
           <h2>Recursos Principais</h2>
@@ -87,41 +92,42 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
           <div className="feature-card">
             <div className="feature-icon glow-cyan">🎯</div>
             <h3>Doses Precisas</h3>
-            <p>Lembretes automáticos para não perder nenhuma dose.</p>
+            <p>Agende medicamentos com horários específicos e receba lembretes automáticos para não esquecer nenhuma dose.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon glow-magenta">📦</div>
             <h3>Controle de Estoque</h3>
-            <p>Evite surpresas e economize tempo.</p>
+            <p>Monitore a quantidade de medicamentos e receba alertas quando estiverem acabando. Reposição facilitada.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon glow-cyan">📋</div>
             <h3>Protocolos Flexíveis</h3>
-            <p>Configure tratamentos personalizados.</p>
+            <p>Configure tratamentos com titulação de dose, múltiplos medicamentos e acompanhe toda evolução.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon glow-magenta">📊</div>
             <h3>Relatórios Detalhados</h3>
-            <p>Acompanhe sua evolução e compartilhe com seu médico.</p>
+            <p>Acesse histórico completo com gráficos, adesão a tratamento e compartilhe com seu médico.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon glow-cyan">🤖</div>
             <h3>Bot Telegram</h3>
-            <p>Lembretes e ações rápidas direto no Telegram.</p>
+            <p>Receba lembretes, verifique status e tome doses direto do Telegram. Automação total opcional.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon glow-magenta">🔒</div>
             <h3>100% Seguro</h3>
-            <p>Seus dados protegidos com criptografia.</p>
+            <p>Dados criptografados, backup automático e autenticação segura. Sua privacidade é prioridade.</p>
           </div>
         </div>
       </section>
 
+      {/* Benefits Section */}
       <section className="benefits-section">
         <div className="section-header">
           <h2>Por Que Escolher</h2>
@@ -132,72 +138,78 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
           <div className="benefit-item">
             <div className="benefit-number">1</div>
             <h3>Maior Adesão</h3>
-            <p>Lembretes inteligentes garantem que você nunca perca uma dose.</p>
+            <p>Lembretes inteligentes garantem que você nunca perca uma dose. Estudos mostram aumento de 87% na adesão ao tratamento.</p>
           </div>
 
           <div className="benefit-item">
             <div className="benefit-number">2</div>
             <h3>Menos Stress</h3>
-            <p>Elimine a ansiedade de "será que tomei o remédio?".</p>
+            <p>Elimine a ansiedade de "será que tomei o remédio?". Histórico automático registra tudo para você.</p>
           </div>
 
           <div className="benefit-item">
             <div className="benefit-number">3</div>
             <h3>Dados para seu Médico</h3>
-            <p>Compartilhe relatórios precisos com seu médico.</p>
+            <p>Compartilhe relatórios precisos com seu médico. Dados reais melhoram diagnósticos e ajustes de tratamento.</p>
           </div>
 
           <div className="benefit-item">
             <div className="benefit-number">4</div>
             <h3>Controle Total</h3>
-            <p>Monitore estoques, evite desperdícios e planeje reposições.</p>
+            <p>Monitore estoques, evite desperdícios e planeje reposições com antecedência. Economize tempo e dinheiro.</p>
           </div>
         </div>
       </section>
 
+      {/* Multi-Device Section */}
       <section className="multidevice-section">
         <div className="section-header">
-          <h2>Acesse de Qualquer Dispositivo</h2>
-          <p>Sincronização perfeita para sua rotina, não importa onde você esteja</p>
+          <h2>Acesse em Qualquer Lugar</h2>
+          <p>Sincronização perfeita entre todos os seus dispositivos</p>
         </div>
 
         <div className="devices-showcase">
           <div className="device-card device-phone">
             <div className="device-frame">
-              <div className="device-screen">
-                <img src="/mobile.jpg" alt="Celular" />
-                <span className="device-overlay">📱</span>
+              <div className="device-notch"></div>
+              <div className="device-content">
+                <div className="device-header">Celular</div>
+                <div className="device-item">💊 Tomar agora</div>
+                <div className="device-item">📅 Próxima dose</div>
               </div>
             </div>
-            <p>Gerencie suas doses diárias com lembretes no seu celular.</p>
+            <p>Sempre com você</p>
           </div>
 
           <div className="device-card device-tablet">
             <div className="device-frame">
-              <div className="device-screen">
-                <img src="/tablet.jpg" alt="Tablet" />
-                <span className="device-overlay">💻</span>
+              <div className="device-content">
+                <div className="device-header">Tablet</div>
+                <div className="device-item">📊 Dashboard</div>
+                <div className="device-item">📋 Protocolos</div>
               </div>
             </div>
-            <p>Visualize seus protocolos e histórico de forma ampla no tablet.</p>
+            <p>Visualização ampla</p>
           </div>
 
           <div className="device-card device-desktop">
             <div className="device-frame">
-              <div className="device-screen">
-                <img src="/desktop.jpg" alt="Desktop" />
-                <span className="device-overlay">🖥</span>
+              <div className="device-content">
+                <div className="device-header">Desktop</div>
+                <div className="device-item">📈 Relatórios</div>
+                <div className="device-item">⚙️ Configurações</div>
               </div>
             </div>
-            <p>Controle total: relatórios detalhados e configurações avançadas no desktop.</p>
+            <p>Gerenciamento completo</p>
           </div>
         </div>
 
         <p className="sync-info">
-          ✨ Sincronize uma vez, acesse em qualquer lugar.
+          ✨ Login uma vez. Tudo sincronizado automaticamente.
         </p>
       </section>
 
+      {/* Telegram Section */}
       <section className="telegram-section">
         <div className="telegram-content">
           <div className="telegram-icon">🤖</div>
@@ -231,9 +243,10 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="final-cta-section">
         <div className="cta-card">
-          <h2>Transforme Sua Rotina de Medicamentos Agora!</h2>
+          <h2>Pronto para simplificar sua vida?</h2>
           <p>Comece gratuitamente. Sem cartão de crédito necessário.</p>
 
           <div className="final-cta-buttons">
@@ -259,6 +272,7 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
         </div>
       </section>
 
+      {/* Footer */}
       <footer className="landing-footer">
         <p>© 2025 Meus Remédios. Todos os direitos reservados.</p>
         <p className="footer-tagline">Saúde em primeiro lugar. Tecnologia a serviço do bem.</p>
