@@ -154,7 +154,6 @@
 
 .floating-card {
   position: absolute;
-  glass-card;
   background: var(--bg-glass);
   border: 1px solid rgba(0, 229, 255, 0.2);
   backdrop-filter: blur(10px);
@@ -236,7 +235,6 @@
 }
 
 .feature-card {
-  glass-card;
   background: rgba(18, 18, 24, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
@@ -546,7 +544,6 @@
 }
 
 .cta-card {
-  glass-card;
   background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(213, 0, 249, 0.1));
   border: 2px solid rgba(0, 229, 255, 0.3);
   border-radius: var(--radius-xl);

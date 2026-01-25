@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from 'react'
-import './Landing.css'
+import React, { useState, useEffect } from 'react';
+import './Landing.css'; // Keep this import
+// Consider importing common components from a centralized place
+// import { Button } from '../components/ui/Button'; // Example
 
 export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}, onContinue = () => {} }) {
-  const [scrollY, setScrollY] = useState(0)
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Consider extracting this into a separate component if it becomes complex
+  const FloatingCard = ({ icon, text, animationDelay }) => (
+    <div className={`floating-card card-1`} style={{ animationDelay: `${animationDelay}s` }}>
+      <div className="card-icon">{icon}</div>
+      <div className="card-text">{text}</div>
+    </div>
+  );
 
   return (
     <div className="landing-container">
@@ -18,13 +28,13 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
           <div className="hero-badge">
             <span>✨ Gerenciamento de Medicamentos Inteligente</span>
           </div>
-          
+
           <h1 className="hero-title">
             Nunca Esqueça
             <br />
             <span className="gradient-text">Seus Remédios Novamente</span>
           </h1>
-          
+
           <p className="hero-subtitle">
             Organize medicamentos, controle estoque e automatize lembretes — tudo em sincronização perfeita entre seus dispositivos.
           </p>
@@ -65,18 +75,9 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
         </div>
 
         <div className="hero-visual">
-          <div className="floating-card card-1">
-            <div className="card-icon">💊</div>
-            <div className="card-text">Medicamento</div>
-          </div>
-          <div className="floating-card card-2">
-            <div className="card-icon">📅</div>
-            <div className="card-text">Agenda</div>
-          </div>
-          <div className="floating-card card-3">
-            <div className="card-icon">📊</div>
-            <div className="card-text">Histórico</div>
-          </div>
+          <FloatingCard icon="💊" text="Medicamento" animationDelay={0} />
+          <FloatingCard icon="📅" text="Agenda" animationDelay={0.5} />
+          <FloatingCard icon="📊" text="Histórico" animationDelay={1} />
         </div>
       </section>
 
@@ -247,7 +248,7 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
         <div className="cta-card">
           <h2>Pronto para simplificar sua vida?</h2>
           <p>Comece gratuitamente. Sem cartão de crédito necessário.</p>
-          
+
           <div className="final-cta-buttons">
             {!isAuthenticated ? (
               <>
@@ -277,5 +278,5 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
         <p className="footer-tagline">Saúde em primeiro lugar. Tecnologia a serviço do bem.</p>
       </footer>
     </div>
-  )
+  );
 }
