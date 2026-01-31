@@ -220,6 +220,7 @@ Para dúvidas ou problemas:
 - ✅ **Adicionado**: Validação de token do Telegram na inicialização
 - ✅ **Melhorado**: Tratamento de erros nos comandos do bot
 - ✅ **Melhorado**: Cache de protocolos por usuário
+- ✅ **Configuração**: Compatível com cron-job.org (GET requests com Authorization header)
 
 ### v2.0.0 - Multi-User Auth (Janeiro 2026)
 - ✅ Autenticação segura via Supabase Auth

@@ -39,6 +39,11 @@ function createNotifyBotAdapter(token) {
 export default async function handler(req, res) {
   logger.info('Cron job triggered', { method: req.method, url: req.url });
 
+  // Accept both GET (from cron-job.org) and POST (for compatibility)
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed. Use GET or POST.' });
+  }
+
   // Protection against unauthorized calls
   const authHeader = req.headers['authorization'];
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
