@@ -86,7 +86,7 @@ export async function getUserSettings(userId, useCache = true) {
       .from('user_settings')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
