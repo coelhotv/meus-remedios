@@ -2,8 +2,22 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/telegram",
+      "destination": "/api/telegram.js"
+    },
+    {
+      "source": "/api/notify",
+      "destination": "/api/notify.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/notify",
+      "schedule": "*/1 * * * *"
     }
   ]
 }

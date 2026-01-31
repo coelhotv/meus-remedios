@@ -1,60 +1,81 @@
+import { supabase } from './supabase.js';
+import { createLogger } from '../bot/logger.js';
 
-import { supabase, MOCK_USER_ID } from './supabase.js';
+const logger = createLogger('ProtocolCache');
 
-// In-memory cache with TTL
+// In-memory cache com TTL por usuário
 const cache = new Map();
-const CACHE_TTL_SECONDS = 30; // Cache protocols for 30 seconds
+const CACHE_TTL_SECONDS = 30;
+
+function getCacheKey(userId, type) {
+  return `${type}:${userId}`;
+}
 
 /**
- * Get active protocols with optional cache
+ * Get active protocols for a specific user
+ * @param {string} userId - User UUID
  * @param {boolean} useCache - Whether to use cached results
  * @returns {Promise<array>} Array of protocols with medicine details
  */
-export async function getActiveProtocols(useCache = true) {
-  const cacheKey = `protocols:${MOCK_USER_ID}`;
+export async function getActiveProtocols(userId, useCache = true) {
+  if (!userId) {
+    logger.error('getActiveProtocols called without userId');
+    return [];
+  }
+
+  const cacheKey = getCacheKey(userId, 'protocols');
 
   // Check cache
   if (useCache && cache.has(cacheKey)) {
     const { data, timestamp } = cache.get(cacheKey);
     if (Date.now() - timestamp < CACHE_TTL_SECONDS * 1000) {
+      logger.debug(`Cache hit for protocols`, { userId });
       return data;
     }
-    cache.delete(cacheKey); // Expired
+    cache.delete(cacheKey);
   }
 
   try {
     const { data, error } = await supabase
       .from('protocols')
       .select('*, medicine:medicines(*)')
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .eq('active', true);
 
     if (error) throw error;
 
     // Store in cache
     cache.set(cacheKey, {
-      data,
+      data: data || [],
       timestamp: Date.now()
     });
 
-    return data;
+    logger.debug(`Protocols fetched`, { userId, count: data?.length || 0 });
+    return data || [];
   } catch (err) {
-    console.error('[ProtocolCache] Error fetching protocols:', err);
+    logger.error(`Error fetching protocols`, err, { userId });
     return [];
   }
 }
 
 /**
  * Get user settings
+ * @param {string} userId - User UUID
  * @param {boolean} useCache - Whether to use cached results
  * @returns {Promise<object>} User settings
  */
-export async function getUserSettings(useCache = true) {
-  const cacheKey = `settings:${MOCK_USER_ID}`;
+export async function getUserSettings(userId, useCache = true) {
+  if (!userId) {
+    logger.error('getUserSettings called without userId');
+    return null;
+  }
+
+  const cacheKey = getCacheKey(userId, 'settings');
 
   if (useCache && cache.has(cacheKey)) {
     const { data, timestamp } = cache.get(cacheKey);
     if (Date.now() - timestamp < CACHE_TTL_SECONDS * 1000) {
+      logger.debug(`Cache hit for settings`, { userId });
       return data;
     }
     cache.delete(cacheKey);
@@ -64,7 +85,7 @@ export async function getUserSettings(useCache = true) {
     const { data, error } = await supabase
       .from('user_settings')
       .select('*')
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .single();
 
     if (error) throw error;
@@ -74,27 +95,73 @@ export async function getUserSettings(useCache = true) {
       timestamp: Date.now()
     });
 
+    logger.debug(`Settings fetched`, { userId });
     return data;
   } catch (err) {
-    console.error('[ProtocolCache] Error fetching settings:', err);
+    logger.error(`Error fetching settings`, err, { userId });
     return null;
   }
 }
 
 /**
- * Invalidate cache (call after mutations)
+ * Get all users with Telegram integration enabled
+ * @returns {Promise<array>} Array of user settings
  */
-export function invalidateCache() {
+export async function getAllUsersWithTelegram() {
+  try {
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('user_id, telegram_chat_id, timezone')
+      .not('telegram_chat_id', 'is', null);
+
+    if (error) throw error;
+
+    logger.debug(`Fetched users with Telegram`, { count: data?.length || 0 });
+    return data || [];
+  } catch (err) {
+    logger.error(`Error fetching users with Telegram`, err);
+    return [];
+  }
+}
+
+/**
+ * Invalidate cache for a user
+ * @param {string} userId - User UUID
+ */
+export function invalidateUserCache(userId) {
+  const keysToDelete = [];
+  for (const key of cache.keys()) {
+    if (key.endsWith(`:${userId}`)) {
+      keysToDelete.push(key);
+    }
+  }
+  
+  keysToDelete.forEach(key => cache.delete(key));
+  logger.debug(`Cache invalidated for user`, { userId, keysDeleted: keysToDelete.length });
+}
+
+/**
+ * Invalidate all cache
+ */
+export function invalidateAllCache() {
   cache.clear();
-  console.log('[ProtocolCache] Cache invalidated');
+  logger.info('All cache invalidated');
 }
 
 /**
  * Get cache statistics
  */
 export function getCacheStats() {
-  return {
+  const stats = {
     size: cache.size,
-    keys: Array.from(cache.keys())
+    keys: Array.from(cache.keys()),
+    entriesByType: {}
   };
+
+  for (const key of cache.keys()) {
+    const type = key.split(':')[0];
+    stats.entriesByType[type] = (stats.entriesByType[type] || 0) + 1;
+  }
+
+  return stats;
 }

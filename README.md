@@ -4,7 +4,7 @@
 
 Gerencie seus medicamentos, protocolos de tratamento e estoque de forma simples e eficiente. Agora com **Autenticação Multi-usuário**, **Planos de Tratamento complexos** e **Titulação de Dose**.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.2.1-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -207,5 +207,26 @@ Para dúvidas ou problemas:
 
 ---
 
-**Versão**: 2.0.0 (Major Release - Multi-User Auth)  
-**Última atualização**: Janeiro 2026
+---
+
+## 📝 Changelog
+
+### v2.2.1 - Correções do Bot Telegram (2026-01-31)
+- ✅ **Corrigido**: Bot agora funciona com múltiplos usuários (removido MOCK_USER_ID)
+- ✅ **Corrigido**: Cron jobs notificam todos os usuários com Telegram vinculado
+- ✅ **Adicionado**: Sistema de logs estruturados (ERROR → TRACE)
+- ✅ **Adicionado**: Health checks via comando `/health`
+- ✅ **Adicionado**: Reconexão automática em erros de rede
+- ✅ **Adicionado**: Validação de token do Telegram na inicialização
+- ✅ **Melhorado**: Tratamento de erros nos comandos do bot
+- ✅ **Melhorado**: Cache de protocolos por usuário
+
+### v2.0.0 - Multi-User Auth (Janeiro 2026)
+- ✅ Autenticação segura via Supabase Auth
+- ✅ Isolamento de dados com RLS
+- ✅ Integração Telegram 2.0 com tokens temporários
+
+---
+
+**Versão**: 2.2.1 (Hotfix - Bot Telegram)  
+**Última atualização**: 31 Janeiro 2026

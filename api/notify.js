@@ -1,3 +1,4 @@
+import { createLogger } from '../server/bot/logger.js';
 import { 
   checkReminders, 
   runDailyDigest,
@@ -7,8 +8,7 @@ import {
   checkMonthlyReport 
 } from '../server/bot/tasks.js';
 
-// --- Configuration ---
-const token = process.env.TELEGRAM_BOT_TOKEN;
+const logger = createLogger('CronNotify');
 
 // --- Bot Adapter (Minimal for Notifications) ---
 function createNotifyBotAdapter(token) {
@@ -21,11 +21,11 @@ function createNotifyBotAdapter(token) {
       });
       const data = await res.json();
       if (!data.ok) {
-        console.error(`Telegram API Error (${method}):`, data);
+        logger.error(`Telegram API Error (${method})`, null, { error: data });
       }
       return data.result;
     } catch (err) {
-      console.error(`Fetch Error (${method}):`, err);
+      logger.error(`Fetch Error (${method})`, err);
     }
   };
 
@@ -37,14 +37,19 @@ function createNotifyBotAdapter(token) {
 }
 
 export default async function handler(req, res) {
+  logger.info('Cron job triggered', { method: req.method, url: req.url });
+
   // Protection against unauthorized calls
   const authHeader = req.headers['authorization'];
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    logger.warn('Unauthorized cron attempt', { authHeader });
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
-    return res.status(200).json({ error: 'Token missing' });
+    logger.error('TELEGRAM_BOT_TOKEN not configured');
+    return res.status(500).json({ error: 'Token missing' });
   }
 
   const bot = createNotifyBotAdapter(token);
@@ -55,24 +60,25 @@ export default async function handler(req, res) {
   
   const currentHour = spDate.getHours();
   const currentMinute = spDate.getMinutes();
-  const currentDay = spDate.getDate(); // 1-31
-  const currentWeekDay = spDate.getDay(); // 0 (Sun) - 6 (Sat)
+  const currentDay = spDate.getDate();
+  const currentWeekDay = spDate.getDay();
   
   const currentHHMM = spDate.toLocaleTimeString('pt-BR', {
     hour: '2-digit', minute: '2-digit', hour12: false
   });
 
-  console.log(`[Notify] Executing cron for ${currentHHMM} (Server time: ${now.toISOString()})`);
+  logger.info(`Executing cron jobs`, { 
+    time: currentHHMM, 
+    hour: currentHour, 
+    minute: currentMinute,
+    day: currentDay,
+    weekday: currentWeekDay 
+  });
 
   const results = [];
 
   try {
     // 1. Always check dose reminders (Every minute)
-    // Note: checkReminders inside calculates time again, but that's fine as long as server time matches or we rely on it.
-    // However, server/bot/checkReminders uses `getCurrentTime()` which uses `new Date()`. 
-    // Vercel server time is usually UTC. 
-    // If `utils/formatters.js` `getCurrentTime` doesn't handle timezone, we might have issues.
-    // Let's verify utils/formatters.js later. For now, we assume it works or we might need to patch it.
     await checkReminders(bot);
     results.push('reminders');
 
@@ -106,14 +112,16 @@ export default async function handler(req, res) {
       results.push('monthly_report');
     }
 
+    logger.info('Cron jobs completed', { executed: results });
+
     res.status(200).json({ 
       status: 'ok', 
       executed: results,
-      time: currentHHMM
+      time: currentHHMM 
     });
     
   } catch (error) {
-    console.error('Notify Error:', error);
+    logger.error('Cron job failed', error);
     res.status(500).json({ error: error.message });
   }
 }
