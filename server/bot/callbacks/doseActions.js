@@ -121,10 +121,22 @@ async function handleTakeDose(bot, callbackQuery) {
       }
     }
 
+    // Add quick action buttons
+    const quickActions = {
+      inline_keyboard: [
+        [
+          { text: '📊 Ver Status', callback_data: 'quick_status' },
+          { text: '📦 Ver Estoque', callback_data: 'quick_stock' }
+        ],
+        [{ text: '📝 Registrar Outra', callback_data: 'quick_register' }]
+      ]
+    };
+
     await bot.editMessageText(confirmMsg, {
       chat_id: chatId,
       message_id: message.message_id,
-      parse_mode: 'Markdown'
+      parse_mode: 'Markdown',
+      reply_markup: quickActions
     });
     
     await bot.answerCallbackQuery(id, { text: 'Dose registrada!' });
