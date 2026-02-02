@@ -32,6 +32,12 @@ export async function handleConversationalCallbacks(bot) {
       await handleProtocolCallback(bot, callbackQuery);
     } else if (data.startsWith('conv_cancel')) {
       await handleCancel(bot, callbackQuery);
+    } else if (data === 'quick_status') {
+      await handleQuickStatus(bot, callbackQuery);
+    } else if (data === 'quick_stock') {
+      await handleQuickStock(bot, callbackQuery);
+    } else if (data === 'quick_register') {
+      await handleQuickRegister(bot, callbackQuery);
     }
   });
 
@@ -270,4 +276,38 @@ async function processDoseRegistration(bot, chatId, protocolId, medicineId, quan
     
     bot.sendMessage(chatId, '❌ Erro ao registrar a dose. Tente novamente.');
   }
+}
+
+// Quick action handlers
+async function handleQuickStatus(bot, callbackQuery) {
+  const { message, id } = callbackQuery;
+  const chatId = message.chat.id;
+  
+  await bot.answerCallbackQuery(id);
+  
+  // Import and call status handler
+  const { handleStatus } = await import('../commands/status.js');
+  await handleStatus(bot, { chat: { id: chatId } });
+}
+
+async function handleQuickStock(bot, callbackQuery) {
+  const { message, id } = callbackQuery;
+  const chatId = message.chat.id;
+  
+  await bot.answerCallbackQuery(id);
+  
+  // Import and call stock handler
+  const { handleEstoque } = await import('../commands/estoque.js');
+  await handleEstoque(bot, { chat: { id: chatId } });
+}
+
+async function handleQuickRegister(bot, callbackQuery) {
+  const { message, id } = callbackQuery;
+  const chatId = message.chat.id;
+  
+  await bot.answerCallbackQuery(id);
+  
+  // Import and call register handler
+  const { handleRegistrar } = await import('../commands/registrar.js');
+  await handleRegistrar(bot, { chat: { id: chatId } });
 }
