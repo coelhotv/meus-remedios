@@ -1,4 +1,5 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
+import { getUserIdByChatId } from '../../services/userService.js';
 import { setSession } from '../state.js';
 
 // Helper function to fetch medicines
@@ -25,7 +26,8 @@ export async function handleAdicionarEstoque(bot, msg) {
   const chatId = msg.chat.id;
 
   try {
-    const medicines = await fetchMedicines(MOCK_USER_ID);
+    const userId = await getUserIdByChatId(chatId);
+    const medicines = await fetchMedicines(userId);
 
     if (!medicines || medicines.length === 0) {
       return bot.sendMessage(chatId, 'Você não possui medicamentos cadastrados. Use o app web para cadastrar.');
@@ -49,6 +51,9 @@ export async function handleAdicionarEstoque(bot, msg) {
     });
 
   } catch (err) {
+    if (err.message === 'User not linked') {
+      return bot.sendMessage(chatId, '❌ Conta não vinculada. Use /start para vincular.');
+    }
     console.error('Erro ao iniciar adição de estoque:', err);
     bot.sendMessage(chatId, '❌ Ocorreu um erro ao buscar seus medicamentos.');
   }
@@ -64,7 +69,8 @@ export async function handleReporShortcut(bot, msg, match) {
   }
 
   try {
-    const medicines = await fetchMedicines(MOCK_USER_ID, medicineName);
+    const userId = await getUserIdByChatId(chatId);
+    const medicines = await fetchMedicines(userId, medicineName);
 
     if (!medicines || medicines.length === 0) {
       return bot.sendMessage(chatId, `❌ Medicamento "${medicineName}" não encontrado.`);
@@ -81,20 +87,23 @@ export async function handleReporShortcut(bot, msg, match) {
     }
 
     // Single match, add immediately
-    await processAddStock(bot, chatId, medicines[0].id, quantity, medicines[0].name);
+    await processAddStock(bot, chatId, userId, medicines[0].id, quantity, medicines[0].name);
 
   } catch (err) {
+    if (err.message === 'User not linked') {
+      return bot.sendMessage(chatId, '❌ Conta não vinculada. Use /start para vincular.');
+    }
     console.error('Erro no atalho de repor:', err);
     bot.sendMessage(chatId, '❌ Ocorreu um erro ao processar sua solicitação.');
   }
 }
 
-export async function processAddStock(bot, chatId, medicineId, quantity, medicineName) {
+export async function processAddStock(bot, chatId, userId, medicineId, quantity, medicineName) {
   try {
     const { error } = await supabase
       .from('stock')
       .insert([{
-        user_id: MOCK_USER_ID,
+        user_id: userId,
         medicine_id: medicineId,
         quantity: quantity,
         purchase_date: new Date().toISOString().split('T')[0]

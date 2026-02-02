@@ -1,69 +1,90 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
+import { getUserIdByChatId } from '../../services/userService.js';
 
 export async function handlePausar(bot, msg, match) {
   const chatId = msg.chat.id;
   const medicineName = match[1]?.trim();
 
-  if (!medicineName) {
-    // List active protocols to pick one
-    const { data: protocols } = await supabase
-      .from('protocols')
-      .select('id, medicine:medicines(name)')
-      .eq('user_id', MOCK_USER_ID)
-      .eq('active', true);
+  try {
+    const userId = await getUserIdByChatId(chatId);
 
-    if (!protocols || protocols.length === 0) {
-      return bot.sendMessage(chatId, 'Você não possui protocolos ativos.');
+    if (!medicineName) {
+      // List active protocols to pick one
+      const { data: protocols } = await supabase
+        .from('protocols')
+        .select('id, medicine:medicines(name)')
+        .eq('user_id', userId)
+        .eq('active', true);
+
+      if (!protocols || protocols.length === 0) {
+        return bot.sendMessage(chatId, 'Você não possui protocolos ativos.');
+      }
+
+      const keyboard = protocols.map(p => ([
+        { text: `Pausar ${p.medicine.name}`, callback_data: `pause_prot:${p.id}` }
+      ]));
+
+      return bot.sendMessage(chatId, 'Selecione o protocolo para pausar:', {
+        reply_markup: { inline_keyboard: keyboard }
+      });
     }
 
-    const keyboard = protocols.map(p => ([
-      { text: `Pausar ${p.medicine.name}`, callback_data: `pause_prot:${p.id}` }
-    ]));
-
-    return bot.sendMessage(chatId, 'Selecione o protocolo para pausar:', {
-      reply_markup: { inline_keyboard: keyboard }
-    });
+    // Handle by name
+    await toggleProtocol(bot, chatId, userId, medicineName, false);
+  } catch (err) {
+    if (err.message === 'User not linked') {
+      return bot.sendMessage(chatId, '❌ Conta não vinculada. Use /start para vincular.');
+    }
+    console.error('Erro em handlePausar:', err);
+    bot.sendMessage(chatId, '❌ Ocorreu um erro ao processar sua solicitação.');
   }
-
-  // Handle by name
-  await toggleProtocol(bot, chatId, medicineName, false);
 }
 
 export async function handleRetomar(bot, msg, match) {
   const chatId = msg.chat.id;
   const medicineName = match[1]?.trim();
 
-  if (!medicineName) {
-    // List paused protocols
-    const { data: protocols } = await supabase
-      .from('protocols')
-      .select('id, medicine:medicines(name)')
-      .eq('user_id', MOCK_USER_ID)
-      .eq('active', false);
+  try {
+    const userId = await getUserIdByChatId(chatId);
 
-    if (!protocols || protocols.length === 0) {
-      return bot.sendMessage(chatId, 'Você não possui protocolos pausados.');
+    if (!medicineName) {
+      // List paused protocols
+      const { data: protocols } = await supabase
+        .from('protocols')
+        .select('id, medicine:medicines(name)')
+        .eq('user_id', userId)
+        .eq('active', false);
+
+      if (!protocols || protocols.length === 0) {
+        return bot.sendMessage(chatId, 'Você não possui protocolos pausados.');
+      }
+
+      const keyboard = protocols.map(p => ([
+        { text: `Retomar ${p.medicine.name}`, callback_data: `resume_prot:${p.id}` }
+      ]));
+
+      return bot.sendMessage(chatId, 'Selecione o protocolo para retomar:', {
+        reply_markup: { inline_keyboard: keyboard }
+      });
     }
 
-    const keyboard = protocols.map(p => ([
-      { text: `Retomar ${p.medicine.name}`, callback_data: `resume_prot:${p.id}` }
-    ]));
-
-    return bot.sendMessage(chatId, 'Selecione o protocolo para retomar:', {
-      reply_markup: { inline_keyboard: keyboard }
-    });
+    // Handle by name
+    await toggleProtocol(bot, chatId, userId, medicineName, true);
+  } catch (err) {
+    if (err.message === 'User not linked') {
+      return bot.sendMessage(chatId, '❌ Conta não vinculada. Use /start para vincular.');
+    }
+    console.error('Erro em handleRetomar:', err);
+    bot.sendMessage(chatId, '❌ Ocorreu um erro ao processar sua solicitação.');
   }
-
-  // Handle by name
-  await toggleProtocol(bot, chatId, medicineName, true);
 }
 
-async function toggleProtocol(bot, chatId, medicineName, active) {
+async function toggleProtocol(bot, chatId, userId, medicineName, active) {
   try {
     const { data: medicines } = await supabase
       .from('medicines')
       .select('id, name')
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .ilike('name', `%${medicineName}%`);
 
     if (!medicines || medicines.length === 0) {
@@ -76,7 +97,7 @@ async function toggleProtocol(bot, chatId, medicineName, active) {
       .from('protocols')
       .update({ active })
       .in('medicine_id', medicineIds)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .select('medicine:medicines(name)')
       .single();
 
