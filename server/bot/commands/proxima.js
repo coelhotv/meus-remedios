@@ -1,14 +1,17 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
+import { getUserIdByChatId } from '../../services/userService.js';
 import { getCurrentTime } from '../../utils/formatters.js';
 
 export async function handleProxima(bot, msg) {
   const chatId = msg.chat.id;
   
   try {
+    const userId = await getUserIdByChatId(chatId);
+    
     const { data: protocols, error } = await supabase
       .from('protocols')
       .select('*, medicine:medicines(*)')
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .eq('active', true);
 
     if (error) throw error;
@@ -53,6 +56,9 @@ export async function handleProxima(bot, msg) {
 
     await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
   } catch (err) {
+    if (err.message === 'User not linked') {
+      return bot.sendMessage(chatId, '❌ Conta não vinculada. Use /start para vincular.');
+    }
     console.error('Erro ao buscar próxima dose:', err);
     await bot.sendMessage(chatId, 'Erro ao buscar próxima dose.');
   }

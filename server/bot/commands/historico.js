@@ -1,9 +1,12 @@
-import { supabase, MOCK_USER_ID } from '../../services/supabase.js';
+import { supabase } from '../../services/supabase.js';
+import { getUserIdByChatId } from '../../services/userService.js';
 
 export async function handleHistorico(bot, msg) {
   const chatId = msg.chat.id;
   
   try {
+    const userId = await getUserIdByChatId(chatId);
+    
     const { data: logs, error } = await supabase
       .from('medicine_logs')
       .select(`
@@ -11,7 +14,7 @@ export async function handleHistorico(bot, msg) {
         medicine:medicines(name),
         protocol:protocols(*)
       `)
-      .eq('user_id', MOCK_USER_ID)
+      .eq('user_id', userId)
       .order('taken_at', { ascending: false })
       .limit(10);
 
@@ -25,13 +28,13 @@ export async function handleHistorico(bot, msg) {
 
     logs.forEach(log => {
       const date = new Date(log.taken_at);
-      const dateStr = date.toLocaleDateString('pt-BR', { 
-        day: '2-digit', 
+      const dateStr = date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
         month: '2-digit',
         timeZone: 'America/Sao_Paulo'
       });
-      const timeStr = date.toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
+      const timeStr = date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
         minute: '2-digit',
         timeZone: 'America/Sao_Paulo'
       });
@@ -42,6 +45,9 @@ export async function handleHistorico(bot, msg) {
 
     await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
   } catch (err) {
+    if (err.message === 'User not linked') {
+      return bot.sendMessage(chatId, '❌ Conta não vinculada. Use /start para vincular.');
+    }
     console.error('Erro ao buscar histórico:', err);
     await bot.sendMessage(chatId, 'Erro ao buscar histórico.');
   }
