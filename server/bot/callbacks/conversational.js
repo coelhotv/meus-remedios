@@ -16,10 +16,18 @@ export async function handleConversationalCallbacks(bot) {
       await handleAddStockMedSelected(bot, callbackQuery);
     } else if (data.startsWith('add_stock_med_val:')) {
       const [_, medId, qty] = data.split(':');
-      const { data: med } = await supabase.from('medicines').select('name').eq('id', medId).single();
-      await processAddStock(bot, chatId, medId, parseFloat(qty), med?.name || 'Medicamento');
-      await bot.deleteMessage(chatId, message.message_id);
-      await bot.answerCallbackQuery(id);
+      try {
+        const userId = await getUserIdByChatId(chatId);
+        const { data: med } = await supabase.from('medicines').select('name').eq('id', medId).single();
+        await processAddStock(bot, chatId, userId, medId, parseFloat(qty), med?.name || 'Medicamento');
+        await bot.deleteMessage(chatId, message.message_id);
+        await bot.answerCallbackQuery(id);
+      } catch (err) {
+        if (err.message === 'User not linked') {
+          return bot.answerCallbackQuery(id, { text: 'Conta não vinculada.', show_alert: true });
+        }
+        throw err;
+      }
     } else if (data.startsWith('pause_prot:') || data.startsWith('resume_prot:')) {
       await handleProtocolCallback(bot, callbackQuery);
     } else if (data.startsWith('conv_cancel')) {

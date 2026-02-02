@@ -11,7 +11,6 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-export const MOCK_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 if (!supabaseUrl || (!supabaseAnonKey && !supabaseServiceKey)) {
   console.error('ERRO: VITE_SUPABASE_URL e as chaves do Supabase devem estar definidos no .env');
