@@ -16,12 +16,11 @@ export const ERROR_MESSAGES = {
  * @param {string} commandName - Name of the command for logging
  * @param {Function} handler - Command handler function
  * @param {Object} options - Options for command behavior
- * @param {boolean} options.requiresAuth - Whether command requires authenticated user (default: true)
  * @param {boolean} options.logUsage - Whether to log command usage (default: true)
  * @returns {Function} Wrapped command handler
  */
 export function commandWrapper(commandName, handler, options = {}) {
-  const { requiresAuth = true, logUsage = true } = options;
+  const { logUsage = true } = options;
   
   return async (bot, msg, ...args) => {
     const chatId = msg.chat?.id;

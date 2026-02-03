@@ -17,7 +17,6 @@ function App() {
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [currentView, setCurrentView] = useState('dashboard')
-  const [showDebug, setShowDebug] = useState(false)
   const [initialProtocolParams, setInitialProtocolParams] = useState(null)
   const [initialStockParams, setInitialStockParams] = useState(null)
   const [showAuth, setShowAuth] = useState(false) // toggles auth UI for unauthenticated visitors
@@ -121,15 +120,9 @@ function App() {
     <div className="app-container">
       <main style={{ paddingBottom: '80px', minHeight: '100vh', position: 'relative' }}>
         {renderCurrentView()}
-        
-        {showDebug && (
-          <div style={{ padding: '0 var(--space-6)', marginBottom: 'var(--space-8)' }}>
-            <TestConnection />
-          </div>
-        )}
-        
-        <footer style={{ 
-          textAlign: 'center', 
+
+        <footer style={{
+          textAlign: 'center',
           marginTop: 'var(--space-8)',
           paddingBottom: 'var(--space-8)',
           color: 'var(--text-tertiary)',

@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './Landing.css';
 
+const FloatingCard = ({ icon, text, animationDelay }) => (
+  <div className={`floating-card card-1`} style={{ animationDelay: `${animationDelay}s` }}>
+    <div className="card-icon">{icon}</div>
+    <div className="card-text">{text}</div>
+  </div>
+);
+
 export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}, onContinue = () => {} }) {
   const [scrollY, setScrollY] = useState(0);
 
@@ -9,13 +16,6 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const FloatingCard = ({ icon, text, animationDelay }) => (
-    <div className={`floating-card card-1`} style={{ animationDelay: `${animationDelay}s` }}>
-      <div className="card-icon">{icon}</div>
-      <div className="card-text">{text}</div>
-    </div>
-  );
 
   return (
     <div className="landing-container">
