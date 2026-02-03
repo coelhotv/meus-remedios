@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { medicineService, protocolService, stockService } from '../services/api' // Import protocolService and stockService
 import Button from '../components/ui/Button'
 import Loading from '../components/ui/Loading'
@@ -18,7 +18,22 @@ export default function Medicines({ onNavigateToProtocol }) {
   const [medicineDependencies, setMedicineDependencies] = useState({}) // { medicineId: { hasProtocols: boolean, hasStock: boolean } }
 
 
-  const loadMedicines = async () => {
+  const loadDependencies = useCallback(async (medicines) => {
+    const dependencies = {};
+    for (const medicine of medicines) {
+      const [protocols, stock] = await Promise.all([
+        protocolService.getByMedicineId(medicine.id),
+        stockService.getByMedicine(medicine.id),
+      ]);
+      dependencies[medicine.id] = {
+        hasProtocols: protocols.length > 0,
+        hasStock: stock.length > 0,
+      };
+    }
+    setMedicineDependencies(dependencies);
+  }, []);
+
+  const loadMedicines = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -33,27 +48,12 @@ export default function Medicines({ onNavigateToProtocol }) {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const loadDependencies = async (medicines) => {
-    const dependencies = {};
-    for (const medicine of medicines) {
-      const [protocols, stock] = await Promise.all([
-        protocolService.getByMedicineId(medicine.id),
-        stockService.getByMedicine(medicine.id),
-      ]);
-      dependencies[medicine.id] = {
-        hasProtocols: protocols.length > 0,
-        hasStock: stock.length > 0,
-      };
-    }
-    setMedicineDependencies(dependencies);
-  };
+  }, [loadDependencies]);
 
 
   useEffect(() => {
     loadMedicines()
-  }, [])
+  }, [loadMedicines])
 
   const handleAdd = () => {
     setEditingMedicine(null)

@@ -23,9 +23,9 @@ export function createCommandHandler(handler) {
       try {
         userId = await getUserIdByChatId(chatId);
         logger.debug(`User validated`, { userId, chatId });
-      } catch (error) {
+      } catch {
         logger.warn(`User not linked`, { chatId });
-        return await bot.sendMessage(chatId, 
+        return await bot.sendMessage(chatId,
           '⚠️ *Conta não vinculada*\n\n' +
           'Você precisa conectar sua conta primeiro:\n\n' +
           '1. Abra o app Meus Remédios\n' +

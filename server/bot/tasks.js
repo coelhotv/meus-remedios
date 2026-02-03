@@ -369,12 +369,12 @@ export async function checkStockAlerts(bot) {
 /**
  * Check adherence reports for ALL users (weekly)
  */
-export async function checkAdherenceReports(bot) {
+export async function checkAdherenceReports() {
   logger.info('Starting adherence reports for all users');
-  
+
   const users = await getAllUsersWithTelegram();
-  
-  for (const user of users) {
+
+  for (const _user of users) {
     // Implementation similar to daily digest but weekly
     // ... (omitted for brevity, can be added)
   }
@@ -385,12 +385,12 @@ export async function checkAdherenceReports(bot) {
 /**
  * Check titration alerts for ALL users
  */
-export async function checkTitrationAlerts(bot) {
+export async function checkTitrationAlerts() {
   logger.info('Starting titration alerts for all users');
-  
+
   const users = await getAllUsersWithTelegram();
-  
-  for (const user of users) {
+
+  for (const _user of users) {
     // Check for protocols in titration that need transition
     // ... (implementation similar to stock alerts)
   }
@@ -401,12 +401,12 @@ export async function checkTitrationAlerts(bot) {
 /**
  * Check monthly reports for ALL users
  */
-export async function checkMonthlyReport(bot) {
+export async function checkMonthlyReport() {
   logger.info('Starting monthly reports for all users');
-  
+
   const users = await getAllUsersWithTelegram();
-  
-  for (const user of users) {
+
+  for (const _user of users) {
     // Monthly report implementation
     // ... (can be added)
   }

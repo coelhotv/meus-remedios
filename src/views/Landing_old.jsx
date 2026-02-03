@@ -3,6 +3,14 @@ import './Landing.css'; // Keep this import
 // Consider importing common components from a centralized place
 // import { Button } from '../components/ui/Button'; // Example
 
+// Consider extracting this into a separate component if it becomes complex
+const FloatingCard = ({ icon, text, animationDelay }) => (
+  <div className={`floating-card card-1`} style={{ animationDelay: `${animationDelay}s` }}>
+    <div className="card-icon">{icon}</div>
+    <div className="card-text">{text}</div>
+  </div>
+);
+
 export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}, onContinue = () => {} }) {
   const [scrollY, setScrollY] = useState(0);
 
@@ -11,14 +19,6 @@ export default function Landing({ isAuthenticated = false, onOpenAuth = () => {}
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Consider extracting this into a separate component if it becomes complex
-  const FloatingCard = ({ icon, text, animationDelay }) => (
-    <div className={`floating-card card-1`} style={{ animationDelay: `${animationDelay}s` }}>
-      <div className="card-icon">{icon}</div>
-      <div className="card-text">{text}</div>
-    </div>
-  );
 
   return (
     <div className="landing-container">

@@ -67,7 +67,7 @@ export function registerDefaultChecks(bot, supabase) {
   // Check Supabase Connection
   healthCheck.register('supabase', async () => {
     try {
-      const { data, error } = await supabase.from('user_settings').select('count').limit(1);
+      const { error } = await supabase.from('user_settings').select('count').limit(1);
       if (error) throw error;
       return { ok: true, connected: true };
     } catch (error) {
