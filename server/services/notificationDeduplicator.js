@@ -1,5 +1,5 @@
 
-import { supabase, MOCK_USER_ID } from './supabase.js';
+import { supabase } from './supabase.js';
 
 const DEDUP_WINDOW_MINUTES = 5; // Don't send same notification twice within 5 minutes
 
@@ -17,7 +17,6 @@ export async function shouldSendNotification(protocolId, notificationType) {
     const { data, error } = await supabase
       .from('notification_log')
       .select('id')
-      .eq('user_id', MOCK_USER_ID)
       .eq('protocol_id', protocolId)
       .eq('notification_type', notificationType)
       .gte('sent_at', cutoffTime)
@@ -53,7 +52,6 @@ export async function logNotification(protocolId, notificationType) {
   const { error } = await supabase
     .from('notification_log')
     .insert({
-      user_id: MOCK_USER_ID,
       protocol_id: protocolId,
       notification_type: notificationType
     });

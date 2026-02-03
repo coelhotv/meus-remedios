@@ -1,12 +1,30 @@
-import { createLogger } from '../server/bot/logger.js';
-import { 
+// Add logging at module level to catch import errors
+console.log('[CronNotify] Starting module imports...');
+
+try {
+  var { createLogger } = await import('../server/bot/logger.js');
+  console.log('[CronNotify] Logger imported successfully');
+} catch (error) {
+  console.error('[CronNotify] Failed to import logger:', error);
+  throw error;
+}
+
+try {
+  var tasksModule = await import('../server/bot/tasks.js');
+  console.log('[CronNotify] Tasks module imported successfully');
+} catch (error) {
+  console.error('[CronNotify] Failed to import tasks:', error);
+  throw error;
+}
+
+const { 
   checkReminders, 
   runDailyDigest,
   checkStockAlerts, 
   checkAdherenceReports, 
   checkTitrationAlerts, 
   checkMonthlyReport 
-} from '../server/bot/tasks.js';
+} = tasksModule;
 
 const logger = createLogger('CronNotify');
 
@@ -37,6 +55,20 @@ function createNotifyBotAdapter(token) {
 }
 
 export default async function handler(req, res) {
+  // Add detailed logging for debugging
+  console.log('[CronNotify] Request received', { 
+    method: req.method, 
+    url: req.url,
+    hasAuthHeader: !!req.headers['authorization'],
+    envVars: {
+      hasTelegramToken: !!process.env.TELEGRAM_BOT_TOKEN,
+      hasCronSecret: !!process.env.CRON_SECRET,
+      hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL,
+      hasSupabaseAnonKey: !!process.env.VITE_SUPABASE_ANON_KEY,
+      hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    }
+  });
+
   logger.info('Cron job triggered', { method: req.method, url: req.url });
 
   // Accept both GET (from cron-job.org) and POST (for compatibility)
@@ -83,9 +115,13 @@ export default async function handler(req, res) {
   const results = [];
 
   try {
+    // Log before importing tasks to catch import errors
+    console.log('[CronNotify] About to call checkReminders');
+    
     // 1. Always check dose reminders (Every minute)
     await checkReminders(bot);
     results.push('reminders');
+    console.log('[CronNotify] checkReminders completed successfully');
 
     // 2. Daily Digest: Daily at 23:00
     if (currentHour === 23 && currentMinute === 0) {
@@ -126,7 +162,16 @@ export default async function handler(req, res) {
     });
     
   } catch (error) {
+    console.error('[CronNotify] Cron job failed with error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    });
     logger.error('Cron job failed', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
