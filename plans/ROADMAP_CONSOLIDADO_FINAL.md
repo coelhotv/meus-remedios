@@ -121,14 +121,14 @@ src/services/api/
 **PRs Mergeados:**
 | PR | Branch | Descrição |
 |----|--------|-----------|
-| [#5](MERGE_REPORT.md) | `feature/wave-1/validacao-zod` | Validação Zod para schemas de dados |
-| [#6](MERGE_REPORT.md) | `feature/wave-1/tests-unitarios` | Testes unitários expandidos |
-| [#7](MERGE_REPORT.md) | `feature/wave-1/sessoes-bot` | Sessões persistentes do bot (Supabase) |
-| [#8](MERGE_REPORT.md) | `feature/wave-1/view-estoque` | View de estoque para performance |
-| [#9](MERGE_REPORT.md) | `feature/wave-1/cache-swr` | Cache SWR pattern |
-| [#10](MERGE_REPORT.md) | `feature/wave-1/onboarding-wizard` | Onboarding guiado em 4 passos |
-| [#11](MERGE_REPORT.md) | `docs/wave-1/documentacao` | Documentação técnica completa |
-| [#12](MERGE_REPORT.md) | `fix/wave-1-local-changes` | Ajustes finais e correções |
+| [#5](../docs/past_deliveries/MERGE_REPORT.md) | `feature/wave-1/validacao-zod` | Validação Zod para schemas de dados |
+| [#6](../docs/past_deliveries/MERGE_REPORT.md) | `feature/wave-1/tests-unitarios` | Testes unitários expandidos |
+| [#7](../docs/past_deliveries/MERGE_REPORT.md) | `feature/wave-1/sessoes-bot` | Sessões persistentes do bot (Supabase) |
+| [#8](../docs/past_deliveries/MERGE_REPORT.md) | `feature/wave-1/view-estoque` | View de estoque para performance |
+| [#9](../docs/past_deliveries/MERGE_REPORT.md) | `feature/wave-1/cache-swr` | Cache SWR pattern |
+| [#10](../docs/past_deliveries/MERGE_REPORT.md) | `feature/wave-1/onboarding-wizard` | Onboarding guiado em 4 passos |
+| [#11](../docs/past_deliveries/MERGE_REPORT.md) | `docs/wave-1/documentacao` | Documentação técnica completa |
+| [#12](../docs/past_deliveries/MERGE_REPORT.md) | `fix/wave-1-local-changes` | Ajustes finais e correções |
 
 **Entregas da Onda 1:**
 - ✅ **Tarefa 1.1:** Testes unitários (~75% cobertura)
