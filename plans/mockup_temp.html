@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Health Command Center - Evolution</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --neon-cyan: #00f0ff;
+            --neon-magenta: #ff00ff;
+            --neon-purple: #b000ff;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --alert-critical: #ff3e3e;
+            --alert-warning: #ffcc00;
+            --alert-info: #00f0ff;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(176, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.1) 0%, transparent 40%);
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: #0d0d14;
+            border: 8px solid #1a1a24;
+            border-radius: 40px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5), 0 0 20px rgba(0, 240, 255, 0.1);
+            position: relative;
+            padding: 44px 16px 24px 16px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        .phone-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 1. Saudação Personalizada */
+        .greeting-section {
+            margin-bottom: 4px;
+        }
+
+        .greeting-time {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .greeting-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: -8px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            margin: 0;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        /* Hero Section - Health Score */
+        .hero-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: row; /* Horizontal for better above-the-fold */
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .health-score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .health-score-circle svg {
+            position: absolute;
+            transform: rotate(-90deg);
+            filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.4));
+        }
+
+        .health-score-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+            line-height: 1;
+        }
+
+        .hero-stats {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hero-stat-item {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .hero-stat-value {
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+
+        /* 2. Smart Alerts com CTAs */
+        .smart-alerts {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .alert-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-left: 4px solid var(--alert-color);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-card.critical { --alert-color: var(--alert-critical); box-shadow: 0 0 15px rgba(255, 62, 62, 0.1); }
+        .alert-card.warning { --alert-color: var(--alert-warning); }
+        .alert-card.info { --alert-color: var(--alert-info); }
+
+        .alert-icon { font-size: 1.1rem; }
+        .alert-content h4 { margin: 0; font-size: 0.8rem; font-weight: 600; color: #fff; }
+        .alert-content p { margin: 1px 0 0; font-size: 0.7rem; opacity: 0.7; line-height: 1.2; }
+
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn-cta {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-cta.primary {
+            background: var(--alert-color);
+            color: #fff;
+        }
+
+        .btn-cta.secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        /* 3. Accordion no Tratamento & Swipe */
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.5;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .accordion-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .accordion-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .accordion-info h3 { margin: 0; font-size: 0.9rem; }
+        .accordion-info p { margin: 2px 0 0; font-size: 0.7rem; color: var(--neon-cyan); }
+
+        .accordion-content {
+            padding: 0 16px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 5. Simulação de Swipe */
+        .swipe-item {
+            position: relative;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            padding-left: 50px;
+        }
+
+        .swipe-track {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            bottom: 5px;
+            width: 40px;
+            background: var(--neon-magenta);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 10px var(--neon-magenta);
+            cursor: grab;
+            z-index: 2;
+        }
+
+        .swipe-track::after { content: '→'; font-size: 0.8rem; font-weight: bold; }
+
+        .swipe-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            pointer-events: none;
+        }
+
+        .swipe-success-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--neon-cyan);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #000;
+            z-index: 3;
+        }
+
+        /* 6. Widgets Dinâmicos: Insight */
+        .insight-card {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(176, 0, 255, 0.1));
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .insight-icon { font-size: 1.2rem; }
+        .insight-text { font-size: 0.75rem; line-height: 1.4; color: rgba(255,255,255,0.9); }
+        .insight-highlight { color: var(--neon-cyan); font-weight: 600; }
+
+        /* Quick Actions - Otimizado */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 10px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.6rem;
+            cursor: pointer;
+        }
+
+        .action-icon { font-size: 1.2rem; }
+
+        .navbar {
+            position: sticky;
+            bottom: 0;
+            margin-top: auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 16px 0 8px 0;
+            background: linear-gradient(transparent, #0d0d14 20%);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .nav-item { font-size: 1.2rem; opacity: 0.4; }
+        .nav-item.active { opacity: 1; color: var(--neon-cyan); }
+
+        /* Helper for Above the Fold simulation */
+        .fold-indicator {
+            border-top: 1px dashed rgba(255,255,255,0.2);
+            margin: 10px 0;
+            position: relative;
+        }
+        .fold-indicator::after {
+            content: 'ABOVE THE FOLD';
+            position: absolute;
+            right: 0;
+            top: -12px;
+            font-size: 0.5rem;
+            opacity: 0.3;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 1. Saudação & Header -->
+        <div class="greeting-section">
+            <span class="greeting-time">Boa tarde, Accoelho</span>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span class="greeting-name">Comando de Saúde</span>
+                <div style="font-size: 1.2rem; cursor: pointer;">⚙️</div>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>HEALTH COMMAND CENTER</h1>
+        </div>
+
+        <!-- Hero: Health Score Compacto -->
+        <div class="hero-section">
+            <div class="health-score-circle">
+                <svg width="80" height="80">
+                    <circle cx="40" cy="40" r="36" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6" />
+                    <circle cx="40" cy="40" r="36" fill="none" stroke="#00f0ff" stroke-width="6" 
+                        stroke-dasharray="226" stroke-dashoffset="34" stroke-linecap="round" />
+                </svg>
+                <div class="health-score-value">85</div>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat-item">Status: <span class="hero-stat-value">Excelente</span></div>
+                <div class="hero-stat-item">Streak: <span style="color:var(--neon-magenta); font-weight: 600;">12 dias</span></div>
+                <div class="hero-stat-item">Adesão: <span class="hero-stat-value">94%</span></div>
+            </div>
+        </div>
+
+        <!-- 2. Smart Alerts com CTAs Contextuais -->
+        <div class="smart-alerts">
+            <div class="alert-card critical">
+                <div class="alert-header">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <h4>Atraso Crítico</h4>
+                        <p><b>Escitalopram 10mg</b> (52 min atrás)</p>
+                    </div>
+                </div>
+                <div class="alert-actions">
+                    <button class="btn-cta secondary">Adiar</button>
+                    <button class="btn-cta primary">TOMAR AGORA</button>
+                </div>
+            </div>
+
+            <div class="alert-card warning">
+                <div class="alert-header">
+                    <div class="alert-icon">📦</div>
+                    <div class="alert-content">
+                        <h4>Estoque Baixo</h4>
+                        <p><b>Pregabalina</b> (restam 3 doses)</p>
+                    </div>
+                </div>
+                <div class="alert-actions">
+                    <button class="btn-cta primary" style="background: var(--alert-warning); color: #000;">COMPRAR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 & 5. Accordion Tratamento + Swipe -->
+        <div>
+            <span class="section-title">Tratamento Ativo</span>
+            <div class="accordion-card">
+                <div class="accordion-header">
+                    <div class="accordion-info">
+                        <h3>Fantastic Four</h3>
+                        <p>Próxima dose em 1h 20min</p>
+                    </div>
+                    <div style="font-size: 0.8rem; opacity: 0.5;">▼</div>
+                </div>
+                <div class="accordion-content">
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-bottom: 4px;">Arraste para registrar:</div>
+                    
+                    <!-- Swipe Item 1 -->
+                    <div class="swipe-item">
+                        <div class="swipe-track" style="left: 5px;"></div>
+                        <span class="swipe-label">Pregabalina 75mg</span>
+                        <div class="swipe-success-overlay">REGISTRADO! ✓</div>
+                    </div>
+
+                    <!-- Swipe Item 2 -->
+                    <div class="swipe-item">
+                        <div class="swipe-track" style="left: 5px;"></div>
+                        <span class="swipe-label">Vitamina D3</span>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 4px;">
+                        <button class="btn-cta secondary" style="width: 100%; font-size: 0.6rem;">REGISTRAR TODOS EM LOTE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Widget Dinâmico: Insights -->
+        <div>
+            <span class="section-title">Health Insight</span>
+            <div class="insight-card">
+                <div class="insight-icon">💡</div>
+                <div class="insight-text">
+                    Você tem <span class="insight-highlight">40% melhor adesão</span> nos dias que toma café antes do protocolo matinal.
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div>
+            <span class="section-title">Ações</span>
+            <div class="quick-actions">
+                <div class="action-btn">
+                    <div class="action-icon">💊</div>
+                    <span>Log Dose</span>
+                </div>
+                <div class="action-btn">
+                    <div class="action-icon">📊</div>
+                    <span>Relatório</span>
+                </div>
+                <div class="action-btn" style="border-color: var(--neon-magenta); border-style: dashed;">
+                    <div class="action-icon" style="color: var(--neon-magenta);">+</div>
+                    <span>Adicionar</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="navbar">
+            <div class="nav-item active">🏠</div>
+            <div class="nav-item">📅</div>
+            <div class="nav-item">💊</div>
+            <div class="nav-item">👤</div>
+        </div>
+    </div>
+
+    <script>
+        // Simulação básica de interatividade para o mockup
+        document.querySelectorAll('.swipe-track').forEach(track => {
+            let isDragging = false;
+            let startX;
+            
+            track.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.pageX - track.offsetLeft;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                let x = e.pageX - startX;
+                if (x < 5) x = 5;
+                if (x > 260) {
+                    x = 260;
+                    const overlay = track.parentElement.querySelector('.swipe-success-overlay');
+                    if (overlay) overlay.style.display = 'flex';
+                }
+                track.style.left = x + 'px';
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                if (parseInt(track.style.left) < 260) {
+                    track.style.transition = 'left 0.3s ease';
+                    track.style.left = '5px';
+                    setTimeout(() => track.style.transition = '', 300);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
