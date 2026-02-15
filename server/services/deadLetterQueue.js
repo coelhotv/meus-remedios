@@ -91,47 +91,11 @@ export async function enqueue(notificationData, error, retryCount, correlationId
   try {
     const errorCategory = categorizeError(error);
     
-    // Check if entry already exists for this protocol/retry
-    // Include notification_type to avoid collision between different notification types
-    const { data: existing } = await supabase
+    // Usar upsert para evitar race condition
+    // O índice único parcial garante atomicidade
+    const { data, error: upsertError } = await supabase
       .from('failed_notification_queue')
-      .select('id, retry_count')
-      .eq('protocol_id', notificationData.protocolId)
-      .eq('user_id', notificationData.userId)
-      .eq('notification_type', notificationData.type)
-      .eq('status', DLQStatus.PENDING)
-      .maybeSingle();
-    
-    if (existing) {
-      // Update existing entry
-      const { data, error: updateError } = await supabase
-        .from('failed_notification_queue')
-        .update({
-          retry_count: retryCount,
-          error_message: error?.message || 'Unknown error',
-          error_category: errorCategory,
-          correlation_id: correlationId,
-          notification_payload: notificationData
-        })
-        .eq('id', existing.id)
-        .select('id')
-        .single();
-      
-      if (updateError) throw updateError;
-      
-      logger.info('DLQ entry updated', {
-        id: data.id,
-        correlationId,
-        retryCount
-      });
-      
-      return { success: true, id: data.id };
-    }
-    
-    // Create new entry
-    const { data, error: insertError } = await supabase
-      .from('failed_notification_queue')
-      .insert({
+      .upsert({
         user_id: notificationData.userId,
         protocol_id: notificationData.protocolId,
         notification_type: notificationData.type,
@@ -142,13 +106,16 @@ export async function enqueue(notificationData, error, retryCount, correlationId
         retry_count: retryCount,
         correlation_id: correlationId,
         status: DLQStatus.PENDING
+      }, {
+        onConflict: 'user_id,protocol_id,notification_type',
+        ignoreDuplicates: false
       })
       .select('id')
       .single();
     
-    if (insertError) throw insertError;
+    if (upsertError) throw upsertError;
     
-    logger.info('Notification added to DLQ', {
+    logger.info('Notification enqueued to DLQ', {
       id: data.id,
       correlationId,
       userId: notificationData.userId,
@@ -267,27 +234,39 @@ export async function getFailedForUser(userId, limit = 10, status = null) {
  */
 export async function getDLQStats() {
   try {
+    // Usa função PostgreSQL para agregação eficiente (não carrega todas as linhas)
     const { data, error } = await supabase
-      .from('failed_notification_queue')
-      .select('status, error_category');
+      .rpc('get_dlq_stats');
     
     if (error) throw error;
     
     const stats = {
-      total: data.length,
+      total: 0,
       failed: 0,
       pending: 0,
       retrying: 0,
       resolved: 0,
       discarded: 0,
-      byCategory: {}
+      byCategory: {},
+      oldestFailure: null
     };
     
     data.forEach(item => {
-      stats[item.status] = (stats[item.status] || 0) + 1;
+      const count = parseInt(item.count, 10) || 0;
+      stats[item.status] = count;
+      stats.total += count;
       
+      // Agrega por categoria de erro
       const cat = item.error_category || 'unknown';
-      stats.byCategory[cat] = (stats.byCategory[cat] || 0) + 1;
+      stats.byCategory[cat] = (stats.byCategory[cat] || 0) + count;
+      
+      // Rastreia a falha mais antiga
+      if (item.oldest_failure) {
+        const oldestDate = new Date(item.oldest_failure);
+        if (!stats.oldestFailure || oldestDate < new Date(stats.oldestFailure)) {
+          stats.oldestFailure = item.oldest_failure;
+        }
+      }
     });
     
     return stats;
@@ -302,6 +281,7 @@ export async function getDLQStats() {
       resolved: 0,
       discarded: 0,
       byCategory: {},
+      oldestFailure: null,
       error: err.message
     };
   }

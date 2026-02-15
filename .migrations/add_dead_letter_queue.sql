@@ -52,6 +52,12 @@ CREATE INDEX IF NOT EXISTS idx_failed_notif_status ON failed_notification_queue(
 CREATE INDEX IF NOT EXISTS idx_failed_notif_correlation ON failed_notification_queue(correlation_id);
 CREATE INDEX IF NOT EXISTS idx_failed_notif_created_at ON failed_notification_queue(created_at);
 
+-- Índice parcial único para prevenir race conditions no upsert
+-- Apenas uma notificação pendente por (user, protocolo, tipo)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_failed_notif_unique_pending
+    ON failed_notification_queue(user_id, protocol_id, notification_type)
+    WHERE status = 'pending';
+
 -- Políticas RLS para isolamento por usuário
 ALTER TABLE failed_notification_queue ENABLE ROW LEVEL SECURITY;
 
@@ -79,3 +85,27 @@ CREATE TRIGGER trigger_update_failed_notif_timestamp
     BEFORE UPDATE ON failed_notification_queue
     FOR EACH ROW
     EXECUTE FUNCTION update_failed_notif_timestamp();
+
+-- Função PostgreSQL para estatísticas da DLQ (performance otimizada)
+-- Evita transferir todas as linhas para o cliente
+CREATE OR REPLACE FUNCTION get_dlq_stats()
+RETURNS TABLE (
+    status VARCHAR,
+    count BIGINT,
+    error_category VARCHAR,
+    oldest_failure TIMESTAMPTZ
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        f.status,
+        COUNT(*)::BIGINT,
+        f.error_category,
+        MIN(f.created_at) as oldest_failure
+    FROM failed_notification_queue f
+    GROUP BY f.status, f.error_category
+    ORDER BY f.status, COUNT(*) DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION get_dlq_stats() IS 'Retorna estatísticas agregadas da DLQ para evitar transferência de dados desnecessária';
