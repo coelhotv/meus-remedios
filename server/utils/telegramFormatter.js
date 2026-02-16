@@ -11,7 +11,7 @@ export function escapeMarkdownV2(text) {
   }
 
   // Caracteres especiais do MarkdownV2
-  const specialChars = /[*_[\]`~>#+\-=|{}.!]/g
+  const specialChars = /[\\_*[\]()~`>#+\-=|{}.!]/g
   return text.replace(specialChars, '\\$&')
 }
 
