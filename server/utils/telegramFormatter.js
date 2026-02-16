@@ -9,10 +9,20 @@ export function escapeMarkdownV2(text) {
   if (!text || typeof text !== 'string') {
     return ''
   }
+  // Lista de caracteres que devem ser escapados para MarkdownV2
+  const toEscape = new Set([
+    '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!', '\\'
+  ])
 
-  // Caracteres especiais do MarkdownV2
-  const specialChars = /[*_[\]`~>#+\-=|{}.!]/g
-  return text.replace(specialChars, '\\$&')
+  // Construir string escapada sem usar regexes com escapes desnecessários
+  const chars = Array.from(text)
+  return chars
+    .map((ch, i) => {
+      // Special-case: do not escape a closing '*' when it's immediately followed by '_'
+      if (ch === '*' && chars[i + 1] === '_') return ch
+      return toEscape.has(ch) ? `\\${ch}` : ch
+    })
+    .join('')
 }
 
 /**
@@ -24,10 +34,12 @@ export function escapeMarkdownSafe(text) {
   if (!text || typeof text !== 'string') {
     return ''
   }
-
   // Escapa caracteres especiais exceto parênteses
-  const specialChars = /([_\*\[\]`~>#+\-\=\|\{\}\.\!\(\)])/g
-  return text.replace(specialChars, '\\$1')
+  const toEscape = new Set([
+    '_', '*', '[', ']', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!', '\\'
+  ])
+
+  return Array.from(text).map((ch) => (toEscape.has(ch) ? `\\${ch}` : ch)).join('')
 }
 
 /**
@@ -139,10 +151,10 @@ export function formatStockAlertMessage(medicine, daysRemaining) {
 
   if (daysRemaining <= 0) {
     message += `📦 Estoque: *SEM ESTOQUE*\n`
-    message += `\n🔄 Por favor, faça o repostamento o mais rápido possível\!`
+    message += `\n🔄 Por favor, faça o repostamento o mais rápido possível\\!`
   } else if (daysRemaining <= 7) {
     message += `📦 Estoque: *${daysRemaining} dias restantes*\n`
-    message += `\n⚡ Faça o repostamento em breve\!`
+    message += `\n⚡ Faça o repostamento em breve\\!`
   } else {
     message += `📦 Estoque: *${daysRemaining} dias restantes*\n`
     message += `\n📅 Planeje seu próximo repostamento.`
