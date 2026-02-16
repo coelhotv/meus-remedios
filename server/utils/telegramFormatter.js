@@ -143,7 +143,7 @@ export function formatStockAlertMessage(medicine, daysRemaining) {
     message += `\n⚡ Faça o repostamento em breve!`
   } else {
     message += `📦 Estoque: *${daysRemaining} dias restantes*\n`
-    message += `\n📅 Planeje seu próximo repostamento.`
+    message += `\n📅 Planeje seu próximo repostamento\\.`
   }
 
   return message
