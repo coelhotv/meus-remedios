@@ -1,91 +1,95 @@
-# 📦 Onda 1 - Fundação: Testes, Validação, Cache, Onboarding
+# 📦 Template de Pull Request
+
+> **⚠️ INSTRUÇÕES DE USO**
+> 
+> Este é um **template estrutural** para criação de Pull Requests.
+> 
+> - **NÃO** copie e cole o conteúdo diretamente
+> - **SUBSTITUA** todos os exemplos pelo conteúdo real da sua PR
+> - **ADAPTE** as seções conforme necessário para o escopo da sua PR
+> - **REMOVA** seções que não se aplicam
+> - **MANTENHA** a estrutura e formatação para consistência
+
+---
 
 ## 🎯 Resumo
 
-Esta PR entrega a **Onda 1** do projeto Meus Remédios, focada em fundamentos técnicos sólidos: testes automatizados, validação de dados, performance e experiência de primeiro uso.
+<!-- 
+  Descreva brevemente o que esta PR entrega.
+  
+  Exemplos:
+  - "Esta PR implementa a Fase X do roadmap, focada em..."
+  - "Esta PR corrige o bug #123 que causava..."
+  - "Esta PR refatora o componente X para melhorar..."
+-->
+
+[Descreva aqui o resumo da sua PR]
 
 ---
 
 ## 📋 Tarefas Implementadas
 
-### ✅ Tarefa 1.1 - Testes Unitários (110 testes)
-- [x] Setup Vitest com jsdom e Testing Library
-- [x] Testes de componentes (Button, Calendar, Modal, Card)
-- [x] Testes de hooks (useCachedQuery)
-- [x] Testes de serviços (logService, stockService)
-- [x] Testes de schemas (23 testes de validação)
+<!-- 
+  Liste as tarefas implementadas com checkboxes.
+  Use ✅ para itens concluídos e ⬜ para itens pendentes.
+  
+  Exemplo de estrutura:
+  
+  ### ✅ Nome da Tarefa 1
+  - [x] Subtarefa concluída
+  - [x] Outra subtarefa
+  - [ ] Subtarefa pendente (se houver)
+-->
 
-### ✅ Tarefa 1.2 - Validação com Zod
-- [x] Schemas para medicamentos, protocolos, estoque e logs
-- [x] Helper de validação com mensagens em português
-- [x] Integração com formulários existentes
-- [x] 23 testes cobrindo edge cases
+### ✅ [Nome da Tarefa 1]
+- [x] [Descrição da subtarefa]
+- [x] [Descrição da subtarefa]
 
-### ✅ Tarefa 1.3 - Persistência de Sessões do Bot
-- [x] SessionManager com Supabase
-- [x] TTL de 30 minutos configurável
-- [x] Cache local em memória
-- [x] Auto-cleanup de sessões expiradas
-- [x] Testes de persistência (simulação de restart)
-
-### ✅ Tarefa 1.4 - Onboarding Wizard
-- [x] Wizard de 4 passos mobile-first
-- [x] Boas-vindas, primeiro remédio, protocolo, Telegram
-- [x] Persistência de progresso
-- [x] Validação em tempo real
-
-### ✅ Tarefa 1.5 - Cache SWR
-- [x] Sistema de cache em memória (QueryCache)
-- [x] Hook useCachedQuery com stale-while-revalidate
-- [x] Deduplicação de requests
-- [x] **95% melhoria no carregamento do Dashboard**
-
-### ✅ Tarefa 1.6 - View de Estoque Otimizada
-- [x] View SQL `medicine_stock_summary`
-- [x] Agregação em tempo real
-- [x] Índices otimizados
-- [x] **5x mais rápida que consultas anteriores**
+### ✅ [Nome da Tarefa 2]
+- [x] [Descrição da subtarefa]
+- [x] [Descrição da subtarefa]
 
 ---
 
 ## 📊 Métricas de Melhoria
 
+<!-- 
+  Inclua métricas quantitativas quando possível.
+  Use tabela para comparar antes/depois.
+  
+  Exemplo:
+  
+  | Métrica | Antes | Depois | Melhoria |
+  |---------|-------|--------|----------|
+  | Tempo de carregamento | ~2s | ~100ms | 95% |
+  | Cobertura de testes | ~10% | ~75% | +65% |
+-->
+
 | Métrica | Antes | Depois | Melhoria |
 |---------|-------|--------|----------|
-| Cobertura de Testes | ~10% | **~75%** | +65% |
-| Tempo Dashboard | ~2s | **~100ms** | **95%** |
-| Query Estoque | ~500ms | **~100ms** | **5x** |
-| Validação de Forms | Cliente apenas | **Cliente + Servidor** | Segurança |
-| Sessões Bot | Memória apenas | **Persistente** | Confiabilidade |
+| [Nome da métrica] | [Valor anterior] | [Valor novo] | [Percentual/Fator] |
 
 ---
 
 ## 🔧 Arquivos Principais
 
+<!-- 
+  Liste os arquivos principais modificados/criados.
+  Use estrutura de árvore para melhor visualização.
+  
+  Exemplo:
+  
+  src/
+  ├── components/
+  │   └── NovoComponente.jsx
+  ├── services/
+  │   └── novoService.js
+  └── styles/
+      └── novoComponente.css
+-->
+
 ```
-src/
-├── components/
-│   └── onboarding/          # Wizard de 4 passos
-├── hooks/
-│   └── useCachedQuery.js    # Hook SWR
-├── lib/
-│   └── queryCache.js        # Sistema de cache
-├── schemas/
-│   ├── *.js                 # Schemas Zod
-│   └── __tests__/
-└── services/api/
-    ├── cachedServices.js    # Serviços com cache
-    └── __tests__/           # Testes de serviços
-
-server/
-└── services/
-    └── sessionManager.js    # Persistência de sessões
-
-docs/
-├── BENCHMARK_CACHE_SWR.md   # Documentação de performance
-├── BENCHMARK_STOCK_VIEW.md
-├── SCHEMAS_VALIDACAO.md
-└── GUIA_TITULACAO.md
+[Liste aqui os arquivos principais modificados/criados]
 ```
 
 ---
@@ -93,71 +97,105 @@ docs/
 ## ✅ Checklist de Verificação
 
 ### Código
-- [ ] Todos os testes passam (`npm test`)
+- [ ] Todos os testes passam (`npm test` ou `npm run test:critical`)
 - [ ] Lint sem erros (`npm run lint`)
 - [ ] Build bem-sucedido (`npm run build`)
 - [ ] Type checking passa (se aplicável)
 
 ### Funcionalidade
-- [ ] Onboarding funciona em mobile
-- [ ] Cache invalida corretamente após mutações
-- [ ] Sessões do bot persistem após restart
-- [ ] Validações exibem mensagens em português
+- [ ] [Funcionalidade específica 1 testada]
+- [ ] [Funcionalidade específica 2 testada]
+- [ ] [Caso de edge testado]
 
 ### Performance
-- [ ] Dashboard carrega em < 200ms (com cache)
-- [ ] Query de estoque otimizada (< 100ms)
-- [ ] Sem memory leaks no cache
+- [ ] [Métrica de performance 1 verificada]
+- [ ] [Métrica de performance 2 verificada]
 
 ### Documentação
 - [ ] README atualizado (se necessário)
 - [ ] JSDoc em funções públicas
-- [ ] Migrations documentadas
+- [ ] Migrations documentadas (se aplicável)
 
 ---
 
 ## 🚀 Como Testar
 
+<!-- 
+  Forneça instruções claras para testar a PR localmente.
+  Inclua comandos específicos e passos manuais se necessário.
+  
+  Exemplo:
+  
+  ```bash
+  # 1. Instalar dependências
+  npm install
+
+  # 2. Executar testes
+  npm run test:critical
+
+  # 3. Verificar lint
+  npm run lint
+
+  # 4. Build de produção
+  npm run build
+
+  # 5. Testar localmente
+  npm run dev
+  ```
+-->
+
 ```bash
-# 1. Instalar dependências
-npm install
-
-# 2. Executar testes
-npm test
-
-# 3. Verificar lint
-npm run lint
-
-# 4. Build de produção
-npm run build
-
-# 5. Testar localmente
-npm run dev
+[Comandos para testar a PR]
 ```
 
 ---
 
 ## 🔗 Issues Relacionadas
 
-- Closes #wave-1
-- Related to #onboarding
-- Related to #performance
+<!-- 
+  Linke issues relacionadas usando keywords do GitHub.
+  
+  - Closes #123 - fecha a issue automaticamente
+  - Fixes #123 - corrige a issue automaticamente
+  - Related to #123 - apenas relaciona
+-->
+
+- Closes #[número da issue]
+- Related to #[número da issue]
 
 ---
 
 ## 📝 Notas para Reviewers
 
-1. **Testes:** Foco nos testes de integração do cache e sessões
-2. **Performance:** Verificar benchmarks documentados em `docs/`
-3. **Segurança:** Validar schemas Zod cobrem todos os inputs
-4. **UX:** Testar onboarding em dispositivo móvel real
+<!-- 
+  Adicione notas específicas para quem vai revisar a PR.
+  Destaque pontos de atenção e áreas que precisam de foco.
+  
+  Exemplo:
+  
+  1. **Testes:** Foco nos testes de integração do módulo X
+  2. **Performance:** Verificar benchmark em `docs/`
+  3. **Segurança:** Validar inputs do formulário Y
+  4. **UX:** Testar em dispositivo móvel real
+-->
+
+1. **[Área de foco 1]:** [Descrição do que verificar]
+2. **[Área de foco 2]:** [Descrição do que verificar]
 
 ---
 
 ## 🏷️ Versão
 
-**Tipo:** Minor (`2.2.1` → `2.3.0`)
-**Tag sugerida:** `v2.3.0`
+<!-- 
+  Indique o tipo de versão e tag sugerida.
+  
+  - **Major** (X.0.0): Breaking changes
+  - **Minor** (0.X.0): Novas funcionalidades
+  - **Patch** (0.0.X): Bug fixes
+-->
+
+**Tipo:** [Major/Minor/Patch] (`[versão atual]` → `[nova versão]`)
+**Tag sugerida:** `v[nova versão]`
 
 ---
 
