@@ -137,7 +137,7 @@ export function formatStockAlertMessage(medicine, daysRemaining) {
 
   if (daysRemaining <= 0) {
     message += `📦 Estoque: *SEM ESTOQUE*\n`
-    message += `\n🔄 Por favor, faça o repostamento o mais rápido possível!`
+    message += `\n🔄 Por favor, faça o repostamento o mais rápido possível\\!`
   } else if (daysRemaining <= 7) {
     message += `📦 Estoque: *${daysRemaining} dias restantes*\n`
     message += `\n⚡ Faça o repostamento em breve!`
