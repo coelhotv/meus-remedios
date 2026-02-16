@@ -51,7 +51,7 @@ jobs:
               owner,
               repo,
               issue_number: prNumber,
-              body: `## 🤖 Gemini Code Review\n\nOlá @${prAuthor}! Vou analisar seu PR: **"${prTitle}"**\n\n🔍 **Análise em andamento...**\n\n⏳ Por favor, aguarde **5 minutos** para que eu termine a análise completa.\n\n📋 **O que será revisado:**\n- ✅ Lint errors\n- ✅ Formatting\n- ✅ Lógica simples\n- ✅ Arquitetura\n- ⚠️ Issues complexas (requer sua atenção)\n\n💡 **Comandos disponíveis:**\n- \`/gemini review\` - Re-rodar a análise\n- \`/gemini skip\` - Pular review para este PR\n\n🔗 [Ver PR](${prUrl})`
+              body: `## 🤖 Gemini Code Review\n\nOlá @${prAuthor}! Vou analisar seu PR: **"${prTitle}"**\n\n🔍 **Análise em andamento...**\n\n⏳ Por favor, aguarde **5 minutos** para que eu termine a análise completa.\n\n📋 **O que será revisado:**\n- ✅ Lint errors\n- ✅ Formatting\n- ✅ Lógica simples\n- ✅ Arquitetura\n- ⚠️ Issues complexas (requer sua atenção)\n\n💡 **Comandos disponíveis:**\n- \`/gemini review\` - Re-rodar a análise\n\n🔗 [Ver PR](${prUrl})`
             });
             
             console.log(`Gemini review initiated for PR #${prNumber}`);

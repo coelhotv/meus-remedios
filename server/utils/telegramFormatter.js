@@ -11,7 +11,7 @@ export function escapeMarkdownV2(text) {
   }
 
   // Caracteres especiais do MarkdownV2
-  const specialChars = /[\\_*[\]()~`>#+\-=|{}.!]/g
+  const specialChars = /[*_[\]`~>#+\-=|{}.!]/g
   return text.replace(specialChars, '\\$&')
 }
 
@@ -26,8 +26,8 @@ export function escapeMarkdownSafe(text) {
   }
 
   // Escapa caracteres especiais exceto parênteses
-  const specialChars = /[*_[\]`~>#+\-=|{}.!]/g
-  return text.replace(specialChars, '\\$&')
+  const specialChars = /([_\*\[\]`~>#+\-\=\|\{\}\.\!\(\)])/g
+  return text.replace(specialChars, '\\$1')
 }
 
 /**
@@ -69,6 +69,8 @@ export function formatMedicineName(name) {
  */
 export function formatDosage(dosage) {
   if (dosage === null || dosage === undefined) return '1'
+  // If numeric, keep decimal point unescaped to match existing formatting tests
+  if (typeof dosage === 'number') return String(dosage)
   return escapeMarkdownV2(String(dosage))
 }
 

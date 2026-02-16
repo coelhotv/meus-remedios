@@ -70,6 +70,12 @@ function isRetryableError(error, config) {
     }
   }
   
+  // Quick checks for clearly non-retryable errors (client errors, malformed requests)
+  const nonRetryablePatterns = ['invalid', 'bad request', "can't parse", "can't parse entities", 'not found', 'invalid chat id']
+  if (nonRetryablePatterns.some(p => errorMessage.includes(p))) {
+    return false
+  }
+
   // Verificar por código do Telegram
   if (telegramCode) {
     const retryableTelegramCodes = [
@@ -85,11 +91,11 @@ function isRetryableError(error, config) {
     }
   }
   
-  // Verificar por tipo de erro
-  const errorType = error.type || error.name || '';
-  if (config.retryableErrorTypes.includes(errorType)) {
-    return true;
-  }
+   // Verificar por tipo de erro
+   const errorType = error.type || error.name || '';
+   if (config.retryableErrorTypes.includes(errorType)) {
+     return true;
+   }
   
   // Verificar mensagem de erro
   const retryablePatterns = [
@@ -102,7 +108,11 @@ function isRetryableError(error, config) {
     'socket hang up'
   ];
   
-  return retryablePatterns.some(pattern => errorMessage.includes(pattern));
+  // If nothing indicates non-retryable, default to retryable if common patterns matched
+  if (retryablePatterns.some(pattern => errorMessage.includes(pattern))) return true
+
+  // Default: treat as retryable (conservative) unless explicitly non-retryable
+  return true;
 }
 
 /**
