@@ -117,7 +117,7 @@ export function formatSoftReminderMessage(protocol) {
   const unit = escapeMarkdownV2(medicine.dosage_unit || 'unidades')
 
   let message = `⏳ *Lembrete*\n\n`
-  message += `Você ainda não registrou sua dose de **${name}** (${dosage} ${unit}).\n\n`
+  message += `Você ainda não registrou sua dose de **${name}** \\(${dosage} ${unit}\\).\n\n`
   message += `Caso já tenha tomado, registre agora:`
 
   return message
