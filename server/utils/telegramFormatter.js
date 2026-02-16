@@ -46,7 +46,7 @@ export function formatTelegramMessage(template, variables = {}) {
   // Escape de todas as variáveis (proteção contra injeção)
   Object.entries(variables).forEach(([key, value]) => {
     const escapedValue = escapeMarkdownV2(String(value))
-    message = message.replace(new RegExp(`{{${key}}}`, 'g'), escapedValue)
+    message = message.split(`{{${key}}}`).join(escapedValue)
   })
 
   return message
