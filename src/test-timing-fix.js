@@ -13,8 +13,8 @@ const unusedTestVariable = 'this should trigger a lint warning'
 console.log('Debug message that should be removed')
 
 // Função com formatação incorreta
-function badlyFormattedFunction(x,y) {
-  return x+y
+function badlyFormattedFunction(x, y) {
+  return x + y
 }
 
 export default badlyFormattedFunction
