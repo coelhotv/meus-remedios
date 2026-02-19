@@ -16,8 +16,8 @@ const missingSemicolon = 'missing semicolon'
 console.log('This should not be in production code')
 
 // Função com erro de formatação
-function testFunction(  x,y  ) {
-  return x+y
+function testFunction(x, y) {
+  return x + y
 }
 
 export default testFunction
