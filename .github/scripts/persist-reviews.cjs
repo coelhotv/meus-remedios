@@ -128,14 +128,15 @@ async function persistReviews(reviewData, options = {}) {
  * @returns {string} Hash SHA-256 (64 caracteres hexadecimais)
  */
 function calculateIssueHash(issue) {
-  const content = JSON.stringify({
+  const dataToHash = {
     file_path: issue.file_path || issue.file,
     line_start: issue.line_start || issue.line,
     line_end: issue.line_end || issue.line,
     title: issue.title || issue.issue?.substring(0, 100) || 'Untitled',
     description: issue.description || issue.issue || '',
     suggestion: issue.suggestion?.trim() || null
-  }, Object.keys({}).sort()); // Ordenar chaves para consistência
+  };
+  const content = JSON.stringify(dataToHash, Object.keys(dataToHash).sort()); // Ordenar chaves para consistência
 
   return crypto
     .createHash('sha256')
