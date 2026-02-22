@@ -2009,6 +2009,304 @@ const metrics = {
 
 ---
 
+## 🔗 Integração com GEMINI_INTEGRATION_PHASES.md
+
+Esta seção detalha como o Workflow Intelligence Refactor se integra com o plano original de fases P2→P3→P4, estabelecendo continuidade, ajustes necessários e elementos reaproveitáveis.
+
+### 10.1 Visão de Integração
+
+```mermaid
+flowchart TB
+    subgraph "Plano Original"
+        P2["P2 - GitHub-Native<br/>✅ Implementado"]
+        P3["P3 - Intelligence<br/>🔄 Parcial"]
+        P4["P4 - Agent Integration<br/>🔄 Fundação"]
+    end
+    
+    subgraph "Workflow Intelligence Refactor"
+        WI["WI - Workflow Intelligence<br/>📋 Este Documento"]
+    end
+    
+    subgraph "Resultado Integrado"
+        I1["P2.x - Aprimorado<br/>com persistência"]
+        I2["P3.x - Inteligência<br/>com memória"]
+        I3["P4.x - Agent Integration<br/>com contexto"]
+    end
+    
+    P2 -->|Estende| WI
+    P3 -->|Consolida| WI
+    P4 -->|Fundamenta| WI
+    
+    WI -->|Integra| I1
+    WI -->|Integra| I2
+    WI -->|Integra| I3
+```
+
+### 10.2 O Que Continua Válido do Plano Original
+
+#### ✅ Sem Alterações Necessárias
+
+| Componente Original | Localização | Status no WI | Justificativa |
+|---------------------|-------------|--------------|---------------|
+| **P2.1 Labels Automáticas** | `.github/scripts/apply-labels.js` | ✅ Mantido | Funciona independentemente, não impactado por deduplicação |
+| **P2.2 Resumo Editável** | `.github/scripts/post-smart-summary.js` | ✅ Mantido | Estratégia de comentário único continua válida |
+| **P2.3 Create Issues** | `.github/scripts/create-issues.cjs` | 🔄 Refatorado | Lógica de criação preservada, adiciona deduplicação |
+| **P2.5 Trigger Re-review** | `.github/scripts/trigger-re-review.js` | ✅ Mantido | Lógica de critérios configuráveis continua válida |
+| **P3.1 Cache de Reviews** | `.github/scripts/review-cache.cjs` | ⚠️ Complementar | Cache de arquivo (performance) ≠ Persistência (qualidade) |
+| **P3.2 Path Filters** | `.gemini/config.yaml` | ✅ Mantido | Configuração YAML continua válida |
+| **P4.6 UI Human Review** | `src/views/admin/` | ✅ Mantido | Interface complementar ao sistema de estados |
+| **P4.1 API Supabase** | `src/services/api/geminiReviewService.js` | 🔄 Evoluído | Base existente, expande com campos novos |
+
+#### 🔄 Elementos Reaproveitáveis
+
+| Elemento | Como Reaproveitar | Arquivos |
+|----------|-------------------|----------|
+| Schema base de reviews | Expandir com novos campos | `src/schemas/geminiReviewSchema.js` |
+| Service de reviews | Adicionar métodos de batch | `src/services/api/geminiReviewService.js` |
+| Tabela Supabase | Migration ALTER TABLE | `.migrations/20260222_create_gemini_reviews_table.sql` |
+| Config de webhooks | Reutilizar estrutura JSON | `.github/config/gemini-webhooks.json` |
+| Parser de comentários | Usar como entrada | `.github/scripts/parse-gemini-comments.cjs` |
+
+### 10.3 O Que Precisa Ser Ajustado
+
+#### Ajustes de Schema (P4.1 Evoluído)
+
+```sql
+-- O QUE MUDA: gemini_reviews
+-- Status anterior: pending → in_progress → completed
+-- Status novo: detected → reported → assigned → resolved/partial/wontfix
+
+-- Antes (P4.1)
+status TEXT CHECK (status IN ('pending', 'in_progress', 'completed'))
+
+-- Depois (WI)
+status TEXT CHECK (status IN (
+  'detected', 'reported', 'assigned',
+  'resolved', 'partial', 'wontfix', 'duplicate'
+))
+```
+
+| Campo Novo | Propósito | Impacto |
+|------------|-----------|---------|
+| `issue_hash` | Deduplicação determinística | Elimina duplicatas |
+| `github_issue_number` | Link bidirecional | Rastreabilidade |
+| `resolution_type` | Tipo de resolução | Métricas de efetividade |
+| `resolved_by` | UUID do agent | Accountability |
+| `resolved_at` | Timestamp | SLA tracking |
+
+#### Ajustes de Scripts
+
+| Script Original | Ajuste Necessário | Complexidade |
+|-----------------|-------------------|--------------|
+| `create-issues.cjs` | Integrar com `persist-reviews.cjs` | Média |
+| `check-resolutions.cjs` | Adicionar UPDATE no Supabase | Média |
+| `notify-agents.cjs` | Enriquecer payload com `review_ids` | Baixa |
+
+#### Ajustes de Workflow
+
+```yaml
+# NOVO JOB a adicionar ao workflow existente
+jobs:
+  # ... jobs P2.x existentes ...
+  
+  persist-reviews:
+    name: Persist Reviews (WI)
+    runs-on: ubuntu-latest
+    needs: [parse]
+    steps:
+      - name: Persist to Supabase with Deduplication
+        run: node .github/scripts/persist-reviews.cjs
+        # Integra com P4.1 existente
+```
+
+### 10.4 O Que Deve Ser Descartado
+
+| Item | Razão | Substituto |
+|------|-------|------------|
+| `findSimilarIssue()` em `create-issues.cjs` | Lógica fraca (arquivo+linha+80%) | `checkExistingHash()` SHA-256 |
+| Cache de arquivo `.gemini-cache/` | Persistência volátil | Supabase como source of truth |
+| Estados legados genéricos | Ambiguidade (`pending`) | Estados granulares (`detected`, `reported`, etc) |
+| JSON temporário de review | Perdido após job | Persistência em banco |
+| Lógica de similaridade de texto | Não determinística | Hash criptográfico |
+
+### 10.5 Nova Ordem de Execução Integrada
+
+```mermaid
+flowchart LR
+    subgraph "Fase P2.x - GitHub-Native Aprimorado"
+        P21["P2.1<br/>Labels"]
+        P22["P2.2<br/>Resumo"]
+        P23["P2.3<br/>Create Issues"]
+        P24["P2.4<br/>Check Resolutions"]
+        P25["P2.5<br/>Trigger"]
+    end
+    
+    subgraph "Workflow Intelligence - NOVO"
+        WI1["persist-reviews.cjs<br/>💾 Deduplicação"]
+        WI2["Batch Update API<br/>🔄 Atualização em lote"]
+    end
+    
+    subgraph "Fase P3.x - Intelligence com Memória"
+        P31["P3.1<br/>Cache"]
+        P32["P3.2<br/>Path Filters"]
+        P33["P3.3<br/>Métricas*"]
+    end
+    
+    subgraph "Fase P4.x - Agent Integration Contextual"
+        P41["P4.1<br/>Supabase<br/>🔄 Evoluído"]
+        P42["P4.2<br/>Protocolo"]
+        P43["P4.3<br/>Webhook Agents"]
+        P44["P4.4<br/>CLI"]
+        P45["P4.5<br/>Endpoint"]
+        P46["P4.6<br/>UI Human"]
+        P47["P4.7<br/>Webhook GitHub"]
+    end
+    
+    P21 --> P22 --> P23
+    P23 --> WI1
+    WI1 --> P24
+    P24 --> P25
+    
+    WI1 --> P41
+    WI2 --> P45
+    
+    P41 --> P42 --> P43
+    P41 --> P44
+    P41 --> P45
+    P41 --> P46
+    P41 --> P47
+    
+    P31 -.->|Complementa| WI1
+    P32 -.->|Filtro| P23
+    P33 -.->|Consome| P41
+```
+
+### 10.6 Matriz de Reaproveitamento
+
+| Componente Original | Reaproveitamento % | Esforço de Adaptação | Prioridade |
+|---------------------|-------------------|---------------------|------------|
+| P4.1 API Supabase | 70% | ALTER TABLE + novos métodos | CRITICAL |
+| P2.3 Create Issues | 60% | Integrar persist-reviews | HIGH |
+| P4.2 Protocolo | 50% | Expandir estados | HIGH |
+| P4.3 Webhook Agents | 80% | Enriquecer payload | MEDIUM |
+| P4.5 Endpoint | 60% | Adicionar batch update | MEDIUM |
+| P2.4 Check Resolutions | 40% | Adicionar UPDATE Supabase | MEDIUM |
+| P4.6 UI Human | 90% | Adicionar filtros de status | LOW |
+| P4.4 CLI | 80% | Usar novos endpoints | LOW |
+
+### 10.7 Plano de Migração de Dados
+
+```mermaid
+gantt
+    title Migração de Dados: Plano Original → Workflow Intelligence
+    dateFormat  YYYY-MM-DD
+    
+    section Preparação
+    Backup tabela           :backup, 2026-02-24, 1d
+    Criar colunas novas     :columns, after backup, 1d
+    
+    section Migração
+    Script hash migration   :hash, after columns, 2d
+    Popular issue_hash      :populate, after hash, 1d
+    Criar UNIQUE constraint :unique, after populate, 1d
+    
+    section Validação
+    Verificar integridade   :verify, after unique, 1d
+    Testes E2E              :tests, after verify, 2d
+```
+
+#### Script de Migração de Dados Legados
+
+```javascript
+// scripts/migrate-legacy-reviews.js
+/**
+ * Migra dados do schema P4.1 original para Workflow Intelligence
+ *
+ * Mapeamentos:
+ * - pending → detected
+ * - in_progress → assigned
+ * - completed → resolved (assumir fixed)
+ * - Gera issue_hash para registros existentes
+ */
+
+async function migrateLegacyReviews() {
+  const { data: legacyReviews } = await supabase
+    .from('gemini_reviews')
+    .select('*')
+    .is('issue_hash', null); // Apenas não migrados
+  
+  for (const review of legacyReviews) {
+    // Mapear status antigo → novo
+    const statusMap = {
+      'pending': 'detected',
+      'in_progress': 'assigned',
+      'completed': 'resolved'
+    };
+    
+    // Gerar hash a partir dos dados
+    const issueHash = calculateIssueHash({
+      file_path: review.file_path,
+      line_start: review.line_start,
+      line_end: review.line_end,
+      title: review.title || 'Legacy review',
+      description: review.description || ''
+    });
+    
+    // Atualizar registro
+    await supabase
+      .from('gemini_reviews')
+      .update({
+        issue_hash: issueHash,
+        status: statusMap[review.status] || 'detected',
+        resolution_type: review.status === 'completed' ? 'fixed' : null
+      })
+      .eq('id', review.id);
+  }
+}
+```
+
+### 10.8 Checklist de Integração
+
+#### Fase 1: Compatibilidade
+- [ ] P2.1 Labels funcionam com novo schema
+- [ ] P2.2 Resumo editável preservado
+- [ ] P2.3 Create Issues integra persist-reviews
+- [ ] P2.5 Trigger mantém critérios configuráveis
+
+#### Fase 2: Migração
+- [ ] Backup criado antes de ALTER TABLE
+- [ ] Migration executada em staging
+- [ ] Dados legados migrados para novo schema
+- [ ] UNIQUE constraint aplicada em issue_hash
+
+#### Fase 3: Validação
+- [ ] Zero regressões em P2.x
+- [ ] Issues duplicadas eliminadas
+- [ ] Cache P3.1 complementa (não substitui)
+- [ ] API P4.x expõe novos campos
+
+### 10.9 Resumo da Integração
+
+| Aspecto | Plano Original | Workflow Intelligence | Resultado |
+|---------|---------------|----------------------|-----------|
+| **Persistência** | JSON temporário | Supabase + hash | ✅ Source of truth |
+| **Deduplicação** | Similaridade fraca | SHA-256 determinístico | ✅ Zero duplicatas |
+| **Estados** | 3 estados simples | 7 estados granulares | ✅ Rastreabilidade |
+| **Re-trigger** | Sem memória | Checkpoint por hash | ✅ Loop eliminado |
+| **Integração** | Polling | Webhook + batch | ✅ Tempo real |
+| **Métricas** | Básicas | Granulares por estado | ✅ Actionable insights |
+
+### 10.10 Documentação Relacionada
+
+| Documento | Relação | Ação Necessária |
+|-----------|---------|-----------------|
+| `GEMINI_INTEGRATION_PHASES.md` | Plano original | Adicionar nota sobre WI como evolução |
+| `GEMINI_AGENT_PROTOCOL.md` | Protocolo P4.2 | Atualizar exemplos com estados novos |
+| `PADROES_CODIGO.md` | Padrões gerais | Referenciar hash calculation |
+| `DATABASE.md` | Schema | Documentar campos novos |
+
+---
+
 ## 📚 Referências
 
 ### Documentação Interna
