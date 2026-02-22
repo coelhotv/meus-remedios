@@ -8,10 +8,34 @@
  * @module persist-reviews
  * @version 2.0.0
  * @requires @supabase/supabase-js
+ * @requires zod
  */
 
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
+const fs = require('fs');
+const { z } = require('zod');
+
+/**
+ * Schema Zod para validação de dados de review
+ */
+const reviewSchema = z.object({
+  pr_number: z.number().int().positive(),
+  commit_sha: z.string().min(1),
+  issues: z.array(z.object({
+    file_path: z.string().optional(),
+    file: z.string().optional(),
+    line_start: z.number().int().optional(),
+    line: z.number().int().optional(),
+    line_end: z.number().int().optional(),
+    title: z.string().optional(),
+    issue: z.string().optional(),
+    description: z.string().optional(),
+    suggestion: z.string().optional(),
+    priority: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']).optional(),
+    category: z.string().optional()
+  }))
+});
 
 // Configuração
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -47,7 +71,14 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
  * @returns {Promise<PersistResult>} Resultado da persistência
  */
 async function persistReviews(reviewData, options = {}) {
-  const { pr_number, commit_sha, issues = [] } = reviewData;
+  // Validar entrada com Zod
+  const validation = reviewSchema.safeParse(reviewData);
+  if (!validation.success) {
+    console.error('❌ Erro de validação dos dados de review:', validation.error.format());
+    throw new Error(`Dados de review inválidos: ${validation.error.message}`);
+  }
+
+  const { pr_number, commit_sha, issues } = validation.data;
   const { dryRun = false } = options;
 
   console.log(`🔄 Persistindo ${issues.length} issues para PR #${pr_number}...`);
@@ -332,7 +363,7 @@ if (require.main === module) {
   }
 
   try {
-    const reviewData = require(`./${reviewFile}`);
+    const reviewData = JSON.parse(fs.readFileSync(reviewFile, 'utf-8'));
     persistReviews(reviewData, { dryRun })
       .then(results => {
         console.log('\n✅ Persistência concluída');
