@@ -17,44 +17,31 @@ Este documento especifica a refatoração do sistema de integração com o Gemin
 |-------|-----------|------------|
 | #121 | Valor do campo `resolved_by` não está de acordo com o schema UUID | MEDIUM |
 | #122 | Falta validação de JSON Schema nos testes | MEDIUM |
-| #123 | Duplicação de issues quando PR é reavaliado | HIGH |
-| PR #120 | Loops circulares no workflow de re-review | CRITICAL |
+| #123 | Duplicata da issue #121 | - |
+| PR #120 | Documentação do protocolo criada com inconsistências nos exemplos | MEDIUM |
 
 ---
 
 ## 🔍 Diagnóstico do Problema
 
-### Caso PR #120: Loops Circulares
+### Caso PR #120: Documentação do Protocolo P4.2
 
-**Sintoma:** Workflow entra em loop infinito quando novo commit é pushado ao PR.
+O PR #120 entregou a documentação formal do protocolo de comunicação entre sistema de reviews do Gemini e agents de IA (`GEMINI_AGENT_PROTOCOL.md`). Durante o code review automatizado do Gemini, foram identificadas inconsistências nos exemplos que precisam ser corrigidas.
 
-**Causa Raiz:**
-1. Novo commit dispara webhook do GitHub
-2. Workflow detecta alterações significativas
-3. Workflow posta comentário `/gemini review`
-4. Gemini completa review
-5. Workflow salva review no Supabase
-6. Workflow detecta "novas" alterações (mesmo commit)
-7. **LOOP:** Volta ao passo 3
+**Problemas Identificados:**
 
-**Fator Agravante:** Ausência de mecanismo de deduplicação baseado em hash do conteúdo.
+1. **Inconsistência de Schema (Issue #121):**
+   - Campo `resolved_by` nos exemplos usa `"agent-123"` (string arbitrária)
+   - Schema define formato UUID (`550e8400-e29b-41d4-a716-446655440001`)
+   - Impacto: Validação falha quando agents tentam usar exemplos como referência
 
-### Issues #121, #122, #123: Duplicatas
+2. **Validação Insuficiente (Issue #122):**
+   - Testes verificam sintaxe JSON mas não conformidade com schema
+   - Falta biblioteca `ajv` ou similar para validação de schema
+   - Impacto: Inconsistências não são detectadas em CI
 
-**Issue #121:** Inconsistência de Schema
-- Campo `resolved_by` nos exemplos usa `"agent-123"` (string arbitrária)
-- Schema define formato UUID (`550e8400-e29b-41d4-a716-446655440001`)
-- Impacto: Validação falha quando agents tentam usar exemplos como referência
-
-**Issue #122:** Validação Insuficiente
-- Testes verificam sintaxe JSON mas não conformidade com schema
-- Falta biblioteca `ajv` ou similar para validação de schema
-- Impacto: Inconsistências não são detectadas em CI
-
-**Issue #123:** Duplicação de Issues
-- Mesmo issue é criado múltiplas vezes quando PR é reavaliado
-- Ausência de `issue_hash` para identificação única
-- Impacto: Poluição do backlog com issues duplicadas
+3. **Issue #123:**
+   - Duplicata da issue #121 (mesmo problema relatado duas vezes)
 
 ### Causas Fundamentais
 
@@ -63,20 +50,20 @@ Este documento especifica a refatoração do sistema de integração com o Gemin
 │                    CAUSAS FUNDAMENTAIS                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. DEDUPLICAÇÃO INCOMPLETA                                     │
-│     ├── Sem hash de conteúdo para identificar issues únicos    │
-│     ├── Sem verificação de duplicatas antes de criar issue     │
-│     └── Cache por arquivo, não por issue específico            │
+│  1. REVIEW INCOMPLETO DOS EXEMPLOS                              │
+│     ├── Exemplos JSON não revisados contra o schema definido   │
+│     ├── Formato de UUID não padronizado nos exemplos           │
+│     └── Valores placeholder ("agent-123") não substituídos     │
 │                                                                 │
-│  2. SEPARAÇÃO DE ESTADOS                                        │
-│     ├── Workflow não conhece estado de issues já criadas       │
-│     ├── Supabase não armazena referência a GitHub Issue        │
-│     └── Sem rastreamento de resolução por issue                │
+│  2. VALIDAÇÃO DE SCHEMA AUSENTE                                 │
+│     ├── Testes não validam exemplos contra JSON Schema         │
+│     ├── Falta integração com biblioteca de validação           │
+│     └── Inconsistências só detectadas em code review manual    │
 │                                                                 │
-│  3. RE-TRIGGER SEM MEMÓRIA                                      │
-│     ├── Workflow não registra qual commit já foi processado    │
-│     ├── Sem checkpoint de estado entre execuções               │
-│     └── Cada execução é "stateless"                            │
+│  3. DEDUPLICAÇÃO DE ISSUES FUTURA                               │
+│     ├── Necessário implementar hash de conteúdo (issue_hash)   │
+│     ├── Prevenir criação de issues duplicadas para mesmo item  │
+│     └── Rastreamento de estado por issue individual            │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
