@@ -3,6 +3,7 @@ import { supabase } from '@shared/utils/supabase'
 import Button from './ui/Button'
 import Card from './ui/Card'
 
+// Test comment for endpoint verification - PR #142
 export default function TestConnection() {
   const [status, setStatus] = useState('idle')
   const [message, setMessage] = useState('')
