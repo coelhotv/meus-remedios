@@ -292,44 +292,95 @@ Após análise detalhada do PR #223, descobrimos o **fluxo real** de trabalho do
 
 ---
 
-## 🔧 Tentativas de Solução (Aprendizados)
+## 🔧 Solução Implementada (Verificação de Threads Resolvidas via GraphQL)
 
-### ❌ Tentativa 1: REST API `listReviewThreads`
+### Implementação no Workflow (`.github/workflows/gemini-review.yml`)
 
-**Erro:** `github.rest.pulls.listReviewThreads is not a function`
+```yaml
+# No job 'parse', step 'Fetch Gemini Comments':
 
-A REST API do GitHub não expõe endpoint para listar review threads.
+# 🆕 Buscar review threads via GraphQL para verificar status de resolução
+const query = `
+  query($owner: String!, $repo: String!, $prNumber: Int!) {
+    repository(owner: $owner, name: $repo) {
+      pullRequest(number: $prNumber) {
+        reviewThreads(first: 100) {
+          nodes {
+            id
+            isResolved
+            comments(first: 100) {
+              nodes {
+                id
+                databaseId
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
-### ❌ Tentativa 2: GraphQL com campo `resolved`
+const graphqlResult = await github.graphql(query, {
+  owner: context.repo.owner,
+  repo: context.repo.repo,
+  prNumber: prNumber
+});
 
-**Erro:** `Field 'resolved' doesn't exist on type 'PullRequestReviewThread'`
+// Criar set de IDs de comentários em threads resolvidas
+const resolvedCommentIds = new Set();
+const threads = graphqlResult?.repository?.pullRequest?.reviewThreads?.nodes || [];
+threads.forEach(thread => {
+  if (thread.isResolved) {
+    thread.comments.nodes.forEach(comment => {
+      resolvedCommentIds.add(comment.databaseId);
+    });
+  }
+});
 
-O campo `resolved` não está disponível no schema GraphQL público do GitHub.
+console.log(`🔍 Encontradas ${resolvedCommentIds.size} threads resolvidas`);
 
-### ⚠️ Conclusão
+// 🆕 Filtrar comentários resolvidos (usando databaseId que corresponde ao id da REST API)
+const geminiReviewComments = reviewComments.filter(c => {
+  const isGemini = c.user.login === 'gemini-code-assist[bot]';
+  const isResolved = resolvedCommentIds.has(c.id);
+  if (isGemini && isResolved) {
+    console.log(`✅ Ignorando comentário resolvido: ${c.path}:${c.line}`);
+  }
+  return isGemini && !isResolved;
+});
+```
 
-**NÃO é possível** via API pública do GitHub determinar se um comentário de review está em uma thread resolvida. O estado de resolução de threads é interno do GitHub e não exposto via API.
+### Como Funciona
+
+1. **Busca Threads:** Usa `github.graphql()` para buscar `reviewThreads` do PR
+2. **Identifica Resolvidas:** Campo `isResolved` indica se thread está resolvida
+3. **Coleta IDs:** `databaseId` dos comentários em threads resolvidas
+4. **Filtra Comentários:** Exclui comentários cujos IDs estão no set de resolvidos
+5. **Parseia apenas ativos:** Workflow processa apenas issues não-resolvidos
+
+### Aprendizados (Erros Anteriores)
+
+| Tentativa | Erro | Correção |
+|-----------|------|----------|
+| REST API `listReviewThreads` | `is not a function` | Usar GraphQL |
+| GraphQL campo `resolved` | `Field doesn't exist` | Usar `isResolved` |
 
 ---
 
-## ✅ Solução Documentada (Workaround)
+## ✅ Fluxo de Trabalho Atualizado
 
-Dado que não é possível detectar automaticamente quando threads são resolvidas, o processo manual continua sendo necessário:
+### Quando issues CRITICAL são detectados:
 
-### Fluxo Recomendado
+1. **Corrigir issues** no código
+2. **Fazer push** dos commits
+3. **Marcar threads como resolvidas** no PR (ou responder confirmando correção)
+4. **Workflow re-executa** em novo commit e **ignora comentários resolvidos**
+5. **Merge disponível** se não houver mais issues bloqueantes
 
-1. **Corrigir issues** CRITICAL/HIGH no código
-2. **Fazer push** dos commits de correção
-3. **Comentar no PR:** `/gemini review` para forçar re-avaliação completa
-4. **Aguardar** novo review do Gemini
-5. **Verificar** se issues foram resolvidos no novo review
+### Alternativa (se workflow não re-executar):
 
-### Por que `/gemini review` funciona
-
-- Força o Gemini Code Assist a analisar o código novamente do zero
-- Gera novos comentários apenas para issues ainda presentes
-- O workflow re-executa e vê apenas os novos comentários
-- Issues corrigidos não aparecem no novo review
+- **Comentar no PR:** `/gemini review` para forçar re-avaliação completa
 
 ---
 
