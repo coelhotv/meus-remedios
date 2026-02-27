@@ -272,18 +272,43 @@ jobs:
               pull_number: prNumber
             });
             
-            // Filtrar apenas comentários do Gemini
-            const geminiReviews = reviews.filter(r => 
+            // 🆕 Buscar review threads para verificar status de resolução
+            const { data: reviewThreads } = await github.rest.pulls.listReviewThreads({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            
+            // Criar set de IDs de comentários em threads resolvidas
+            const resolvedCommentIds = new Set();
+            reviewThreads.forEach(thread => {
+              if (thread.resolved) {
+                thread.comments.forEach(comment => {
+                  resolvedCommentIds.add(comment.id);
+                });
+              }
+            });
+            
+            console.log(`🔍 Encontradas ${resolvedCommentIds.size} threads resolvidas`);
+            
+            // Filtrar apenas comentários do Gemini (excluindo resolvidos)
+            const geminiReviews = reviews.filter(r =>
               r.user.login === 'gemini-code-assist[bot]'
             );
             
-            const geminiComments = comments.filter(c => 
+            const geminiComments = comments.filter(c =>
               c.user.login === 'gemini-code-assist[bot]'
             );
             
-            const geminiReviewComments = reviewComments.filter(c => 
-              c.user.login === 'gemini-code-assist[bot]'
-            );
+            // 🆕 Filtrar comentários resolvidos
+            const geminiReviewComments = reviewComments.filter(c => {
+              const isGemini = c.user.login === 'gemini-code-assist[bot]';
+              const isResolved = resolvedCommentIds.has(c.id);
+              if (isGemini && isResolved) {
+                console.log(`✅ Ignorando comentário resolvido: ${c.path}:${c.line}`);
+              }
+              return isGemini && !isResolved;
+            });
             
             // Salvar para parsing
             const data = {
