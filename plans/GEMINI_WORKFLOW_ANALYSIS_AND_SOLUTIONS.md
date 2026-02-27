@@ -271,8 +271,8 @@ Após análise detalhada do PR #223, descobrimos o **fluxo real** de trabalho do
 │  4. Desenvolvedor faz push do commit de correção                        │
 │  5. Desenvolvedor responde inline no comentário do Gemini:              │
 │     "erro resolvido no commit {sha}"                                    │
-│  6. Desenvolvedor marca thread como **RESOLVIDA** (resolved)            │
-│  7. Gemini confirma resolução em resposta                               │
+│  6. Gemini confirma resolução em resposta                               │
+│  7. Desenvolvedor marca thread como **RESOLVIDA** (resolved)            │
 │  8. Workflow CONTINUA BLOQUEADO ❌ (não vê threads resolvidas)          │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
