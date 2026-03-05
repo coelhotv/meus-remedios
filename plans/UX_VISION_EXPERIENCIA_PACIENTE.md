@@ -1,8 +1,8 @@
 # Visão de Experiência Unificada — Meus Remédios
 
-**Data:** 27/02/2026
+**Data:** 04/03/2026
 **Status:** Em evolução
-**Versão:** 0.3
+**Versão:** 0.4
 
 ---
 
@@ -504,13 +504,309 @@ ATUAL (5 tabs):              PROPOSTA (4 tabs):
 
 ---
 
-## 9. Próximos Passos
+## 9. Refinamentos v0.4 — Janelas Temporais, Agrupamento e Escalabilidade
 
-1. Validar com o usuário: essa visão atende ao que imaginava?
-2. Se sim: traduzir em spec de execução com tarefas atômicas
-3. Priorizar: quais evoluções visuais implementar primeiro?
-4. Decisão pendente: order de implementação (EV primeiro, ou Features primeiro?)
+### 9.1 Janelas Temporais Deslizantes (vs. Blocos Rígidos)
+
+**Problema:** Blocos fixos (Manhã 7-12h, Tarde 12-18h, Noite 18-23h) não refletem a realidade do paciente. Quem acordou tarde e perdeu a dose das 08:00 não quer vê-la enterrada numa seção "Manhã" já encerrada.
+
+**Solução: Janela Deslizante centrada no "agora"**
+
+A tab "Hoje" organiza doses em 3 zonas temporais **relativas ao horário atual**, não absolutas:
+
+```
+┌──────────────────────────────┐
+│ Bom dia, André         🌙 👤 │
+│ ╭───╮ 85%  🔥 12d           │  ← ring gauge compacto
+│ ╰───╯                       │
+├──────────────────────────────┤
+│ ⏰ ATRASADAS (-2h)     1 ⚠️  │  ← Zona 1: now - 2h → now
+│  ⚠ Losartana 08:00    [reg] │    Destaque visual vermelho/laranja
+│                              │    CTA "Registrar Atrasado"
+├──────────────────────────────┤
+│ ▶ AGORA                2/3  │  ← Zona 2: now → now + 1h
+│  ✓ Metformina 10:00         │    (horários dentro do intervalo
+│  → Vitamina D 10:00  [swipe]│    imediato de ação)
+│  → AAS 10:00         [swipe]│
+├──────────────────────────────┤
+│ ⏳ PRÓXIMAS (+4h)      0/2  │  ← Zona 3: now + 1h → now + 4h
+│  ○ Omeprazol 14:00          │    Visual mais suave (cinza/outline)
+│  ○ Metformina 14:00         │    "Daqui a 3h"
+├──────────────────────────────┤
+│ 📋 MAIS TARDE          0/2  │  ← Zona 4: restante do dia
+│  ○ Losartana 22:00          │    Colapsado por padrão
+│  ○ Omeprazol 22:00          │    Expandir para ver
+└──────────────────────────────┘
+```
+
+**Algoritmo de zonas:**
+
+```
+Zona          │ Regra                    │ Visual        │ Comportamento
+──────────────┼──────────────────────────┼───────────────┼─────────────────
+ATRASADAS     │ scheduled < now          │ 🟠 bg-warning │ Sempre expandida
+              │ AND scheduled >= now-2h  │ pulse sutil   │ CTA "Registrar"
+              │ AND não registrada       │               │
+──────────────┼──────────────────────────┼───────────────┼─────────────────
+AGORA         │ scheduled >= now         │ 🟢 bg-primary │ Sempre expandida
+              │ AND scheduled < now+1h   │ bold          │ Swipe para registrar
+──────────────┼──────────────────────────┼───────────────┼─────────────────
+PRÓXIMAS      │ scheduled >= now+1h      │ ⚪ bg-muted   │ Expandida se ≤4 itens
+              │ AND scheduled < now+4h   │ text-muted    │ Colapsada se >4 itens
+──────────────┼──────────────────────────┼───────────────┼─────────────────
+MAIS TARDE    │ scheduled >= now+4h      │ ⚪ bg-subtle  │ Colapsada por padrão
+              │ (restante do dia)        │ text-light    │ Counter badge "(3)"
+──────────────┼──────────────────────────┼───────────────┼─────────────────
+REGISTRADAS   │ já registrada hoje       │ ✅ line-thru  │ Seção final, colapsada
+              │                          │ text-muted    │ "3 doses registradas ✓"
+```
+
+**Por que funciona melhor que blocos fixos:**
+- Às 09:30 o paciente vê: Losartana 08:00 como "ATRASADA" (perdeu), Metformina 10:00 como "AGORA" (prioridade), Omeprazol 14:00 como "PRÓXIMA"
+- Às 14:15 as zonas se recalculam: Metformina 10:00 some (>2h atrás ou já registrada), Omeprazol 14:00 é "AGORA", Losartana 22:00 é "PRÓXIMA"
+- O paciente nunca precisa interpretar em qual "período do dia" ele está — a interface faz isso por ele
+
+**Integração com accordion:** Dentro de cada zona temporal, as doses são agrupadas pelo accordion de tratamento quando houver mais de um protocolo no mesmo horário (ver seção 9.2).
+
+### 9.2 Visão Dual: Temporal (Ação) + Tratamento (Contexto)
+
+**Problema:** Abandonar o agrupamento por plano de tratamento perde contexto clínico. O "quarteto fantástico" para ICFEr agrupa 4 medicamentos com um *propósito*, e o paciente quer ver esse propósito — "tomei para o quê mesmo?"
+
+**Solução: View primária temporal + contexto de tratamento inline**
+
+A organização padrão é **temporal** (zonas deslizantes), mas cada dose carrega um **badge de contexto** e o accordion continua disponível:
+
+```
+┌──────────────────────────────┐
+│ ▶ AGORA               3/5   │
+│                              │
+│  🫀 Losartana    08:00 [swp] │  ← badge 🫀 = plano Cardiovascular
+│  🫀 Metformina   08:00 [swp] │    badge ao lado do nome
+│  🫀 AAS          08:00 [swp] │    toque no badge → expande info
+│  💊 Vitamina D   08:00 [swp] │  ← badge 💊 = plano Suplementos
+│  ○ Omeprazol    10:00       │  ← sem badge = protocolo avulso
+│                              │
+│  [LOTE: 🫀 Cardiovascular]   │  ← botão de lote por plano
+│  [LOTE: Tudo 08:00]         │  ← botão de lote por horário
+└──────────────────────────────┘
+```
+
+**Badge de tratamento:**
+
+```
+Plano                 │ Badge │ Cor
+──────────────────────┼───────┼──────────
+Cardiovascular        │ 🫀    │ vermelho
+Diabetes              │ 🩸    │ azul
+Suplementos           │ 💊    │ verde
+Sem plano (avulso)    │ (nenhum) │ cinza
+```
+
+- Os badges são definidos pelo usuário ao criar/editar o plano de tratamento
+- Cada plano pode ter um emoji e uma cor
+- Tap no badge: tooltip/mini-card com nome do plano + médico responsável + objetivo
+
+**Toggle de visualização (para pacientes com muitos meds):**
+
+```
+┌──────────────────────────────┐
+│ AGORA      [⏰ Hora│📋 Plano] │  ← toggle no header da zona
+└──────────────────────────────┘
+```
+
+No modo **📋 Plano**, a zona mostra o accordion tradicional:
+
+```
+┌──────────────────────────────┐
+│ ▶ AGORA (modo plano)   3/5  │
+│                              │
+│ ▼ 🫀 Cardiovascular    3/3   │  ← accordion por plano (EXISTENTE)
+│   ✓ Losartana    08:00       │    com swipe + lote
+│   ✓ Metformina   08:00       │
+│   → AAS          08:00 [swp] │
+│                              │
+│ ▶ 💊 Suplementos       0/1   │
+│                              │
+│ ▶ Avulsos              0/1   │
+└──────────────────────────────┘
+```
+
+**Comportamento inteligente do toggle:**
+- Default: modo `⏰ Hora` (mais direto para ação)
+- Se o paciente tem ≤3 medicamentos no mesmo horário: modo Hora (sem necessidade de agrupar)
+- Se o paciente tem >5 medicamentos no mesmo horário: sugere modo Plano automaticamente (UI-hint)
+- A última escolha do paciente é persistida em localStorage
+
+**Lote inteligente:**
+- No modo Hora: "Registrar todos do horário 08:00" → bulk register
+- No modo Plano: "Registrar todo Cardiovascular" → bulk register do plano
+- Ambos disponíveis sempre, toggle só muda a organização visual
+
+### 9.3 Escalabilidade: De 1 Remédio a 12 Doses/Dia
+
+**Problema:** A UI que funciona para 2 medicamentos pode ser verbosa demais para 10, e a UI condensada para 10 pode ser confusa para quem tem 2.
+
+**Solução: Progressive Disclosure com 3 "modos" automáticos**
+
+O sistema detecta a complexidade do paciente e adapta a UI:
+
+```
+Complexidade  │ Critério           │ Adaptação UI
+──────────────┼────────────────────┼──────────────────────
+SIMPLES       │ ≤3 doses/dia       │ Expansão total, cards grandes
+              │ ≤2 medicamentos    │ Sem toggle hora/plano
+              │                    │ Badges inline (sem tooltip)
+              │                    │ Ring gauge proeminente
+──────────────┼────────────────────┼──────────────────────
+MODERADO      │ 4-8 doses/dia      │ Cards médios
+              │ 3-5 medicamentos   │ Toggle hora/plano disponível
+              │                    │ Zonas colapsáveis
+              │                    │ Estoque rápido: top 4 críticos
+──────────────┼────────────────────┼──────────────────────
+COMPLEXO      │ >8 doses/dia       │ Cards compactos (1 linha)
+              │ >5 medicamentos    │ Toggle padrão = modo Plano
+              │                    │ Zonas PRÓXIMAS colapsadas
+              │                    │ Progress bar por zona
+              │                    │ Estoque rápido: só críticos
+              │                    │ Lote é ação primária
+```
+
+**Wireframe: Paciente SIMPLES (2 meds, 2 doses/dia)**
+
+```
+┌──────────────────────────────┐
+│ Bom dia, André               │
+│ ┌──────────────────────────┐ │
+│ │     ╭─────╮              │ │  ← ring gauge grande (mais espaço)
+│ │   ╭╯ 100 ╰╮  Perfeito!  │ │    motivação: mensagem de incentivo
+│ │   ╰╮  %  ╭╯  🔥 12 dias │ │
+│ │     ╰─────╯              │ │
+│ │  ▁▃▅▇▅▇█▅▇▅▇█▅          │ │
+│ └──────────────────────────┘ │
+├──────────────────────────────┤
+│ ▶ AGORA                     │
+│ ┌──────────────────────────┐ │
+│ │ 💊 Losartana  50mg       │ │  ← card grande com detalhes
+│ │    1 comprimido · 08:00  │ │    nome, dosagem, hora
+│ │    Hipertensão           │ │    contexto do plano
+│ │              [Registrar →]│ │    botão em vez de swipe
+│ └──────────────────────────┘ │
+│ ┌──────────────────────────┐ │
+│ │ 💊 Omeprazol  20mg       │ │
+│ │    1 cápsula · 08:00     │ │
+│ │              [Registrar →]│ │
+│ └──────────────────────────┘ │
+├──────────────────────────────┤
+│ ⏳ NOITE (22:00)         0/1 │
+│  ○ Losartana 22:00          │
+├──────────────────────────────┤
+│ ✅ NENHUMA ATRASADA          │  ← seção vazia = positiva
+└──────────────────────────────┘
+```
+
+**Wireframe: Paciente COMPLEXO (10 meds, 12 doses/dia)**
+
+```
+┌──────────────────────────────┐
+│ André              ╭───╮ 85%│  ← ring gauge inline (compacto)
+│ 🔥 12d             ╰───╯    │    maximizar espaço vertical
+├──────────────────────────────┤
+│ ⚠️ 1 atrasada                │
+│  ⚠ Losartana 08:00    [reg] │  ← 1 linha por dose (compacto)
+├──────────────────────────────┤
+│ ▶ AGORA             3/5  ▓▓░│  ← progress bar inline
+│ ┌──────────────────────────┐ │
+│ │ ▼ 🫀 Cardio        2/3   │ │  ← modo Plano por padrão
+│ │   ✓ Losartana · ✓ AAS    │ │    2 por linha (compacto)
+│ │   → Metformina     [swp] │ │
+│ │ ▶ 🩸 Diabetes      0/1   │ │
+│ │ ▶ 💊 Suplementos   1/1 ✅│ │  ← plano completo = colapsado
+│ └──────────────────────────┘ │
+│ [LOTE: Registrar 2 restantes]│  ← CTA proeminente
+├──────────────────────────────┤
+│ ⏳ PRÓXIMAS (+4h)      0/4 ▼│  ← colapsado com counter
+├──────────────────────────────┤
+│ 📋 MAIS TARDE          0/3 ▼│  ← colapsado com counter
+├──────────────────────────────┤
+│ ✅ 4 registradas hoje     ▼  │  ← colapsado
+├──────────────────────────────┤
+│ ESTOQUE  ░░Omep.🔴 ░Losart.🟡│ ← só críticos, inline
+└──────────────────────────────┘
+```
+
+**Lógica de adaptação automática:**
+
+```javascript
+function getComplexityMode(protocols, todayDoses) {
+  const totalDoses = todayDoses.length
+  const uniqueMeds = new Set(todayDoses.map(d => d.medicine_id)).size
+
+  if (totalDoses <= 3 && uniqueMeds <= 2) return 'simple'
+  if (totalDoses <= 8 && uniqueMeds <= 5) return 'moderate'
+  return 'complex'
+}
+```
+
+**Adaptações por complexidade:**
+
+| Elemento | Simple | Moderate | Complex |
+|----------|--------|----------|---------|
+| Ring Gauge | Grande, centralizado | Médio, com sparkline | Inline, 1 linha |
+| Card de dose | 3 linhas (nome+dosagem+contexto) | 2 linhas (nome+hora) | 1 linha (nome · hora) |
+| Modo padrão | Hora (poucos itens) | Hora (toggle visível) | Plano (toggle visível) |
+| Botão registrar | Botão explícito "Registrar →" | Swipe | Swipe + Lote proeminente |
+| Zonas futuras | Sempre expandidas | Expandidas se ≤4 | Colapsadas com badge |
+| Estoque rápido | Todos os meds | Top 5 por criticidade | Só críticos (🔴🟡) |
+| SmartAlerts | Sempre expandidos | Badge com contagem | Badge com contagem |
+
+**Override manual:** O paciente pode forçar um modo em Perfil > Configurações > "Densidade da interface" (Confortável / Normal / Compacto). A detecção automática é apenas o default.
 
 ---
 
-*Documento em evolução — última atualização: 27/02/2026*
+## 10. Impacto no Tab "HOJE" — Wireframe Consolidado v0.4
+
+Integrando as 3 evoluções (janelas deslizantes + contexto de plano + escalabilidade), o Dashboard "Hoje" fica:
+
+```
+┌──────────────────────────────┐
+│ André               ╭───╮85%│  ← adapta tamanho por complexidade
+│ 🔥 12d  ▁▃▅▇▅▇█    ╰───╯   │    sparkline + ring gauge
+├──────────────────────────────┤
+│ ⚠️ 2 alertas          [ver]  │  ← badge colapsado (complex mode)
+├──────────────────────────────┤
+│ ⚠ ATRASADAS           1  🟠 │  ← Zona deslizante (now - 2h)
+│  ⚠ Losartana 08:00 🫀 [reg] │    badge de plano + CTA
+├──────────────────────────────┤
+│ ▶ AGORA          [⏰│📋] 3/5│  ← toggle hora/plano
+│  🫀 Metformina 10:00  [swp] │    (ou accordion, depende do toggle)
+│  🫀 AAS         10:00  [swp] │
+│  💊 Vit. D      10:00  [swp] │
+│  [LOTE: 3 pendentes]        │
+├──────────────────────────────┤
+│ ⏳ PRÓXIMAS (+4h)    0/2  ▼  │  ← colapsado em complex mode
+├──────────────────────────────┤
+│ 📋 MAIS TARDE        0/3  ▼  │  ← colapsado
+├──────────────────────────────┤
+│ ✅ 4 registradas      [ver]  │
+├──────────────────────────────┤
+│ EST. ░Omep.🔴 ░Losar.🟡     │  ← estoque rápido (só críticos)
+├──────────────────────────────┤
+│ [+ Manual] [👨‍⚕️ Consulta]    │
+└──────────────────────────────┘
+```
+
+---
+
+## 11. Próximos Passos
+
+1. **Validar v0.4** — As soluções de janela deslizante, contexto de plano e escalabilidade atendem?
+2. **Decisões pendentes:**
+   - Quais emojis/badges default para planos (ou deixar o paciente escolher)?
+   - Threshold exato de complexidade (3/5 meds ou outro?)
+   - A janela de "atrasadas" deve ser 2h ou configurável?
+3. **Se aprovado:** Traduzir em spec de execução com tarefas atômicas por sprint
+4. **Priorização de implementação:** EV-01 a EV-08 + zonas deslizantes + escalabilidade
+
+---
+
+*Documento em evolução — última atualização: 04/03/2026*

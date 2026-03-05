@@ -163,14 +163,6 @@ Para **pacientes crônicos brasileiros e seus cuidadores** que **enfrentam dific
 - Com base no estoque inicial e doses tomadas, calcular quando o medicamento acaba.
 - Lembrete "Você tem remédio para apenas 3 dias. Lembre-se de renovar a receita e comprar."
 
-**9. Integração com Apple Health e Google Fit (básica)**
-- Sincronizar métricas básicas (PA, glicemia, peso) se usuário já usa wearables ou apps de saúde.
-- Exibir tendências na tela de histórico.
-
-**10. Suporte e ajuda**
-- FAQ integrado.
-- Chat com suporte via WhatsApp Business (humano ou bot híbrido).
-- Tutoriais em vídeo (YouTube embarcado) para funções principais.
 
 #### Stack tecnológico sugerido (MVP):
 
