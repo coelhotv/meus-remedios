@@ -1,8 +1,8 @@
 # Visão de Experiência Unificada — Meus Remédios
 
 **Data:** 04/03/2026
-**Status:** Em evolução
-**Versão:** 0.4
+**Status:** Aprovada — em execução
+**Versão:** 0.5
 
 ---
 
@@ -651,20 +651,20 @@ No modo **📋 Plano**, a zona mostra o accordion tradicional:
 O sistema detecta a complexidade do paciente e adapta a UI:
 
 ```
-Complexidade  │ Critério           │ Adaptação UI
+Complexidade  │ Critério (v0.5)    │ Adaptação UI
 ──────────────┼────────────────────┼──────────────────────
-SIMPLES       │ ≤3 doses/dia       │ Expansão total, cards grandes
-              │ ≤2 medicamentos    │ Sem toggle hora/plano
+SIMPLES       │ ≤3 medicamentos    │ Expansão total, cards grandes
+              │                    │ Sem toggle hora/plano
               │                    │ Badges inline (sem tooltip)
               │                    │ Ring gauge proeminente
 ──────────────┼────────────────────┼──────────────────────
-MODERADO      │ 4-8 doses/dia      │ Cards médios
-              │ 3-5 medicamentos   │ Toggle hora/plano disponível
+MODERADO      │ 4-6 medicamentos   │ Cards médios
+              │                    │ Toggle hora/plano disponível
               │                    │ Zonas colapsáveis
               │                    │ Estoque rápido: top 4 críticos
 ──────────────┼────────────────────┼──────────────────────
-COMPLEXO      │ >8 doses/dia       │ Cards compactos (1 linha)
-              │ >5 medicamentos    │ Toggle padrão = modo Plano
+COMPLEXO      │ 7+ medicamentos    │ Cards compactos (1 linha)
+              │                    │ Toggle padrão = modo Plano
               │                    │ Zonas PRÓXIMAS colapsadas
               │                    │ Progress bar por zona
               │                    │ Estoque rápido: só críticos
@@ -737,13 +737,14 @@ COMPLEXO      │ >8 doses/dia       │ Cards compactos (1 linha)
 **Lógica de adaptação automática:**
 
 ```javascript
-function getComplexityMode(protocols, todayDoses) {
-  const totalDoses = todayDoses.length
-  const uniqueMeds = new Set(todayDoses.map(d => d.medicine_id)).size
+// DECISÃO v0.5: threshold baseado apenas em quantidade de medicamentos ativos
+// (não em doses/dia — irrelevante pra complexidade visual)
+function getComplexityMode(activeMedicines) {
+  const count = activeMedicines.length
 
-  if (totalDoses <= 3 && uniqueMeds <= 2) return 'simple'
-  if (totalDoses <= 8 && uniqueMeds <= 5) return 'moderate'
-  return 'complex'
+  if (count <= 3) return 'simple'
+  if (count <= 6) return 'moderate'
+  return 'complex'    // 7+ medicamentos
 }
 ```
 
@@ -797,16 +798,24 @@ Integrando as 3 evoluções (janelas deslizantes + contexto de plano + escalabil
 
 ---
 
-## 11. Próximos Passos
+## 11. Decisões Finalizadas (v0.5)
 
-1. **Validar v0.4** — As soluções de janela deslizante, contexto de plano e escalabilidade atendem?
-2. **Decisões pendentes:**
-   - Quais emojis/badges default para planos (ou deixar o paciente escolher)?
-   - Threshold exato de complexidade (3/5 meds ou outro?)
-   - A janela de "atrasadas" deve ser 2h ou configurável?
-3. **Se aprovado:** Traduzir em spec de execução com tarefas atômicas por sprint
-4. **Priorização de implementação:** EV-01 a EV-08 + zonas deslizantes + escalabilidade
+| Decisão | Resolução | Justificativa |
+|---------|-----------|---------------|
+| Badges de planos | **Usuário escolhe** emoji+cor ao criar/editar plano. Sugerir opções default no wizard (🫀❤️💊🧠🦴) | Personalização aumenta engajamento |
+| Threshold complexidade | **Só quantidade de medicamentos:** ≤3 simples, 4-6 moderado, 7+ complexo | Doses/dia é irrelevante — a tela se adapta à quantidade de itens |
+| Janela de atrasadas | **2h fixo inicialmente.** Avaliar uso e ajustar se necessário | YAGNI — não criar configuração antes de ter evidência |
+
+## 12. Plano de Execução
+
+**Spec de orquestração completa:** `plans/EXEC_SPEC_UX_EVOLUTION.md`
+
+| Onda | Escopo | Risco | Executor |
+|------|--------|-------|----------|
+| **1. Componentes Visuais** | EV-01 a EV-06 (ring gauge, barras estoque, sparkline, micro-animações, custo) | Baixo | Sonnet / qualquer agente |
+| **2. Lógica + Hooks** | Zonas deslizantes, toggle hora/plano, progressive disclosure, badges de plano | Médio | Sonnet + CLAUDE.md |
+| **3. Navegação** | 5→4 tabs, Tratamento (fusão), Perfil (evolução Settings), wizard cadastro | Alto | Sonnet + supervisão Opus |
 
 ---
 
-*Documento em evolução — última atualização: 04/03/2026*
+*Documento aprovado — última atualização: 04/03/2026*
