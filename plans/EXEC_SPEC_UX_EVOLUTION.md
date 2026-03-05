@@ -198,7 +198,7 @@ DEPOIS de implementar:
 - [x] **W1-04** Micro-animações Dose — spec ✅ | código ✅ | teste ✅ | review ⬜
 - [x] **W1-05** Custo Mini-Chart — spec ✅ | código ✅ | teste ✅ | review ⬜
 - [x] **W1-06** Pulse Críticos — spec ✅ | código ✅ | teste N/A | review ⬜
-- [ ] **W1-07** Prescrições Timeline — spec ✅ | código ⬜ | teste ⬜ | review ⬜ *(BLOQUEADA: F5.9)*
+- [x] **W1-07** Prescrições Timeline — spec ✅ | código ✅ | teste ✅ | review ⬜
 - [x] **W1-08** Calendar Heat Map — spec ✅ | código ✅ | teste ✅ | review ⬜
 
 ### Onda 2 — Lógica e Hooks
