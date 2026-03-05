@@ -245,5 +245,4 @@ Summary:
    - Props: `zones, totals, viewMode, complexityMode, onRegisterDose(protocolId, dosagePerIntake), onBatchRegister(doseItems[]), onToggleSelection(protocolId, scheduledTime), selectedDoses: Set<string>`
    - 9 tests per spec
 
-If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/accoelho/.claude/projects/-Users-accoelho-Library-Mobile-Documents-com-apple-CloudDocs-git-meus-remedios/471e2a94-ad9f-41c1-be29-f3299b579696.jsonl
 Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
