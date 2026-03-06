@@ -1053,26 +1053,3 @@ Integracao (logs de integrações externas)
 5. **Seed round:** R$ 2,5–3M (VCs de healthtech: Canary, Valor Capital, Monashees, ACE, Bossanova, Tiger, etc.) para escalar em 12–18 meses e fechar primeiras parcerias B2B.
 
 ***
-
-**Este canvas de produto fornece a estrutura completa para transformar a pesquisa anterior em um produto tangível, com visão clara, roadmap executável, arquitetura técnica robusta e modelo de negócio sustentável. O diferencial está em combinar profundidade técnica (integrações, IA, dados) com sensibilidade ao contexto brasileiro (SUS, LGPD, comportamento do paciente idoso de baixa renda) e um go-to-market agressivo em B2B2C, evitando a armadilha de depender apenas de conversão freemium B2C.**
-
-Se quiser, posso agora:  
-- Detalhar **wireframes e fluxos de tela específicos** (ex.: onboarding completo, cadastro de medicamento via OCR, dashboard de cuidador).  
-- Aprofundar **arquitetura técnica** de um componente específico (ex.: motor de ML de predição de risco, pipeline de integração com eRx).  
-- Ou construir **pitch deck executivo** (10–15 slides) para apresentar a investidores, baseado neste canvas.
-
-Sources
-
-
-
-
-
-
-
-
-
-
-
-
-
-
