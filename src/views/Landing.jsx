@@ -187,13 +187,19 @@ export default function Landing({
           <div className="feature-card">
             <div className="feature-icon">📊</div>
             <h3>Estoque Visual</h3>
-            <p>Barras de criticidade mostram de relance quem vai acabar. Alertas com 7 dias de antecedência</p>
+            <p>
+              Barras de criticidade mostram de relance quem vai acabar. Alertas com 7 dias de
+              antecedência
+            </p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon">🔍</div>
             <h3>Base ANVISA</h3>
-            <p>10.000+ medicamentos brasileiros. Autocomplete preenche nome, princípio ativo e laboratório</p>
+            <p>
+              10.000+ medicamentos brasileiros. Autocomplete preenche nome, princípio ativo e
+              laboratório
+            </p>
           </div>
 
           <div className="feature-card">
@@ -300,8 +306,8 @@ export default function Landing({
         <div className="cta-card">
           <h2>Comece hoje. É gratuito, sempre.</h2>
           <p>
-            Cadastre seus medicamentos em minutos, configure seus horários e deixe o app cuidar
-            dos lembretes. Sem cartão de crédito. Sem planos pagos.
+            Cadastre seus medicamentos em minutos, configure seus horários e deixe o app cuidar dos
+            lembretes. Sem cartão de crédito. Sem planos pagos.
           </p>
 
           <div className="final-cta-buttons">
