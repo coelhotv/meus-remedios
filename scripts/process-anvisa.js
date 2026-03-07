@@ -65,7 +65,7 @@ async function processCSV() {
     if (parts.length < 5) continue
 
     // Colunas do CSV: NOME_PRODUTO;CATEGORIA_REGULATORIA;CLASSE_TERAPEUTICA;PRINCIPIO_ATIVO;EMPRESA_DETENTORA_REGISTRO
-    const [nomeProduto, categoriaRegulatoria, classeTerapeutica, principioAtivo, empresaDetentora] = parts
+    const [nomeProduto, , classeTerapeutica, principioAtivo, empresaDetentora] = parts
 
     if (!nomeProduto || !principioAtivo) continue
 
