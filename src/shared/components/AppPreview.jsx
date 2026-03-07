@@ -53,14 +53,14 @@ export default function AppPreview() {
 
       <div className="preview-stock">
         <div className="stock-bar critical">
-          <span>Omeprazol</span>
+          <span className="stock-bar__label">Omeprazol</span>
           <div className="bar">
             <div className="fill" />
           </div>
           <span className="days">2d 🔴</span>
         </div>
         <div className="stock-bar">
-          <span>Metformina</span>
+          <span className="stock-bar__label">Metformina</span>
           <div className="bar">
             <div className="fill" />
           </div>

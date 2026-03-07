@@ -762,7 +762,7 @@
   font-size: 0.875rem;
 }
 
-.stock-bar > span:first-child {
+.stock-bar__label {
   flex: 0 0 auto;
   max-width: 100px;
   white-space: nowrap;
