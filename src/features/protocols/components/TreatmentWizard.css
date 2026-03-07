@@ -94,7 +94,9 @@
   color: var(--text-primary);
   font-size: var(--font-size-base);
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
 }
 
