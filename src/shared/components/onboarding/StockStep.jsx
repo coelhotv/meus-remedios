@@ -1,9 +1,24 @@
 import { useState, useCallback } from 'react'
+import { z } from 'zod'
 import { useOnboarding } from './useOnboarding'
 import { cachedStockService } from '@shared/services/cachedServices'
 import { formatLocalDate } from '@utils/dateUtils'
 import Button from '@shared/components/ui/Button'
 import './StockStep.css'
+
+const stockFormSchema = z.object({
+  quantity: z.coerce
+    .number({ invalid_type_error: 'Quantidade é obrigatória.' })
+    .positive('Quantidade deve ser maior que 0.'),
+  unitPrice: z.coerce
+    .number()
+    .nonnegative('Preço não pode ser negativo.')
+    .optional()
+    .nullable(),
+})
+
+// Referência para o cálculo de duração do estoque (ex: 2 meses se 1 comprimido/dia)
+const PREVIEW_MAX_QUANTITY = 60
 
 export default function StockStep() {
   // 1. States
@@ -20,19 +35,21 @@ export default function StockStep() {
   const handleSaveStock = useCallback(async () => {
     setError(null)
 
-    // Validação
-    if (!quantity || Number(quantity) <= 0) {
-      setError('Quantidade é obrigatória e deve ser maior que 0')
+    // Validação com Zod
+    const result = stockFormSchema.safeParse({ quantity, unitPrice })
+    if (!result.success) {
+      setError(result.error.errors[0]?.message || 'Erro na validação')
       return
     }
 
     setIsLoading(true)
 
     try {
+      const validatedData = result.data
       await cachedStockService.add({
         medicine_id: medicine.id,
-        quantity: Number(quantity),
-        unit_price: unitPrice ? Number(unitPrice) : null,
+        quantity: validatedData.quantity,
+        unit_price: validatedData.unitPrice,
         purchase_date: formatLocalDate(new Date()),
       })
 
@@ -100,7 +117,7 @@ export default function StockStep() {
             className="stock-fill"
             style={{
               width: quantity
-                ? Math.min((Number(quantity) / 60) * 100, 100) + '%'
+                ? Math.min((Number(quantity) / PREVIEW_MAX_QUANTITY) * 100, 100) + '%'
                 : '0%',
             }}
           />

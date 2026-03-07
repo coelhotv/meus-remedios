@@ -41,7 +41,7 @@ export default function OnboardingWizard() {
 
   const isLastStep = currentStep === totalSteps - 1
   const isFirstStep = currentStep === 0
-  const isStockStep = currentStep === 3
+  const isStockStep = steps[currentStep]?.name === 'Estoque'
 
   return (
     <div className="onboarding-overlay">
