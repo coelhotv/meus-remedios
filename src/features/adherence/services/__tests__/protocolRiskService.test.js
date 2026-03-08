@@ -1,60 +1,60 @@
 // src/features/adherence/services/__tests__/protocolRiskService.test.js
 
-import { describe, it, expect, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { calculateProtocolRisk, calculateAllProtocolRisks, RISK_LEVELS } from '../protocolRiskService'
 
 describe('protocolRiskService', () => {
+  beforeEach(() => {
+    // Usar data fixa para evitar flakiness perto de meia-noite (fix: Gemini issue #7)
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-08T12:00:00Z'))
+  })
+
   afterEach(() => {
     vi.clearAllMocks()
     vi.clearAllTimers()
+    vi.useRealTimers()
   })
 
   describe('calculateProtocolRisk', () => {
     it('classifica como STABLE com adesao >=80% e trend >= -5%', () => {
       // 14/14 doses tomadas (100%), trend 0%
       // Result: adherence >= 80% AND trend >= -5% = STABLE
-      
+
       const now = new Date()
-      // Fix timezone by using explicit dates
-      now.setHours(12, 0, 0, 0)
-      
       const logs = []
-      
-      // Days 1-7 (last 7 days): 7 doses = 100% adherence
-      for (let i = 1; i <= 7; i++) {
+
+      // Days 1-14: 14 doses = 100% adherence
+      for (let i = 1; i <= 14; i++) {
         const date = new Date(now)
         date.setDate(date.getDate() - i)
         date.setHours(10, 0, 0, 0)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
-      }
-      
-      // Days 8-14 (previous 7 days): 7 doses = 100% adherence
-      for (let i = 8; i <= 14; i++) {
-        const date = new Date(now)
-        date.setDate(date.getDate() - i)
-        date.setHours(10, 0, 0, 0)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
 
       const protocol = {
         id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'diario',
+        frequency: 'diário',
         time_schedule: ['08:00'],
         active: true,
       }
 
       const result = calculateProtocolRisk({ protocolId: 'proto-1', logs, protocol })
 
-      // Note: Due to timezone differences, actual counts may vary slightly
-      // With adherence >= 80% and trend >= -5%, risk should NOT be CRITICAL
-      expect(result.riskLevel).not.toBe(RISK_LEVELS.CRITICAL)
+      expect(result.riskLevel).toBe(RISK_LEVELS.STABLE)
+      expect(result.adherence14d).toBe(100)
+      expect(result.trend7d).toBe(0)
     })
 
     it('classifica como ATTENTION com adesao 50-79%', () => {
-      // Adherence 50-79% = ATTENTION (not critical)
-      // Simplified test: just verify not CRITICAL
-      
+      // 9/14 doses = 64% adherence = ATTENTION (not CRITICAL, not STABLE)
+
       const now = new Date()
       const logs = []
       // Create 9 doses spread across 14 days
@@ -62,27 +62,31 @@ describe('protocolRiskService', () => {
         const date = new Date(now)
         date.setDate(date.getDate() - i)
         date.setHours(10, 0, 0, 0)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
 
       const protocol = {
         id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'diario',
+        frequency: 'diário',
         time_schedule: ['08:00'],
         active: true,
       }
 
       const result = calculateProtocolRisk({ protocolId: 'proto-1', logs, protocol })
 
-      // With low adherence (9/14 = 64%), should not be CRITICAL
-      expect(result.riskLevel).not.toBe(RISK_LEVELS.CRITICAL)
+      expect(result.riskLevel).toBe(RISK_LEVELS.ATTENTION)
+      expect(result.adherence14d).toBe(64)
     })
 
     it('classifica como CRITICAL com adesao <50%', () => {
-      // Low adherence should not be STABLE
-      // Simplified: verify returns some risk level (not exact value due to timezone)
-      
+      // 5/14 doses = 36% adherence = CRITICAL
+
       const now = new Date()
       const logs = []
       // Create 5 doses spread across 14 days
@@ -90,108 +94,133 @@ describe('protocolRiskService', () => {
         const date = new Date(now)
         date.setDate(date.getDate() - i)
         date.setHours(10, 0, 0, 0)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
 
       const protocol = {
         id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'diario',
+        frequency: 'diário',
         time_schedule: ['08:00'],
         active: true,
       }
 
       const result = calculateProtocolRisk({ protocolId: 'proto-1', logs, protocol })
 
-      // With very low adherence, should not be STABLE
-      expect(result.riskLevel).not.toBe(RISK_LEVELS.STABLE)
+      expect(result.riskLevel).toBe(RISK_LEVELS.CRITICAL)
+      expect(result.adherence14d).toBe(36)
     })
 
     it('classifica como CRITICAL com trend < -15%', () => {
-      // Low trend should not be STABLE
-      // Simplified: verify trend is calculated and not STABLE
-      
+      // Week 1: 0 doses (0%), Week 2 (previous): 7 doses (100%) → trend = -100% = CRITICAL
+
       const now = new Date()
       const logs = []
-      // Create more doses in earlier days than recent days to create negative trend
+
+      // Days 8-14 (previous week): 7 doses = 100%
       for (let i = 8; i <= 14; i++) {
         const date = new Date(now)
         date.setDate(date.getDate() - i)
         date.setHours(10, 0, 0, 0)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
+
+      // Days 1-7 (recent week): 0 doses = 0%
+      // (no logs added for this period)
 
       const protocol = {
         id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'diario',
+        frequency: 'diário',
         time_schedule: ['08:00'],
         active: true,
       }
 
       const result = calculateProtocolRisk({ protocolId: 'proto-1', logs, protocol })
 
-      // With negative trend, should not be STABLE
-      expect(result.trend7d).toBeLessThan(0)
-      expect(result.riskLevel).not.toBe(RISK_LEVELS.STABLE)
+      expect(result.trend7d).toBeLessThan(-15)
+      expect(result.riskLevel).toBe(RISK_LEVELS.CRITICAL)
     })
 
     it('retorna STABLE quando dados insuficientes', () => {
-      // When hasEnoughData is false, risk should be STABLE regardless of adherence
-      // Use 'quando_necessario' frequency to have expected14d = 0
-      
+      // Use 'quando_necessário' frequency: expected14d = 0 → hasEnoughData = false
+
       const now = new Date()
       const logs = []
-      // Add some logs but with 'quando_necessario' frequency
+      // Add some logs
       for (let i = 1; i <= 2; i++) {
         const date = new Date(now)
         date.setDate(date.getDate() - i)
         date.setHours(10, 0, 0, 0)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
 
       const protocol = {
         id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'quando_necessario',
+        frequency: 'quando_necessário',
         time_schedule: ['08:00'],
         active: true,
       }
 
       const result = calculateProtocolRisk({ protocolId: 'proto-1', logs, protocol })
 
-      // When frequency is 'quando_necessario', expected14d = 0, so hasEnoughData = false
       expect(result.hasEnoughData).toBe(false)
+      expect(result.riskLevel).toBe(RISK_LEVELS.STABLE)
     })
 
     it('calcula trend corretamente', () => {
-      // 7d: 100%, prev7d: 80% → trend = +20
-      
+      // Week 1: 7 doses (100%), Week 2: 7 doses (100%) → trend = 0
+      // Fix: remove duplicate logs (fix: Gemini issue #8)
+
       const now = new Date()
       const logs = []
-      // Last 14 days: 14 doses (full adherence)
-      for (let i = 1; i <= 14; i++) {
-        const date = new Date(now)
-        date.setDate(date.getDate() - i)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
-      }
-      // Last 7 days: 7 doses (100%)
+
+      // Days 1-7 (recent week): 7 doses = 100%
       for (let i = 1; i <= 7; i++) {
         const date = new Date(now)
         date.setDate(date.getDate() - i)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        date.setHours(10, 0, 0, 0)
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
-      // Previous 7 days: 7 doses (100%)
+
+      // Days 8-14 (previous week): 7 doses = 100%
       for (let i = 8; i <= 14; i++) {
         const date = new Date(now)
         date.setDate(date.getDate() - i)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        date.setHours(10, 0, 0, 0)
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
 
       const protocol = {
         id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'diario',
+        frequency: 'diário',
         time_schedule: ['08:00'],
         active: true,
       }
@@ -199,24 +228,31 @@ describe('protocolRiskService', () => {
       const result = calculateProtocolRisk({ protocolId: 'proto-1', logs, protocol })
 
       expect(result.trend7d).toBe(0)
+      expect(result.adherence14d).toBe(100)
     })
 
     it('cap adherence at 100%', () => {
-      // Mais logs que esperado (doses extras)
-      
+      // 20 doses in 14 days (more than expected 14) → capped at 100%
+
       const now = new Date()
       const logs = []
-      // 20 doses in 14 days (more than expected 14)
+      // 20 doses in 14 days
       for (let i = 1; i <= 20; i++) {
         const date = new Date(now)
-        date.setDate(date.getDate() - i)
-        logs.push({ protocol_id: 'proto-1', medicine_id: 'med-1', taken_at: date.toISOString() })
+        date.setDate(date.getDate() - (i % 14 || 14))
+        date.setHours(10, 0, 0, 0)
+        logs.push({
+          protocol_id: 'proto-1',
+          medicine_id: 'med-1',
+          taken_at: date.toISOString(),
+          quantity_taken: 1,
+        })
       }
 
       const protocol = {
         id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'diario',
+        frequency: 'diário',
         time_schedule: ['08:00'],
         active: true,
       }
@@ -230,8 +266,8 @@ describe('protocolRiskService', () => {
   describe('calculateAllProtocolRisks', () => {
     it('filtra protocolos inativos', () => {
       const protocols = [
-        { id: 'proto-1', medicine_id: 'med-1', frequency: 'diario', time_schedule: ['08:00'], active: true },
-        { id: 'proto-2', medicine_id: 'med-2', frequency: 'diario', time_schedule: ['08:00'], active: false },
+        { id: 'proto-1', medicine_id: 'med-1', frequency: 'diário', time_schedule: ['08:00'], active: true },
+        { id: 'proto-2', medicine_id: 'med-2', frequency: 'diário', time_schedule: ['08:00'], active: false },
       ]
       const logs = []
 

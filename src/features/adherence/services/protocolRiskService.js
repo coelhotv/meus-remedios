@@ -1,6 +1,6 @@
 // src/features/adherence/services/protocolRiskService.js
 
-// Note: dateUtils functions not needed - using native Date for pure calculations
+import { calculateExpectedDoses } from '@utils/adherenceLogic'
 
 /**
  * Niveis de risco para protocolos.
@@ -18,9 +18,9 @@ export const RISK_COLORS = {
 }
 
 export const RISK_LABELS = {
-  stable: 'Estavel',
-  attention: 'Atencao',
-  critical: 'Critico',
+  stable: 'Estável',
+  attention: 'Atenção',
+  critical: 'Crítico',
 }
 
 /**
@@ -44,31 +44,35 @@ export function calculateProtocolRisk({ protocolId, logs, protocol }) {
   const now = new Date()
   const fourteenDaysAgo = new Date(now)
   fourteenDaysAgo.setDate(now.getDate() - 14)
+  fourteenDaysAgo.setHours(0, 0, 0, 0) // Zerar horas para comparacao consistente (fix: Gemini issue #1)
+
   const sevenDaysAgo = new Date(now)
   sevenDaysAgo.setDate(now.getDate() - 7)
+  sevenDaysAgo.setHours(0, 0, 0, 0) // Zerar horas
 
-  // Filtrar logs deste protocolo
-  const protocolLogs = logs.filter(log =>
-    log.protocol_id === protocolId ||
-    log.medicine_id === protocol.medicine_id
-  )
+  // Filtrar logs APENAS deste protocolo (fix: Gemini issue #4, nao OR por medicine_id)
+  const protocolLogs = logs.filter(log => log.protocol_id === protocolId)
 
-  // Adesao ultimos 14 dias
+  // Adesao ultimos 14 dias - usar sum of quantity_taken, nao contagem de logs (fix: Gemini issue #2)
   const logs14d = protocolLogs.filter(log => new Date(log.taken_at) >= fourteenDaysAgo)
-  const expected14d = calculateExpectedDosesForProtocol(protocol, 14)
+  const expected14d = calculateExpectedDoses([protocol], 14)
+  const totalTaken14d = logs14d.reduce((sum, log) => sum + (log.quantity_taken ?? 0), 0)
   const adherence14d = expected14d > 0
-    ? Math.min(100, Math.round((logs14d.length / expected14d) * 100))
+    ? Math.min(100, Math.round((totalTaken14d / expected14d) * 100))
     : 100
 
-  // Adesao ultimos 7 dias vs 7 dias anteriores (trend)
+  // Adesao ultimos 7 dias vs 7 dias anteriores (trend) - fix: Gemini issue #3
   const logs7d = protocolLogs.filter(log => new Date(log.taken_at) >= sevenDaysAgo)
   const logsPrev7d = protocolLogs.filter(log => {
     const logDate = new Date(log.taken_at)
     return logDate >= fourteenDaysAgo && logDate < sevenDaysAgo
   })
-  const expected7d = calculateExpectedDosesForProtocol(protocol, 7)
-  const adherence7d = expected7d > 0 ? (logs7d.length / expected7d) * 100 : 100
-  const adherencePrev7d = expected7d > 0 ? (logsPrev7d.length / expected7d) * 100 : 100
+
+  const expected7d = calculateExpectedDoses([protocol], 7)
+  const totalTaken7d = logs7d.reduce((sum, log) => sum + (log.quantity_taken ?? 0), 0)
+  const totalTakenPrev7d = logsPrev7d.reduce((sum, log) => sum + (log.quantity_taken ?? 0), 0)
+  const adherence7d = expected7d > 0 ? (totalTaken7d / expected7d) * 100 : 100
+  const adherencePrev7d = expected7d > 0 ? (totalTakenPrev7d / expected7d) * 100 : 100
   const trend7d = Math.round(adherence7d - adherencePrev7d)
 
   // Verificar dados suficientes
@@ -110,31 +114,3 @@ export function calculateAllProtocolRisks({ protocols, logs }) {
     }))
 }
 
-/**
- * Calcula doses esperadas para um protocolo em N dias.
- * Referencia: adherenceLogic.js getDailyDoseRate
- */
-function calculateExpectedDosesForProtocol(protocol, days) {
-  const timesPerDay = protocol.time_schedule?.length || 1
-  let dosesPerDay
-
-  switch (protocol.frequency) {
-    case 'diario':
-      dosesPerDay = timesPerDay
-      break
-    case 'dias_alternados':
-      dosesPerDay = timesPerDay / 2
-      break
-    case 'semanal':
-      dosesPerDay = timesPerDay / 7
-      break
-    case 'quando_necessario':
-    case 'personalizado':
-      dosesPerDay = 0
-      break
-    default:
-      dosesPerDay = timesPerDay
-  }
-
-  return Math.round(dosesPerDay * days)
-}

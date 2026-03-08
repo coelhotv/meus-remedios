@@ -1,12 +1,19 @@
 // src/features/stock/services/__tests__/refillPredictionService.test.js
 
-import { describe, it, expect, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { predictRefill, predictAllRefills } from '../refillPredictionService'
 
 describe('refillPredictionService', () => {
+  beforeEach(() => {
+    // Usar data fixa para evitar flakiness perto de meia-noite (fix: Gemini issue #7)
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-08T12:00:00Z'))
+  })
+
   afterEach(() => {
     vi.clearAllMocks()
     vi.clearAllTimers()
+    vi.useRealTimers()
   })
 
   describe('predictRefill', () => {
@@ -41,7 +48,7 @@ describe('refillPredictionService', () => {
     it('usa consumo teorico quando dados insuficientes (<14 dias)', () => {
       // 5 logs em 5 dias, protocolo diario 2x/dia
       // dailyConsumption = 2 (teorico), isRealData=false, confidence='low'
-      
+
       const now = new Date()
       const logs = []
       for (let i = 0; i < 5; i++) {
@@ -51,9 +58,11 @@ describe('refillPredictionService', () => {
       }
 
       const protocols = [{
+        id: 'proto-1',
         medicine_id: 'med-1',
-        frequency: 'diario',
+        frequency: 'diário',
         time_schedule: ['08:00', '20:00'],
+        active: true,
       }]
 
       const result = predictRefill({
@@ -65,6 +74,7 @@ describe('refillPredictionService', () => {
 
       expect(result.isRealData).toBe(false)
       expect(result.confidence).toBe('low')
+      expect(result.dailyConsumption).toBe(2)
     })
 
     it('retorna confidence high com >=21 dias', () => {

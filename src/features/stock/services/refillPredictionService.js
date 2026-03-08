@@ -1,7 +1,7 @@
 // src/features/stock/services/refillPredictionService.js
 
 import { formatLocalDate } from '@utils/dateUtils'
-import { calculateDailyIntake } from '@utils/adherenceLogic'
+import { calculateExpectedDoses } from '@utils/adherenceLogic'
 
 /**
  * Calcula previsao de reposicao baseada em consumo REAL (logs de doses).
@@ -10,7 +10,7 @@ import { calculateDailyIntake } from '@utils/adherenceLogic'
  * @param {Object} params
  * @param {string} params.medicineId - ID do medicamento
  * @param {number} params.currentStock - Quantidade atual em estoque
- * @param {Array} params.logs - Logs de doses dos ultimos 30 dias para este med
+ * @param {Array} params.logs - Logs de doses dos ultimos 30 dias
  * @param {Array} params.protocols - Protocolos ativos deste medicamento
  * @returns {{
  *   daysRemaining: number,
@@ -24,6 +24,7 @@ export function predictRefill({ medicineId, currentStock, logs, protocols }) {
   // 1. Calcular consumo real (ultimos 30 dias)
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  thirtyDaysAgo.setHours(0, 0, 0, 0) // Zerar horas para comparacao consistente
 
   const recentLogs = logs.filter(log =>
     log.medicine_id === medicineId &&
@@ -38,13 +39,18 @@ export function predictRefill({ medicineId, currentStock, logs, protocols }) {
 
   if (daysWithData >= 14) {
     // Consumo real: total de comprimidos consumidos / dias com dados
-    const totalConsumed = recentLogs.reduce((sum, log) => sum + log.quantity_taken, 0)
+    const totalConsumed = recentLogs.reduce((sum, log) => sum + (log.quantity_taken ?? 0), 0)
     dailyConsumption = totalConsumed / daysWithData
     isRealData = true
     confidence = daysWithData >= 21 ? 'high' : 'medium'
   } else {
     // Fallback: consumo teorico baseado no protocolo
-    dailyConsumption = calculateDailyIntake(medicineId, protocols)
+    // Usa calculateExpectedDoses que considera frequencia corretamente (getDailyDoseRate)
+    const activeProtocols = protocols.filter(p => p.active === true)
+    const expectedDaily = activeProtocols.length > 0
+      ? calculateExpectedDoses(activeProtocols, 1) // 1 dia
+      : 0
+    dailyConsumption = expectedDaily
     isRealData = false
     confidence = 'low'
   }
@@ -78,6 +84,8 @@ export function predictRefill({ medicineId, currentStock, logs, protocols }) {
 
 /**
  * Calcula previsao para TODOS os medicamentos com estoque.
+ * Otimizado com O(M+S+P) ao inves de O(M*S*P).
+ *
  * @param {Object} params
  * @param {Array} params.medicines - Todos os medicamentos
  * @param {Array} params.stocks - Todos os registros de estoque
@@ -86,17 +94,30 @@ export function predictRefill({ medicineId, currentStock, logs, protocols }) {
  * @returns {Array<{medicineId, name, ...prediction}>}
  */
 export function predictAllRefills({ medicines, stocks, logs, protocols }) {
+  // Pre-calcular mapas para O(1) lookup (fix performance: Gemini issue #6)
+  const stockByMedId = stocks.reduce((acc, s) => {
+    acc[s.medicine_id] = (acc[s.medicine_id] || 0) + s.quantity
+    return acc
+  }, {})
+
+  const protocolsByMedId = protocols.reduce((acc, p) => {
+    if (!acc[p.medicine_id]) {
+      acc[p.medicine_id] = []
+    }
+    acc[p.medicine_id].push(p)
+    return acc
+  }, {})
+
   return medicines
     .map(med => {
-      const medStocks = stocks.filter(s => s.medicine_id === med.id)
-      const currentStock = medStocks.reduce((sum, s) => sum + s.quantity, 0)
+      const currentStock = stockByMedId[med.id] || 0
       if (currentStock === 0) return null
 
       const prediction = predictRefill({
         medicineId: med.id,
         currentStock,
         logs,
-        protocols: protocols.filter(p => p.medicine_id === med.id),
+        protocols: protocolsByMedId[med.id] || [],
       })
 
       return {
@@ -107,7 +128,12 @@ export function predictAllRefills({ medicines, stocks, logs, protocols }) {
       }
     })
     .filter(Boolean)
-    .sort((a, b) => a.daysRemaining - b.daysRemaining) // Mais urgente primeiro
+    .sort((a, b) => {
+      // Tratar Infinity corretamente (fix: Gemini issue #10)
+      if (a.daysRemaining === Infinity) return 1
+      if (b.daysRemaining === Infinity) return -1
+      return a.daysRemaining - b.daysRemaining
+    })
 }
 
 /**
