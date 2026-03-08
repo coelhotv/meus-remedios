@@ -213,6 +213,18 @@ export function calculateRealCosts({ medicines = [], protocols = [], logs = [] }
     }
   })
 
+  // Mapa pré-calculado de consumo teórico diário por medicamento
+  // Evita O(M*P) dentro do loop: calcular consumo diário para cada med em O(P) uma única vez
+  const theoreticalDailyIntakeMap = {}
+  validatedProtocols.forEach(p => {
+    if (p.active && p.medicine_id) {
+      const intakesPerDay = p.time_schedule?.length || 0
+      const dosagePerIntake = p.dosage_per_intake || 0
+      const protocolDailyIntake = dosagePerIntake * intakesPerDay
+      theoreticalDailyIntakeMap[p.medicine_id] = (theoreticalDailyIntakeMap[p.medicine_id] || 0) + protocolDailyIntake
+    }
+  })
+
   const items = validatedMedicines
     .filter(med => activeMedicineIds.has(med.id))
     .map(med => {
@@ -229,12 +241,12 @@ export function calculateRealCosts({ medicines = [], protocols = [], logs = [] }
 
       if (daysWithData >= 14) {
         // Consumo real: total de comprimidos consumidos / dias com dados
-        const totalConsumed = medLogs.reduce((sum, l) => sum + (l.quantity_taken || 0), 0)
+        const totalConsumed = medLogs.reduce((sum, l) => sum + (l.quantity_taken ?? 0), 0)
         dailyConsumption = daysWithData > 0 ? totalConsumed / daysWithData : 0
         isRealData = true
       } else {
-        // Fallback: consumo teórico baseado no protocolo
-        dailyConsumption = calculateDailyIntake(med.id, validatedProtocols)
+        // Fallback: consumo teórico baseado no mapa pré-calculado
+        dailyConsumption = theoreticalDailyIntakeMap[med.id] || 0
         isRealData = false
       }
 
