@@ -10,9 +10,9 @@ export default function MedicineOrphanCard({ medicine, onCreateProtocol, onDelet
             <button
               className="medicine-orphan-card__delete"
               onClick={() => onDeleteMedicine(medicine)}
-              title="Deletar medicamento"
+              aria-label="Deletar medicamento"
             >
-              ❌
+              <span aria-hidden="true">❌</span>
             </button>
           )}
         </div>

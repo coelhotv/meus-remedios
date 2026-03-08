@@ -26,6 +26,7 @@ export default function Treatment({ onNavigate }) {
   const [medicineToDelete, setMedicineToDelete] = useState(null)
   const [deleteConfirmed, setDeleteConfirmed] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
 
   const { medicines, protocols, refresh } = useDashboard()
 
@@ -68,18 +69,20 @@ export default function Treatment({ onNavigate }) {
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteConfirmed) {
       setDeleteConfirmed(true)
+      setDeleteError(null)
       return
     }
 
     try {
       setIsDeleting(true)
+      setDeleteError(null)
       await medicineService.delete(medicineToDelete.id)
       setMedicineToDelete(null)
       setDeleteConfirmed(false)
       refresh()
     } catch (err) {
       console.error('Erro ao deletar medicamento:', err)
-      alert(`Erro ao deletar medicamento: ${err.message}`)
+      setDeleteError(err.message || 'Erro ao deletar medicamento')
     } finally {
       setIsDeleting(false)
     }
@@ -88,6 +91,7 @@ export default function Treatment({ onNavigate }) {
   const handleCancelDelete = useCallback(() => {
     setMedicineToDelete(null)
     setDeleteConfirmed(false)
+    setDeleteError(null)
   }, [])
 
   const handleEditProtocol = useCallback(
@@ -266,6 +270,11 @@ export default function Treatment({ onNavigate }) {
               </>
             )}
           </p>
+          {deleteError && (
+            <p className="delete-confirmation-modal__error">
+              ⚠️ {deleteError}
+            </p>
+          )}
           <div className="delete-confirmation-modal__actions">
             <Button
               variant="secondary"

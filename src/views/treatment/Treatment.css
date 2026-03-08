@@ -313,6 +313,17 @@
   line-height: 1.5;
 }
 
+.delete-confirmation-modal__error {
+  margin: 0;
+  padding: var(--space-3);
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid #ef4444;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: #dc2626;
+  line-height: 1.5;
+}
+
 .delete-confirmation-modal__actions {
   display: flex;
   gap: var(--space-3);
