@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import './AdherenceHeatmap.css'
 
 /**
@@ -18,31 +18,14 @@ const PERIOD_NAMES = ['Madrugada', 'Manhã', 'Tarde', 'Noite']
  * - pattern: { grid, worstCell, narrative, hasEnoughData } (saída de analyzeAdherencePatterns)
  *
  * Renderiza:
- * - Desktop (>= 380px): Grid 7x4
- * - Mobile (< 380px): Stacked cards por dia
+ * - Desktop (>= 380px): Grid 7x4 via CSS
+ * - Mobile (< 380px): Stacked cards via CSS
+ * (A responsividade é controlada por media queries no CSS, não por lógica JS)
  */
 export default function AdherenceHeatmap({ pattern }) {
   // States
   const [hoveredCell, setHoveredCell] = useState(null)
   const [touchedCell, setTouchedCell] = useState(null)
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== 'undefined' ? window.innerWidth < 380 : false
-  )
-
-  // Effects
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 380)
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  // Memos
-  const displayMode = useMemo(() => (isMobile ? 'stacked' : 'grid'), [isMobile])
 
   // Guard clause: dados insuficientes
   if (!pattern || !pattern.hasEnoughData) {
@@ -96,11 +79,12 @@ export default function AdherenceHeatmap({ pattern }) {
     setHoveredCell(null)
   }
 
-  // Renderização: Grid
-  if (displayMode === 'grid') {
-    return (
-      <div className="adherence-heatmap" role="region" aria-label="Heatmap de adesão por dia e período">
-        <div className="adherence-heatmap__container">
+  // Renderização: Grid (visível em desktop via CSS) + Stacked (visível em mobile via CSS)
+  return (
+    <div className="adherence-heatmap" role="region" aria-label="Heatmap de adesão por dia e período">
+      {/* Grid: Desktop (>=380px) */}
+      <div className="adherence-heatmap__grid-container">
+        <div className="adherence-heatmap__container"> {/* Inner container for grid styling */}
           {/* Cabeçalho com períodos */}
           <div className="adherence-heatmap__header">
             <div className="adherence-heatmap__corner" />
@@ -156,19 +140,17 @@ export default function AdherenceHeatmap({ pattern }) {
           )}
         </div>
 
-        {/* Narrativa */}
+        {/* Narrativa (Grid) */}
         {pattern.narrative && (
           <div className="adherence-heatmap__narrative" role="status">
             💡 {pattern.narrative}
           </div>
         )}
       </div>
-    )
-  }
+      </div>
 
-  // Renderização: Stacked cards (mobile)
-  return (
-    <div className="adherence-heatmap adherence-heatmap--stacked" role="region" aria-label="Heatmap de adesão (mobile)">
+      {/* Stacked: Mobile (<380px) */}
+      <div className="adherence-heatmap__stacked-wrapper">
       <div className="adherence-heatmap__stacked-container">
         {pattern.grid.map((row, dayIndex) => (
           <div key={dayIndex} className="adherence-heatmap__day-card">
@@ -194,12 +176,13 @@ export default function AdherenceHeatmap({ pattern }) {
         ))}
       </div>
 
-      {/* Narrativa */}
-      {pattern.narrative && (
-        <div className="adherence-heatmap__narrative" role="status">
-          💡 {pattern.narrative}
-        </div>
-      )}
+        {/* Narrativa (Stacked) */}
+        {pattern.narrative && (
+          <div className="adherence-heatmap__narrative" role="status">
+            💡 {pattern.narrative}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
