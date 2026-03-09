@@ -68,7 +68,6 @@ function preprocessProtocolsExpected(protocols) {
     }
 
     const daysOfWeek = getDaysOfWeekForProtocol(protocol.frequency)
-    const timesPerDay = protocol.time_schedule.length
 
     daysOfWeek.forEach((dayIndex) => {
       protocol.time_schedule.forEach((timeStr) => {
