@@ -9,6 +9,28 @@
 
 ---
 
+## Status de Entregas
+
+| Sprint | Status | Commit | Data | Quality Gates |
+|--------|--------|--------|------|----------------|
+| **M0** | ✅ MERGED | `6f4be85` | 2026-03-10 | ✅ 539/539 testes, ✅ 0 lint, ✅ 2 commits, ✅ Gemini suggestions |
+| M1 | 🔜 Pendente | — | — | — |
+| M2 | 🔜 Pendente | — | — | — |
+| M3 | 🔜 Pendente | — | — | — |
+| M4 | 🔜 Pendente | — | — | — |
+
+### Sprint M0 — Quality Gates Checklist
+
+- [x] **Lint:** 0 erros em HealthHistory.jsx
+- [x] **Testes:** 539/539 passando (30 test files)
+- [x] **Build:** npm run build sem erros
+- [x] **Dead Code:** adherencePatternData removido (0 referências)
+- [x] **Commits:** 2 semânticos (principal + Gemini suggestions)
+- [x] **Code Review:** Gemini #340, #341 aplicadas e fechadas
+- [x] **Merge:** Squash + delete branch automático (via gh CLI)
+
+---
+
 ## Contexto Obrigatório (Ler Antes de Qualquer Sprint)
 
 ### Por que esta spec existe
