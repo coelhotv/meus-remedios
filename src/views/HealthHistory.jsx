@@ -78,7 +78,7 @@ export default function HealthHistory({ onNavigate }) {
   const daysThisMonth = useMemo(
     () =>
       new Set(
-        currentMonthLogs.map((log) => new Date(log.taken_at).toLocaleDateString('pt-BR'))
+        currentMonthLogs.map((log) => formatLocalDate(new Date(log.taken_at)))
       ).size,
     [currentMonthLogs]
   )
@@ -158,7 +158,7 @@ export default function HealthHistory({ onNavigate }) {
                 }
               })
             })
-            .catch(() => {})
+            .catch((err) => console.error('[HealthHistory] Falha ao buscar logs para análise:', err))
             .finally(() => setIsLoadingPatterns(false))
           observer.disconnect()
         }
