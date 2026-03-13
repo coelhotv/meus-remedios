@@ -1114,7 +1114,7 @@ manualChunks: {
 npm run build 2>&1 | grep -E "vendor-pdf|feature-medicines-db"
 # Esperado: chunks aparecem SEPARADOS do index principal
 ```
-
+```markdown
 **Source:** Sprint M2 — code splitting completo
 ```
 
