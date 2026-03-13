@@ -388,7 +388,7 @@ export const adherenceService = {
     const startDateStr = formatLocalDate(startDate)
     const endDateStr = formatLocalDate(endDate)
 
-    const { data, error, status } = await supabase
+    const { data, error } = await supabase
       .from('v_daily_adherence')
       .select('log_date, expected_doses, taken_doses, adherence_percentage')
       .gte('log_date', startDateStr)
