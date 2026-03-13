@@ -1,5 +1,60 @@
+import { z } from 'zod'
 import { supabase, getUserId } from '@shared/utils/supabase'
 import { isProtocolActiveOnDate, parseLocalDate, formatLocalDate } from '@utils/dateUtils.js'
+
+// Schema para validação de parâmetros
+const GetDailyAdherenceFromViewSchema = z.object({
+  days: z.number().int().positive().max(365, 'Máximo 365 dias').default(30),
+})
+
+const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+const PERIOD_NAMES = ['Madrugada', 'Manhã', 'Tarde', 'Noite']
+
+/**
+ * Encontra pior célula e gera narrativa para heatmap
+ * @param {Array} data - Dados do heatmap
+ * @param {boolean} hasEnoughData - Se tem dados suficientes
+ * @returns {object} {worstCell, narrative}
+ */
+function buildHeatmapNarrative(data, hasEnoughData) {
+  let worstCell = null
+
+  if (hasEnoughData) {
+    let worstAdherence = 100
+    let worstDayIndex = null
+    let worstPeriodIndex = null
+
+    ;(data || []).forEach((row) => {
+      if (
+        row.expected_doses >= 3 &&
+        row.adherence_percentage !== null &&
+        row.adherence_percentage < worstAdherence
+      ) {
+        worstAdherence = row.adherence_percentage
+        worstDayIndex = row.day_of_week
+        worstPeriodIndex = row.period_index
+      }
+    })
+
+    if (worstDayIndex !== null && worstPeriodIndex !== null) {
+      worstCell = {
+        dayIndex: worstDayIndex,
+        periodIndex: worstPeriodIndex,
+        adherence: worstAdherence,
+        dayName: DAY_NAMES[worstDayIndex],
+        periodName: PERIOD_NAMES[worstPeriodIndex],
+      }
+    }
+  }
+
+  const narrative = hasEnoughData && worstCell
+    ? `Seu pior horário é ${worstCell.dayName} à ${worstCell.periodName.toLowerCase()}`
+    : !hasEnoughData
+    ? `Dados insuficientes. Registre pelo menos 21 dias de doses para análise completa.`
+    : 'Sua adesão está excelente em todos os períodos!'
+
+  return { worstCell, narrative }
+}
 
 /**
  * Adherence Service - Cálculo de adesão ao tratamento
@@ -318,14 +373,20 @@ export const adherenceService = {
    * @returns {Promise<Array<{date: string, adherence: number, taken: number, expected: number}>>}
    */
   async getDailyAdherenceFromView(days = 30) {
+    // Validar input com Zod
+    const validation = GetDailyAdherenceFromViewSchema.safeParse({ days })
+    if (!validation.success) {
+      console.error('[adherenceService] Erro validação getDailyAdherenceFromView:', validation.error.format())
+      return []
+    }
+
+    const { days: validDays } = validation.data
     const endDate = new Date()
     const startDate = new Date()
-    startDate.setDate(startDate.getDate() - days)
+    startDate.setDate(startDate.getDate() - validDays)
 
     const startDateStr = formatLocalDate(startDate)
     const endDateStr = formatLocalDate(endDate)
-
-    console.log('[adherenceService] getDailyAdherenceFromView:', { days, startDateStr, endDateStr })
 
     const { data, error, status } = await supabase
       .from('v_daily_adherence')
@@ -334,26 +395,9 @@ export const adherenceService = {
       .lte('log_date', endDateStr)
       .order('log_date', { ascending: true })
 
-    console.log('[adherenceService] Query retornou status:', status, 'data:', data, 'error:', error)
-
     if (error) {
       console.error('[adherenceService] getDailyAdherenceFromView erro:', error)
       throw error
-    }
-
-    if (!data || data.length === 0) {
-      console.warn('[adherenceService] getDailyAdherenceFromView retornou vazio!')
-    }
-
-    console.log('[adherenceService] getDailyAdherenceFromView retornou:', data?.length || 0, 'registros')
-    if (data && data.length > 0) {
-      console.log('[adherenceService] Primeiros 3 registros:', data.slice(0, 3))
-      console.log('[adherenceService] Valores das colunas:', {
-        log_date: data[0]?.log_date,
-        expected_doses: data[0]?.expected_doses,
-        taken_doses: data[0]?.taken_doses,
-        adherence_percentage: data[0]?.adherence_percentage,
-      })
     }
 
     // Adaptar nomes das colunas para match com SparklineAdesao
@@ -373,26 +417,15 @@ export const adherenceService = {
   async getAdherencePatternFromView() {
     console.log('[adherenceService] getAdherencePatternFromView: iniciando')
 
-    const { data, error, status } = await supabase
+    const { data, error } = await supabase
       .from('v_adherence_heatmap')
       .select('day_of_week, period_index, expected_doses, taken_doses, adherence_percentage')
       .order('day_of_week')
       .order('period_index')
 
-    console.log('[adherenceService] Heatmap query retornou status:', status, 'data:', data, 'error:', error)
-
     if (error) {
       console.error('[adherenceService] getAdherencePatternFromView erro:', error)
       throw error
-    }
-
-    if (!data || data.length === 0) {
-      console.warn('[adherenceService] getAdherencePatternFromView retornou vazio!')
-    }
-
-    console.log('[adherenceService] getAdherencePatternFromView retornou:', data?.length || 0, 'registros')
-    if (data && data.length > 0) {
-      console.log('[adherenceService] Primeiros 3 registros:', data.slice(0, 3))
     }
 
     // Inicializar grid 7×4
@@ -414,50 +447,8 @@ export const adherenceService = {
     const filledCells = (data || []).filter((row) => row.expected_doses > 0).length
     const hasEnoughData = filledCells >= 7
 
-    console.log('[adherenceService] Heatmap stats:', { totalRows: data?.length || 0, filledCells, hasEnoughData })
-
-    // Encontrar pior célula (mínimo 3 doses esperadas)
-    let worstCell = null
-    if (hasEnoughData) {
-      let worstAdherence = 100
-      let worstDayIndex = null
-      let worstPeriodIndex = null
-
-      const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-      const PERIOD_NAMES = ['Madrugada', 'Manhã', 'Tarde', 'Noite']
-
-      ;(data || []).forEach((row) => {
-        if (
-          row.expected_doses >= 3 &&
-          row.adherence_percentage !== null &&
-          row.adherence_percentage < worstAdherence
-        ) {
-          worstAdherence = row.adherence_percentage
-          worstDayIndex = row.day_of_week
-          worstPeriodIndex = row.period_index
-        }
-      })
-
-      if (worstDayIndex !== null && worstPeriodIndex !== null) {
-        worstCell = {
-          dayIndex: worstDayIndex,
-          periodIndex: worstPeriodIndex,
-          adherence: worstAdherence,
-          dayName: DAY_NAMES[worstDayIndex],
-          periodName: PERIOD_NAMES[worstPeriodIndex],
-        }
-      }
-    }
-
-    // Gerar narrativa
-    let narrative = ''
-    if (hasEnoughData && worstCell) {
-      narrative = `Seu pior horário é ${worstCell.dayName} à ${worstCell.periodName.toLowerCase()}`
-    } else if (!hasEnoughData) {
-      narrative = `Dados insuficientes. Registre pelo menos 21 dias de doses para análise completa.`
-    } else {
-      narrative = 'Sua adesão está excelente em todos os períodos!'
-    }
+    // Encontrar pior célula e gerar narrativa
+    const { worstCell, narrative } = buildHeatmapNarrative(data, hasEnoughData)
 
     return {
       grid,

@@ -145,7 +145,7 @@ expected_per_period AS (
       WHEN EXTRACT(HOUR FROM p.schedule_time::time) < 18 THEN 2
       ELSE 3
     END AS period_index,
-    COUNT(DISTINCT p.id) AS expected_count
+    COUNT(*) AS expected_count
   FROM protocol_schedule_expanded p
   GROUP BY p.user_id, p.day_of_week, period_index
 )

@@ -118,14 +118,6 @@ export default function HealthHistory({ onNavigate }) {
         }),
       ])
 
-      console.log('[HealthHistory] Summary carregado:', summary)
-      console.log('[HealthHistory] Daily adherence carregado:', daily?.length || 0, 'dias')
-      if (daily && daily.length > 0) {
-        console.log('[HealthHistory] Primeiros 3 dias:', daily.slice(0, 3))
-      } else {
-        console.warn('[HealthHistory] AVISO: Daily adherence vazio ou null')
-      }
-
       setAdherenceSummary(summary)
       setDailyAdherence(daily)
     } catch (err) {
