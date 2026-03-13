@@ -1548,8 +1548,9 @@ export function OfflineBanner() {
 
 ---
 
-# SPRINT M5 — ASSETS, CSS E FONT SIZES
+# SPRINT M5 ✅ DELIVERED — ASSETS, CSS E FONT SIZES
 
+**Status:** ✅ MERGED (commit `4822296`, 2026-03-13)
 **Branch:** `fix/mobile-perf-m5-assets-css`
 **Dependência:** Nenhuma
 **Duração estimada:** 1 dia
