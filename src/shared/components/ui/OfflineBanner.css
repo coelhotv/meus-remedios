@@ -1,0 +1,14 @@
+.offline-banner {
+  position: fixed;
+  bottom: 64px; /* acima do BottomNav (altura estimada: 60-64px) */
+  left: 0;
+  right: 0;
+  background: var(--color-warning, #f59e0b);
+  color: var(--color-text-on-warning, #1a1a1a);
+  text-align: center;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 100;
+  contain: layout style; /* evita layout thrash no toggle */
+}
