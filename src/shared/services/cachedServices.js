@@ -229,6 +229,16 @@ export const cachedStockService = {
 }
 
 /**
+ * Invalida todas as chaves de cache relacionadas à adesão.
+ * Centraliza a lógica para evitar duplicação nos 4 métodos de mutação do cachedLogService.
+ */
+const _invalidateAdherenceCache = () => {
+  invalidateCache(`${CACHE_KEYS.ADHERENCE_SUMMARY}*`)
+  invalidateCache(`${CACHE_KEYS.ADHERENCE_DAILY}*`)
+  invalidateCache(CACHE_KEYS.ADHERENCE_PATTERN)
+}
+
+/**
  * Log Service com Cache
  */
 export const cachedLogService = {
@@ -267,10 +277,7 @@ export const cachedLogService = {
     invalidateCache(`${CACHE_KEYS.LOGS_BY_MONTH}*`)
     invalidateCache(`${CACHE_KEYS.LOGS_PAGINATED}*`)
     invalidateCache('logs:dateRange*')
-    // Invalida dados de adesão (logs afetam métricas de adesão)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_SUMMARY}*`)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_DAILY}*`)
-    invalidateCache(CACHE_KEYS.ADHERENCE_PATTERN)
+    _invalidateAdherenceCache()
     // Invalida estoque (foi decrementado)
     invalidateCache(`${CACHE_KEYS.STOCK_BY_MEDICINE}*`)
     invalidateCache(`${CACHE_KEYS.STOCK_TOTAL}*`)
@@ -287,10 +294,7 @@ export const cachedLogService = {
     invalidateCache(`${CACHE_KEYS.LOGS_BY_MONTH}*`)
     invalidateCache(`${CACHE_KEYS.LOGS_PAGINATED}*`)
     invalidateCache('logs:dateRange*')
-    // Invalida dados de adesão (logs afetam métricas de adesão)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_SUMMARY}*`)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_DAILY}*`)
-    invalidateCache(CACHE_KEYS.ADHERENCE_PATTERN)
+    _invalidateAdherenceCache()
     invalidateCache(`${CACHE_KEYS.STOCK_BY_MEDICINE}*`)
     invalidateCache(`${CACHE_KEYS.STOCK_TOTAL}*`)
     invalidateCache(`${CACHE_KEYS.STOCK_SUMMARY}*`)
@@ -306,10 +310,7 @@ export const cachedLogService = {
     invalidateCache(`${CACHE_KEYS.LOGS_BY_MONTH}*`)
     invalidateCache(`${CACHE_KEYS.LOGS_PAGINATED}*`)
     invalidateCache('logs:dateRange*')
-    // Invalida dados de adesão (logs afetam métricas de adesão)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_SUMMARY}*`)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_DAILY}*`)
-    invalidateCache(CACHE_KEYS.ADHERENCE_PATTERN)
+    _invalidateAdherenceCache()
     invalidateCache(`${CACHE_KEYS.STOCK_BY_MEDICINE}*`)
     invalidateCache(`${CACHE_KEYS.STOCK_TOTAL}*`)
     invalidateCache(`${CACHE_KEYS.STOCK_SUMMARY}*`)
@@ -324,10 +325,7 @@ export const cachedLogService = {
     invalidateCache(`${CACHE_KEYS.LOGS_BY_MONTH}*`)
     invalidateCache(`${CACHE_KEYS.LOGS_PAGINATED}*`)
     invalidateCache('logs:dateRange*')
-    // Invalida dados de adesão (logs afetam métricas de adesão)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_SUMMARY}*`)
-    invalidateCache(`${CACHE_KEYS.ADHERENCE_DAILY}*`)
-    invalidateCache(CACHE_KEYS.ADHERENCE_PATTERN)
+    _invalidateAdherenceCache()
     invalidateCache(`${CACHE_KEYS.STOCK_BY_MEDICINE}*`)
     invalidateCache(`${CACHE_KEYS.STOCK_TOTAL}*`)
     invalidateCache(`${CACHE_KEYS.STOCK_SUMMARY}*`)

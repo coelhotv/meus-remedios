@@ -531,10 +531,10 @@ export const adherenceService = {
 
     const expectedDoses = calculateExpectedDoses(protocols, days, endDate)
     const takenDoses = count || 0
-    const score = expectedDoses > 0 ? Math.round((takenDoses / expectedDoses) * 100) : 0
+    const score = expectedDoses > 0 ? Math.min(Math.round((takenDoses / expectedDoses) * 100), 100) : 0
 
     return {
-      score: Math.min(score, 100),
+      score,
       taken: takenDoses,
       expected: expectedDoses,
       period,
