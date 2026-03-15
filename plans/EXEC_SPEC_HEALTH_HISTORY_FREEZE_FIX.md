@@ -1,7 +1,7 @@
 # EXEC SPEC — Fix HealthHistory Mobile Browser Freeze
 
 **Versão:** 1.0 | **Data:** 2026-03-15
-**Plano-base:** `.claude/plans/peaceful-discovering-sparrow.md`
+**Plano-base:** `plans/new-plan-mobile-performance-refactor.md`
 **Skill de entrega:** `/deliver-sprint`
 
 > Documento de execução autônoma para agentes IA coder.
@@ -1280,7 +1280,7 @@ Antes de criar PR, verificar:
 
 # Referências
 
-- `plans/EXEC_SPEC_MOBILE_PERFORMANCE.md` — sprints M0-M8 (concluídos)
+- `plans/archive_old/mobile_performance/EXEC_SPEC_MOBILE_PERFORMANCE.md` — sprints M0-M8 (concluídos)
 - `docs/standards/MOBILE_PERFORMANCE.md` — guia de performance mobile
 - `.memory/rules.md` — R-001 a R-127
 - `.memory/anti-patterns.md` — AP-001 a AP-P13
