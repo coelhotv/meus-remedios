@@ -1,6 +1,11 @@
+import { useState } from 'react'
 import Card from '@shared/components/ui/Card'
 import StockIndicator from './StockIndicator'
 import './StockCard.css'
+
+// Ajustes automáticos gerados pelo sistema (deleção/edição de dose)
+const isSystemAdjustment = (entry) =>
+  entry.notes?.startsWith('Dose excluída') || entry.notes?.startsWith('Ajuste de dose')
 
 export default function StockCard({
   medicine,
@@ -11,6 +16,8 @@ export default function StockCard({
   dailyIntake,
   onClick,
 }) {
+  const [showHistory, setShowHistory] = useState(false)
+
   const isOutOfStock = totalQuantity === 0
 
   const formatDate = (dateString) => {
@@ -33,6 +40,48 @@ export default function StockCard({
     const expDate = new Date(expirationDate)
     return expDate < today
   }
+
+  // Classificar entradas por tipo
+  const activeEntries = stockEntries.filter((e) => e.quantity > 0 && !isSystemAdjustment(e))
+  const consumedEntries = stockEntries.filter((e) => e.quantity === 0 && !isSystemAdjustment(e))
+  const systemEntries = stockEntries.filter(isSystemAdjustment)
+  const hiddenCount = consumedEntries.length + systemEntries.length
+
+  const renderEntryItem = (entry, className = '') => (
+    <div key={entry.id} className={`entry-item ${className}`}>
+      <div className="entry-info">
+        <span className="entry-quantity">{entry.quantity} un.</span>
+        <span className="entry-price">
+          {entry.unit_price > 0 ? `(R$ ${parseFloat(entry.unit_price).toFixed(2)}/un)` : ''}
+        </span>
+        <span className="entry-date">Compra: {formatDate(entry.purchase_date)}</span>
+      </div>
+      {entry.unit_price > 0 && (
+        <div className="entry-total">
+          Custo lote: R$ {(entry.unit_price * entry.quantity).toFixed(2)}
+        </div>
+      )}
+      {entry.expiration_date && (
+        <div className="entry-expiration">
+          <span
+            className={`expiration-badge ${
+              isExpired(entry.expiration_date)
+                ? 'expired'
+                : isExpiringSoon(entry.expiration_date)
+                  ? 'expiring-soon'
+                  : ''
+            }`}
+          >
+            {isExpired(entry.expiration_date)
+              ? '⚠️ Vencido'
+              : isExpiringSoon(entry.expiration_date)
+                ? '⏰ Vence em breve'
+                : `Validade: ${formatDate(entry.expiration_date)}`}
+          </span>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <Card
@@ -64,46 +113,57 @@ export default function StockCard({
 
       {stockEntries.length > 0 && (
         <div className="stock-entries">
-          <h5>Histórico de Compras</h5>
+          <h5>Lotes Ativos</h5>
           <div className="entries-list">
-            {stockEntries.map((entry) => (
-              <div key={entry.id} className="entry-item">
-                <div className="entry-info">
-                  <span className="entry-quantity">{entry.quantity} un.</span>
-                  <span className="entry-price">
-                    {entry.unit_price > 0
-                      ? `(R$ ${parseFloat(entry.unit_price).toFixed(2)}/un)`
-                      : ''}
-                  </span>
-                  <span className="entry-date">Compra: {formatDate(entry.purchase_date)}</span>
-                </div>
-                {entry.unit_price > 0 && (
-                  <div className="entry-total">
-                    Custo lote: R$ {(entry.unit_price * entry.quantity).toFixed(2)}
-                  </div>
-                )}
-                {entry.expiration_date && (
-                  <div className="entry-expiration">
-                    <span
-                      className={`expiration-badge ${
-                        isExpired(entry.expiration_date)
-                          ? 'expired'
-                          : isExpiringSoon(entry.expiration_date)
-                            ? 'expiring-soon'
-                            : ''
-                      }`}
-                    >
-                      {isExpired(entry.expiration_date)
-                        ? '⚠️ Vencido'
-                        : isExpiringSoon(entry.expiration_date)
-                          ? '⏰ Vence em breve'
-                          : `Validade: ${formatDate(entry.expiration_date)}`}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
+            {activeEntries.length > 0 ? (
+              activeEntries.map((entry) => renderEntryItem(entry))
+            ) : (
+              <p className="no-active-entries">Nenhum lote com quantidade disponível</p>
+            )}
           </div>
+
+          {hiddenCount > 0 && (
+            <>
+              <button
+                className="history-toggle"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowHistory((prev) => !prev)
+                }}
+              >
+                {showHistory ? '▾' : '▸'} Ver histórico completo ({hiddenCount}{' '}
+                {hiddenCount === 1 ? 'entrada anterior' : 'entradas anteriores'})
+              </button>
+
+              {showHistory && (
+                <div className="history-section">
+                  {consumedEntries.length > 0 && (
+                    <>
+                      <span className="history-section-title">Lotes consumidos</span>
+                      <div className="entries-list">
+                        {consumedEntries.map((entry) => renderEntryItem(entry, 'consumed'))}
+                      </div>
+                    </>
+                  )}
+                  {systemEntries.length > 0 && (
+                    <>
+                      <span className="history-section-title">Ajustes automáticos</span>
+                      <div className="entries-list">
+                        {systemEntries.map((entry) => (
+                          <div key={entry.id} className="entry-item system-adjustment">
+                            <div className="entry-info">
+                              <span className="entry-quantity">+{entry.quantity} un.</span>
+                              <span className="entry-date system-note">{entry.notes}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </Card>
