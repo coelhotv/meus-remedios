@@ -304,6 +304,8 @@ Histórico de doses tomadas.
 | `notes` | text | Observações |
 | `user_id` | uuid (FK, NOT NULL) | Dono do registro (default: '00000000-0000-0000-0000-000000000001') |
 
+> ⚠️ **Colunas que NÃO existem em `medicine_logs`**: `status`, `treatment_plan_id`. Não inclua estas colunas em queries SELECT — causam HTTP 400. O `treatment_plan_id` é uma coluna de `protocols`, não de `medicine_logs`.
+
 ---
 
 ## Tabelas do Sistema Gemini Reviews (v3.0.0)
