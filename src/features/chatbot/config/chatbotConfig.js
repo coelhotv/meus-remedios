@@ -72,3 +72,11 @@ export const CHATBOT_HEALTH_KEYWORDS = [
   'saude',
   'sintoma',
 ]
+
+// -- Persistência de Histórico --
+
+/** Chave do localStorage para persistir histórico de conversa. */
+export const CHATBOT_HISTORY_STORAGE_KEY = 'mr_chat_history'
+
+/** Máximo de mensagens a manter e exibir no histórico persistido (10 turnos = 20 mensagens). */
+export const CHATBOT_HISTORY_MAX_DISPLAY = 20
