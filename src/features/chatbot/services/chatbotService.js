@@ -71,7 +71,8 @@ export async function sendChatMessage({ message, history = [], patientData }) {
       blocked: false,
       rateLimited: false,
     }
-  } catch {
+  } catch (error) {
+    console.error('[chatbot] Erro ao enviar mensagem:', error)
     return {
       response: 'Desculpe, estou com dificuldades técnicas. Tente novamente em instantes.',
       blocked: false,

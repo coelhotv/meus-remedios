@@ -37,7 +37,11 @@ export function buildPatientContext({ medicines, protocols, logs, stockSummary, 
 
   const todayLogs = (logs || []).filter(log => {
     const logDate = new Date(log.taken_at)
-    return logDate.toDateString() === today.toDateString()
+    return (
+      logDate.getFullYear() === today.getFullYear() &&
+      logDate.getMonth() === today.getMonth() &&
+      logDate.getDate() === today.getDate()
+    )
   })
 
   const adherence7d = stats?.adherence != null
