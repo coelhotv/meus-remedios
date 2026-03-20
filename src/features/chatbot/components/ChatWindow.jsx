@@ -6,9 +6,56 @@ import {
   savePersistedHistory,
   clearPersistedHistory,
 } from '../services/chatbotService'
-import { DISCLAIMER } from '../services/safetyGuard'
+import { createWelcomeMessage } from '../config/chatbotConfig'
 import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import styles from './ChatWindow.module.css'
+
+// Funções auxiliares puras (fora do componente para melhor performance e organização)
+
+/**
+ * Formata timestamp para exibição relativa (e.g., "às 14:30", "Ontem às 09:15").
+ */
+const formatMessageTime = timestamp => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  const isYesterday = date.toDateString() === yesterday.toDateString()
+  const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  if (isToday) return `às ${timeStr}`
+  if (isYesterday) return `Ontem às ${timeStr}`
+  return `${date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${timeStr}`
+}
+
+/**
+ * Verifica se deve exibir separador de data antes da mensagem atual.
+ */
+const shouldShowDateSeparator = (msgs, idx) => {
+  if (idx === 0) return false
+  const prev = new Date(msgs[idx - 1].timestamp).toDateString()
+  const curr = new Date(msgs[idx].timestamp).toDateString()
+  return prev !== curr
+}
+
+/**
+ * Formata label do separador de data (e.g., "Hoje", "Ontem", "15/03").
+ */
+const formatDaySeparator = timestamp => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  const isYesterday = date.toDateString() === yesterday.toDateString()
+  if (isToday) return 'Hoje'
+  if (isYesterday) return 'Ontem'
+  return date.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+  })
+}
 
 /**
  * Drawer lateral de chat com o assistente IA.
@@ -25,13 +72,7 @@ export default function ChatWindow({ isOpen, onClose }) {
   const [messages, setMessages] = useState(() => {
     const persisted = loadPersistedHistory()
     if (persisted.length > 0) return persisted
-    return [
-      {
-        role: 'assistant',
-        content: `Olá! Sou seu Assistente IA de medicamentos. Como posso ajudar?\n\n_${DISCLAIMER}_`,
-        timestamp: Date.now(),
-      },
-    ]
+    return [createWelcomeMessage()]
   })
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -42,16 +83,21 @@ export default function ChatWindow({ isOpen, onClose }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Adiciona mensagem ao estado e persiste histórico
+  const addMessage = useCallback(message => {
+    setMessages(prev => {
+      const next = [...prev, message]
+      savePersistedHistory(next)
+      return next
+    })
+  }, [])
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return
 
     const userMessage = input.trim()
     setInput('')
-    setMessages(prev => {
-      const next = [...prev, { role: 'user', content: userMessage, timestamp: Date.now() }]
-      savePersistedHistory(next)
-      return next
-    })
+    addMessage({ role: 'user', content: userMessage, timestamp: Date.now() })
     setIsLoading(true)
 
     try {
@@ -61,18 +107,15 @@ export default function ChatWindow({ isOpen, onClose }) {
         patientData: { medicines, protocols, logs, stockSummary, stats },
       })
 
-      setMessages(prev => {
-        const next = [
-          ...prev,
-          { role: 'assistant', content: result.response || result.reason || '', timestamp: Date.now() },
-        ]
-        savePersistedHistory(next)
-        return next
+      addMessage({
+        role: 'assistant',
+        content: result.response || result.reason || '',
+        timestamp: Date.now(),
       })
     } finally {
       setIsLoading(false)
     }
-  }, [input, isLoading, messages, medicines, protocols, logs, stockSummary, stats])
+  }, [input, isLoading, messages, addMessage, medicines, protocols, logs, stockSummary, stats])
 
   const handleKeyDown = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -87,51 +130,10 @@ export default function ChatWindow({ isOpen, onClose }) {
     'Quando preciso repor estoque?',
   ]
 
-  // Formata hora da mensagem
-  const formatMessageTime = timestamp => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const isToday = date.toDateString() === now.toDateString()
-    const isYesterday = date.toDateString() === new Date(now - 86400000).toDateString()
-    const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-    if (isToday) return `às ${timeStr}`
-    if (isYesterday) return `Ontem às ${timeStr}`
-    return `${date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${timeStr}`
-  }
-
-  // Verifica se deve mostrar separador de dia
-  const shouldShowDateSeparator = (msgs, idx) => {
-    if (idx === 0) return false
-    const prev = new Date(msgs[idx - 1].timestamp).toDateString()
-    const curr = new Date(msgs[idx].timestamp).toDateString()
-    return prev !== curr
-  }
-
-  // Label do separador de dia
-  const formatDaySeparator = timestamp => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const isToday = date.toDateString() === now.toDateString()
-    const isYesterday = date.toDateString() === new Date(now - 86400000).toDateString()
-    if (isToday) return 'Hoje'
-    if (isYesterday) return 'Ontem'
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-    })
-  }
-
   const handleClearHistory = () => {
     if (!confirm('Tem certeza que deseja limpar o histórico de conversa?')) return
     clearPersistedHistory()
-    setMessages([
-      {
-        role: 'assistant',
-        content: `Olá! Sou seu assistente de medicamentos. Como posso ajudar?\n\n_${DISCLAIMER}_`,
-        timestamp: Date.now(),
-      },
-    ])
+    setMessages([createWelcomeMessage()])
   }
 
   return (
