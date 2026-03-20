@@ -1,6 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { sendChatMessage } from '../services/chatbotService'
+import {
+  sendChatMessage,
+  loadPersistedHistory,
+  savePersistedHistory,
+  clearPersistedHistory,
+} from '../services/chatbotService'
 import { DISCLAIMER } from '../services/safetyGuard'
 import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import styles from './ChatWindow.module.css'
@@ -17,12 +22,17 @@ import styles from './ChatWindow.module.css'
 export default function ChatWindow({ isOpen, onClose }) {
   const { medicines, protocols, logs, stockSummary, stats } = useDashboard()
 
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: `Olá! Sou seu assistente de medicamentos. Como posso ajudar?\n\n_${DISCLAIMER}_`,
-    },
-  ])
+  const [messages, setMessages] = useState(() => {
+    const persisted = loadPersistedHistory()
+    if (persisted.length > 0) return persisted
+    return [
+      {
+        role: 'assistant',
+        content: `Olá! Sou seu Assistente IA de medicamentos. Como posso ajudar?\n\n_${DISCLAIMER}_`,
+        timestamp: Date.now(),
+      },
+    ]
+  })
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
@@ -37,7 +47,11 @@ export default function ChatWindow({ isOpen, onClose }) {
 
     const userMessage = input.trim()
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    setMessages(prev => {
+      const next = [...prev, { role: 'user', content: userMessage, timestamp: Date.now() }]
+      savePersistedHistory(next)
+      return next
+    })
     setIsLoading(true)
 
     try {
@@ -47,10 +61,14 @@ export default function ChatWindow({ isOpen, onClose }) {
         patientData: { medicines, protocols, logs, stockSummary, stats },
       })
 
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: result.response || result.reason || '' },
-      ])
+      setMessages(prev => {
+        const next = [
+          ...prev,
+          { role: 'assistant', content: result.response || result.reason || '', timestamp: Date.now() },
+        ]
+        savePersistedHistory(next)
+        return next
+      })
     } finally {
       setIsLoading(false)
     }
@@ -68,6 +86,53 @@ export default function ChatWindow({ isOpen, onClose }) {
     'Como está minha adesão?',
     'Quando preciso repor estoque?',
   ]
+
+  // Formata hora da mensagem
+  const formatMessageTime = timestamp => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const isToday = date.toDateString() === now.toDateString()
+    const isYesterday = date.toDateString() === new Date(now - 86400000).toDateString()
+    const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    if (isToday) return `às ${timeStr}`
+    if (isYesterday) return `Ontem às ${timeStr}`
+    return `${date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${timeStr}`
+  }
+
+  // Verifica se deve mostrar separador de dia
+  const shouldShowDateSeparator = (msgs, idx) => {
+    if (idx === 0) return false
+    const prev = new Date(msgs[idx - 1].timestamp).toDateString()
+    const curr = new Date(msgs[idx].timestamp).toDateString()
+    return prev !== curr
+  }
+
+  // Label do separador de dia
+  const formatDaySeparator = timestamp => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const isToday = date.toDateString() === now.toDateString()
+    const isYesterday = date.toDateString() === new Date(now - 86400000).toDateString()
+    if (isToday) return 'Hoje'
+    if (isYesterday) return 'Ontem'
+    return date.toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+    })
+  }
+
+  const handleClearHistory = () => {
+    if (!confirm('Tem certeza que deseja limpar o histórico de conversa?')) return
+    clearPersistedHistory()
+    setMessages([
+      {
+        role: 'assistant',
+        content: `Olá! Sou seu assistente de medicamentos. Como posso ajudar?\n\n_${DISCLAIMER}_`,
+        timestamp: Date.now(),
+      },
+    ])
+  }
 
   return (
     <AnimatePresence>
@@ -93,25 +158,42 @@ export default function ChatWindow({ isOpen, onClose }) {
             {/* Header */}
             <div className={styles.header}>
               <span className={styles.headerTitle}>Assistente IA</span>
-              <button
-                onClick={onClose}
-                className={styles.closeButton}
-                aria-label="Fechar chat"
-              >
-                ✕
-              </button>
+              <div className={styles.headerActions}>
+                <button
+                  onClick={handleClearHistory}
+                  className={styles.clearButton}
+                  title="Limpar histórico"
+                  aria-label="Limpar histórico de conversa"
+                >
+                  🗑️
+                </button>
+                <button
+                  onClick={onClose}
+                  className={styles.closeButton}
+                  aria-label="Fechar chat"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Messages */}
             <div className={styles.messages}>
               {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`${styles.messageBubble} ${
-                    msg.role === 'user' ? styles.messageBubbleUser : styles.messageBubbleAssistant
-                  }`}
-                >
-                  {msg.content}
+                <div key={i}>
+                  {shouldShowDateSeparator(messages, i) && (
+                    <div className={styles.dateSeparator}>{formatDaySeparator(msg.timestamp)}</div>
+                  )}
+                  <div
+                    className={`${styles.messageBubble} ${
+                      msg.role === 'user' ? styles.messageBubbleUser : styles.messageBubbleAssistant
+                    }`}
+                  >
+                    {msg.content}
+                    {msg.timestamp && (
+                      <span className={styles.messageTime}>{formatMessageTime(msg.timestamp)}</span>
+                    )}
+                  </div>
                 </div>
               ))}
 
