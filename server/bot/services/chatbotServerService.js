@@ -8,40 +8,34 @@
  * - Chama Groq SDK diretamente (sem fetch para /api/chatbot)
  * - Mantém histórico de conversa por userId em memória
  *
+ * Configurações centralizadas em:
+ * src/features/chatbot/config/chatbotConfig.js
+ *
  * @module chatbotServerService
  */
 
 import Groq from 'groq-sdk'
 import { supabase } from '../../services/supabase.js'
 import { createLogger } from '../logger.js'
+import {
+  CHATBOT_MAX_TOKENS,
+  CHATBOT_TEMPERATURE,
+  CHATBOT_TOP_P,
+  CHATBOT_MAX_HISTORY,
+  CHATBOT_RATE_LIMIT_MAX,
+  CHATBOT_RATE_LIMIT_WINDOW,
+  CHATBOT_BLOCKED_PATTERNS,
+  CHATBOT_DISCLAIMER,
+  CHATBOT_HEALTH_KEYWORDS,
+} from '../../../src/features/chatbot/config/chatbotConfig.js'
 
 const logger = createLogger('ChatbotServerService')
 
 const MODEL = process.env.GROQ_MODEL || 'groq/compound'
-const MAX_TOKENS = 300
-const MAX_HISTORY = 10
-
-// Rate limiting em memória (30 mensagens/hora por userId)
-const RATE_LIMIT_MAX = 30
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000 // 1 hora
 const rateLimitMap = new Map()
-
-// Histórico de conversa por userId (máx 10 mensagens)
 const historyMap = new Map()
 
-// -- Segurança (adapatado de src/features/chatbot/services/safetyGuard.js) --
-
-const BLOCKED_PATTERNS = [
-  /qual\s+(dosagem|dose)\s+(devo|posso|preciso)/i,
-  /posso\s+(parar|interromper|suspender)\s+de\s+tomar/i,
-  /substituir\s+.+\s+por/i,
-  /diagnostico|diagnosticar/i,
-  /receitar|prescrever/i,
-  /efeito\s+colateral\s+grave/i,
-]
-
-const DISCLAIMER =
-  'Não substituo orientação médica. Consulte seu médico para decisões sobre o seu tratamento.'
+// -- Segurança --
 
 /**
  * Valida mensagem do usuário antes de enviar ao LLM.
@@ -49,7 +43,7 @@ const DISCLAIMER =
  * @returns {{ blocked: boolean, reason?: string }}
  */
 export function validateServerMessage(message) {
-  for (const pattern of BLOCKED_PATTERNS) {
+  for (const pattern of CHATBOT_BLOCKED_PATTERNS) {
     if (pattern.test(message)) {
       return {
         blocked: true,
@@ -74,11 +68,10 @@ export function validateServerMessage(message) {
  * @returns {string}
  */
 export function addServerDisclaimer(response) {
-  const healthKeywords = ['medicamento', 'remedio', 'dose', 'tratamento', 'saude', 'sintoma']
-  const hasHealthContent = healthKeywords.some(kw => response.toLowerCase().includes(kw))
+  const hasHealthContent = CHATBOT_HEALTH_KEYWORDS.some(kw => response.toLowerCase().includes(kw))
 
   if (hasHealthContent && !response.includes('Não substituo')) {
-    return `${response}\n\n_${DISCLAIMER}_`
+    return `${response}\n\n_${CHATBOT_DISCLAIMER}_`
   }
 
   return response
@@ -94,15 +87,15 @@ export function addServerDisclaimer(response) {
 export function isServerRateLimited(userId) {
   const data = rateLimitMap.get(userId)
   if (!data) return false
-  if (Date.now() - data.windowStart > RATE_LIMIT_WINDOW) return false
-  return data.count >= RATE_LIMIT_MAX
+  if (Date.now() - data.windowStart > CHATBOT_RATE_LIMIT_WINDOW) return false
+  return data.count >= CHATBOT_RATE_LIMIT_MAX
 }
 
 function incrementServerRateCounter(userId) {
   const data = rateLimitMap.get(userId)
   const now = Date.now()
 
-  if (!data || now - data.windowStart > RATE_LIMIT_WINDOW) {
+  if (!data || now - data.windowStart > CHATBOT_RATE_LIMIT_WINDOW) {
     rateLimitMap.set(userId, { windowStart: now, count: 1 })
   } else {
     rateLimitMap.set(userId, { windowStart: data.windowStart, count: data.count + 1 })
@@ -279,7 +272,7 @@ export function buildServerSystemPrompt(patientContext) {
   ].join('\n')
 }
 
-// -- Função principal --
+// -- Histórico de conversa --
 
 /**
  * Obtém histórico de conversa de um usuário.
@@ -302,9 +295,11 @@ export function updateConversationHistory(userId, userMessage, assistantResponse
     ...history,
     { role: 'user', content: userMessage },
     { role: 'assistant', content: assistantResponse },
-  ].slice(-MAX_HISTORY)
+  ].slice(-CHATBOT_MAX_HISTORY)
   historyMap.set(userId, newHistory)
 }
+
+// -- Função principal --
 
 /**
  * Envia mensagem ao chatbot IA via Groq e retorna resposta.
@@ -375,9 +370,9 @@ export async function sendTelegramChatMessage({ message, userId }) {
     const completion = await groq.chat.completions.create({
       model: MODEL,
       messages,
-      max_tokens: MAX_TOKENS,
-      temperature: 0.2,
-      top_p: 1.0,
+      max_tokens: CHATBOT_MAX_TOKENS,
+      temperature: CHATBOT_TEMPERATURE,
+      top_p: CHATBOT_TOP_P,
     })
 
     const rawResponse =

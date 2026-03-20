@@ -37,9 +37,10 @@ export async function handleChatbotMessage(bot, msg) {
   let userId
   try {
     userId = await getUserIdByChatId(chatId)
-  } catch {
-    // Usuário não vinculado: ignorar silenciosamente
+  } catch (err) {
+    // Usuário não vinculado: ignorar silenciosamente (sem mensagem de erro)
     // (o /start vai orientá-los a vincular a conta)
+    logger.warn('Mensagem de chat ignorada — usuário não vinculado', err, { chatId })
     return
   }
 
