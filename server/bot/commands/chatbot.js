@@ -76,11 +76,20 @@ export async function handleChatbotMessage(bot, msg) {
     await bot.sendMessage(chatId, result.response)
     logger.info('✅ Mensagem enviada com sucesso', { chatId, respLen: result.response?.length })
   } catch (error) {
-    logger.error('❌ Erro no handler do chatbot', error, { chatId, userId })
+    logger.error('❌ Erro no handler do chatbot', error, {
+      chatId,
+      userId,
+      errorMessage: error.message,
+      errorStatus: error.response?.statusCode,
+    })
     try {
       await bot.sendMessage(chatId, '🤖 Desculpe, tive um problema. Tente novamente.')
     } catch (sendError) {
-      logger.error('❌ Erro ao enviar mensagem de erro', sendError, { chatId })
+      logger.error('❌ Erro ao enviar mensagem de erro', sendError, {
+        chatId,
+        errorMessage: sendError.message,
+        errorStatus: sendError.response?.statusCode,
+      })
     }
   }
 }

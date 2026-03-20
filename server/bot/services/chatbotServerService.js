@@ -161,7 +161,13 @@ export async function fetchPatientData(userId) {
   })
 
   if (medicinesResult.error) {
-    logger.error('❌ Erro ao buscar medicamentos', medicinesResult.error, { userId })
+    const { code, details, hint } = medicinesResult.error
+    logger.error('❌ Erro ao buscar medicamentos', medicinesResult.error, {
+      userId,
+      errorCode: code,
+      errorDetails: details,
+      errorHint: hint,
+    })
     throw medicinesResult.error
   }
 
