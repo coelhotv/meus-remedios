@@ -4,16 +4,8 @@ import ShakeEffect from '@shared/components/ui/animations/ShakeEffect'
 import MedicineAutocomplete from './MedicineAutocomplete'
 import LaboratoryAutocomplete from './LaboratoryAutocomplete'
 import { MEDICINE_TYPES, DOSAGE_UNITS, DOSAGE_UNIT_LABELS } from '@schemas/medicineSchema'
+import { toSentenceCase } from '@utils/stringUtils'
 import './MedicineForm.css'
-
-/**
- * Converte texto para Title Case (primeira letra maiúscula, resto minúscula)
- */
-const toTitleCase = (str) => {
-  if (!str) return ''
-  const lower = str.toLowerCase()
-  return lower.charAt(0).toUpperCase() + lower.slice(1)
-}
 
 /**
  * @typedef {Object} MedicineFormProps
@@ -74,8 +66,8 @@ export default function MedicineForm({
     setFormData((prev) => ({
       ...prev,
       name: medicine.name,
-      active_ingredient: toTitleCase(medicine.activeIngredient),
-      therapeutic_class: toTitleCase(medicine.therapeuticClass) || null,
+      active_ingredient: toSentenceCase(medicine.activeIngredient),
+      therapeutic_class: toSentenceCase(medicine.therapeuticClass) || null,
     }))
     if (saveSuccess) setSaveSuccess(false)
   }
@@ -252,7 +244,7 @@ export default function MedicineForm({
           name="therapeutic_class"
           value={formData.therapeutic_class || ''}
           onChange={handleChange}
-          placeholder="Ex: Analgesicos nao narcoticos"
+          placeholder="Ex: Analgésicos não narcóticos"
           disabled={isSubmitting}
           maxLength={100}
         />

@@ -6,19 +6,11 @@ import { treatmentPlanService } from '@protocols/services/treatmentPlanService'
 import { DOSAGE_UNITS } from '@schemas/medicineSchema'
 import { FREQUENCIES } from '@schemas/protocolSchema'
 import { formatLocalDate } from '@utils/dateUtils'
+import { toSentenceCase } from '@utils/stringUtils'
 import Button from '@shared/components/ui/Button'
 import MedicineAutocomplete from '@medications/components/MedicineAutocomplete'
 import LaboratoryAutocomplete from '@medications/components/LaboratoryAutocomplete'
 import './TreatmentWizard.css'
-
-/**
- * Converte texto para Title Case (primeira letra maiúscula, resto minúscula)
- */
-const toTitleCase = (str) => {
-  if (!str) return ''
-  const lower = str.toLowerCase()
-  return lower.charAt(0).toUpperCase() + lower.slice(1)
-}
 
 const FREQUENCY_LABELS = {
   diario: 'Diário',
@@ -145,8 +137,8 @@ export default function TreatmentWizard({
     setMedicineData((prev) => ({
       ...prev,
       name: medicine.name,
-      active_ingredient: toTitleCase(medicine.activeIngredient) || '',
-      therapeutic_class: toTitleCase(medicine.therapeuticClass) || null,
+      active_ingredient: toSentenceCase(medicine.activeIngredient) || '',
+      therapeutic_class: toSentenceCase(medicine.therapeuticClass) || null,
     }))
   }, [])
 
