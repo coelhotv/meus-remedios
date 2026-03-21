@@ -11,7 +11,7 @@
  * @module queryCache
  */
 
-import { debugLog } from './logger'
+import { debugLog } from '@shared/utils/logger'
 
 const CACHE_CONFIG = {
   STALE_TIME: 30 * 1000, // 30 segundos

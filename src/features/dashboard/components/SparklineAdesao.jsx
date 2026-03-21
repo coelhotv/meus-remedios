@@ -19,7 +19,7 @@
 import { useMemo, useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
 import { analyticsService } from '@dashboard/services/analyticsService'
-import { debugLog } from '@utils/logger'
+import { debugLog } from '@shared/utils/logger'
 import './SparklineAdesao.css'
 
 /**

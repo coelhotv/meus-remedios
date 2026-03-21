@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { selectBestInsight } from '@dashboard/services/insightService'
-import { debugLog } from '@utils/logger'
+import { debugLog } from '@shared/utils/logger'
 
 /**
  * Hook para obter insights contextuais para o usuário

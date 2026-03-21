@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { debugLog } from '@utils/logger'
+import { debugLog } from '@shared/utils/logger'
 import './AdherenceHeatmap.css'
 
 /**
