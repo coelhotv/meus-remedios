@@ -11,6 +11,15 @@ import MedicineAutocomplete from '@medications/components/MedicineAutocomplete'
 import LaboratoryAutocomplete from '@medications/components/LaboratoryAutocomplete'
 import './TreatmentWizard.css'
 
+/**
+ * Converte texto para Title Case (primeira letra maiúscula, resto minúscula)
+ */
+const toTitleCase = (str) => {
+  if (!str) return ''
+  const lower = str.toLowerCase()
+  return lower.charAt(0).toUpperCase() + lower.slice(1)
+}
+
 const FREQUENCY_LABELS = {
   diario: 'Diário',
   dias_alternados: 'Dias alternados',
@@ -136,8 +145,8 @@ export default function TreatmentWizard({
     setMedicineData((prev) => ({
       ...prev,
       name: medicine.name,
-      active_ingredient: medicine.activeIngredient || '',
-      therapeutic_class: medicine.therapeuticClass || null,
+      active_ingredient: toTitleCase(medicine.activeIngredient) || '',
+      therapeutic_class: toTitleCase(medicine.therapeuticClass) || null,
     }))
   }, [])
 
@@ -349,6 +358,22 @@ export default function TreatmentWizard({
                         className="wizard__input"
                         value={medicineData.active_ingredient}
                         readOnly
+                      />
+                      <small className="wizard__label-note">
+                        Preenchido automaticamente via ANVISA
+                      </small>
+                    </label>
+                  )}
+
+                  {medicineData.therapeutic_class && (
+                    <label className="wizard__label">
+                      Classe Terapêutica
+                      <input
+                        type="text"
+                        className="wizard__input"
+                        value={medicineData.therapeutic_class}
+                        onChange={(e) => updateMedicine('therapeutic_class', e.target.value)}
+                        maxLength={100}
                       />
                       <small className="wizard__label-note">
                         Preenchido automaticamente via ANVISA
