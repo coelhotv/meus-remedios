@@ -11,15 +11,11 @@ const isDev = typeof window !== 'undefined' && process.env.NODE_ENV === 'develop
  * Log de debug (só em development)
  * @param {string} tag - Prefixo [tag] do log
  * @param {string} message - Mensagem principal
- * @param {*} data - Dados adicionais (opcionais)
+ * @param {...*} args - Dados adicionais (opcionais)
  */
-export function debugLog(tag, message, data) {
+export function debugLog(tag, message, ...args) {
   if (isDev) {
-    if (data !== undefined) {
-      console.log(`[${tag}] ${message}`, data)
-    } else {
-      console.log(`[${tag}] ${message}`)
-    }
+    console.log(`[${tag}] ${message}`, ...args)
   }
 }
 
@@ -27,10 +23,10 @@ export function debugLog(tag, message, data) {
  * Log de erro/warning (sempre, mas formatado)
  * @param {string} tag - Prefixo [tag]
  * @param {string} message - Mensagem
- * @param {Error} error - Erro opcional
+ * @param {...*} args - Erro opcional e outros dados
  */
-export function errorLog(tag, message, error) {
-  console.error(`[${tag}] ${message}`, error || '')
+export function errorLog(tag, message, ...args) {
+  console.error(`[${tag}] ${message}`, ...args)
 }
 
 /**
@@ -38,10 +34,10 @@ export function errorLog(tag, message, error) {
  * @param {boolean} condition - Condição
  * @param {string} tag - Prefixo
  * @param {string} message - Mensagem
- * @param {*} data - Dados
+ * @param {...*} args - Dados
  */
-export function conditionalLog(condition, tag, message, data) {
+export function conditionalLog(condition, tag, message, ...args) {
   if (condition) {
-    debugLog(tag, message, data)
+    debugLog(tag, message, ...args)
   }
 }

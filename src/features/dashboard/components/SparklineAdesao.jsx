@@ -232,6 +232,7 @@ export function SparklineAdesao({
       adherenceValues: chartData.map((d) => d.adherence),
     })
     if (validData.length === 0) {
+      debugLog('SparklineAdesao', 'AVISO: Nenhum dia com adherence > 0!')
       return { average: 0, trend: 'stable' }
     }
 
