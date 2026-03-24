@@ -219,22 +219,6 @@ function drawKpiCard(doc, card, x, y, width, height) {
   doc.text(card.meta || '', x + KPI_LAYOUT.paddingX, y + KPI_LAYOUT.metaOffsetY)
 }
 
-function buildArcPath(centerX, centerY, radius, startAngle, endAngle) {
-  const points = []
-  const segments = Math.max(12, Math.ceil(Math.abs(endAngle - startAngle) / 10))
-  const radiansPerDegree = Math.PI / 180
-  const step = (endAngle - startAngle) / segments
-
-  for (let index = 0; index <= segments; index += 1) {
-    const angle = (startAngle + step * index) * radiansPerDegree
-    const x = centerX + radius * Math.cos(angle)
-    const y = centerY + radius * Math.sin(angle)
-    points.push(index === 0 ? { op: 'm', c: [x, y] } : { op: 'l', c: [x, y] })
-  }
-
-  return points
-}
-
 function drawArcSegments(doc, centerX, centerY, radius, startAngle, endAngle) {
   const segments = Math.max(20, Math.ceil(Math.abs(endAngle - startAngle) / 6))
   const radiansPerDegree = Math.PI / 180
