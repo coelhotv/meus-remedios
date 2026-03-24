@@ -2,7 +2,7 @@
 
 **Status:** Pronto para execucao
 **Dependencias:** Infraestrutura de rollout gradual (RedesignContext + tokens.redesign.css) DEVE existir
-**Branch:** `claude/gradual-redesign-rollout-VBlvB`
+**Branch:** `feature/redesign/wave-0-design-tokens`
 **Estimativa:** 5 sprints sequenciais
 **Risco:** BAIXO — tokens novos ficam isolados em arquivo scoped. App atual nao e afetada.
 

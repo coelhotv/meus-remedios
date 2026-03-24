@@ -2,7 +2,7 @@
 
 **Status:** Pronto para execucao
 **Dependencias:** Wave 0 (tokens scoped) + Wave 1 (typography scoped) DEVEM estar completas
-**Branch:** `claude/gradual-redesign-rollout-VBlvB`
+**Branch:** `feature/redesign/wave-2-surface-layout`
 **Estimativa:** 3 sprints sequenciais
 **Risco:** BAIXO — classes novas (nomes unicos) sao aditivas. Sem conflito com CSS existente.
 

@@ -2,7 +2,7 @@
 
 **Status:** Pronto para execucao
 **Dependencias:** Wave 0 (tokens.redesign.css com bloco `[data-redesign="true"]`) DEVE estar completa
-**Branch:** `claude/gradual-redesign-rollout-VBlvB`
+**Branch:** `feature/redesign/wave-1-typography-icons`
 **Estimativa:** 3 sprints sequenciais
 **Risco:** BAIXO — tipografia scoped, sem impacto em usuarios sem o flag. Lucide e install aditivo.
 

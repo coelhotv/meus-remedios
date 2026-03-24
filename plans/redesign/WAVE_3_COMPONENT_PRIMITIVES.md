@@ -2,7 +2,7 @@
 
 **Status:** Pronto para execucao
 **Dependencias:** Waves 0, 1 e 2 DEVEM estar completas (tokens scoped, typography scoped, layout.redesign.css)
-**Branch:** `claude/gradual-redesign-rollout-VBlvB`
+**Branch:** `feature/redesign/wave-3-component-primitives`
 **Estimativa:** 6 sprints sequenciais
 **Risco:** BAIXO (com abordagem scoped) — CSS de redesign vai em arquivo separado, sem tocar Button.css ou Card.css.
 
