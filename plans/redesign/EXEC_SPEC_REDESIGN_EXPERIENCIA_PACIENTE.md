@@ -1,9 +1,32 @@
 # Plano de Redesign: Neon/Glass → Santuário Terapêutico
 
-**Versão:** 1.1
-**Data:** 2026-03-23
-**Status:** Aprovado para execução
+**Versão:** 1.2
+**Data:** 2026-03-24
+**Status:** Em execução — Foundation Waves W0-W3 entregues ✅ | W4-W6 em spec ✅
 **Escopo:** Redesign completo de Design System, UI e UX — mobile-first + desktop responsivo
+
+## Status das Waves
+
+| Wave | Descrição | Spec | Status | PR/Branch |
+|------|-----------|------|--------|-----------|
+| Infra | RedesignContext, useRedesign, feature flag | `EXEC_SPEC_GRADUAL_ROLLOUT.md` | ✅ MERGED | — |
+| W0 | Design Tokens (cores, sombras, borders) | `WAVE_0_DESIGN_TOKENS.md` | ✅ MERGED | main |
+| W1 | Typography + Lucide Icons | `WAVE_1_TYPOGRAPHY_ICONS.md` | ✅ MERGED #418 | main |
+| W2 | Surface & Layout System | `WAVE_2_SURFACE_LAYOUT.md` | ✅ MERGED #419 | main |
+| W3 | Component Library Primitives | `WAVE_3_COMPONENT_PRIMITIVES.md` | ✅ MERGED #420 | main |
+| W4 | Navigation Shell (BottomNav + Sidebar) | `WAVE_4_NAVIGATION_SHELL.md` | 🔜 PRONTO P/ EXECUÇÃO | — |
+| W5 | Motion Language | `WAVE_5_MOTION_LANGUAGE.md` | 🔜 PRONTO P/ EXECUÇÃO | — |
+| W6 | Dashboard Redesign | `WAVE_6_DASHBOARD_REDESIGN.md` | 🔜 PRONTO P/ EXECUÇÃO | — |
+| W7 | Tratamentos Redesign | — | ⏳ PENDENTE SPEC | — |
+| W8 | Estoque Redesign | — | ⏳ PENDENTE SPEC | — |
+| W9 | Perfil & Saúde | — | ⏳ PENDENTE SPEC | — |
+| W10 | Progressive Disclosure | — | ⏳ PENDENTE SPEC | — |
+| W11 | Accessibility & Polish | — | ⏳ PENDENTE SPEC | — |
+| W12 | Landing, Auth & Onboarding | — | ⏳ PENDENTE SPEC | — |
+
+> **Próximo bloco de execução:** W4 → W5 → W6 (executar sequencialmente via `/deliver-sprint` por agentes coder)
+> **Specs executáveis:** W4, W5 e W6 estão completas com código de referência e checklists binários
+
 
 > **Norte criativo:** "Um santuário terapêutico brasileiro: calmo, editorial e legível. Um espaço em camadas e respirável onde dados clínicos sensíveis são apresentados com contraste suave, hierarquia clara e calor humano suficiente para reduzir ansiedade sem parecer infantil."
 
