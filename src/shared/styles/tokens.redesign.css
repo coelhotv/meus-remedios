@@ -13,10 +13,12 @@
 
 /* ============================================
    W1: Google Fonts — Public Sans + Lexend
-   Carregado via CSS @import para não impactar
-   usuários sem o flag (evita <link> global no HTML).
+   NOTA: @import DEVE estar no topo do arquivo.
+   As fontes são carregadas globalmente MAS só são
+   aplicadas aos elementos dentro de [data-redesign="true"].
+   Tipografia padrão (old design) não usa estas fontes.
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap');
 
 /* ============================================
    W0: DESIGN TOKENS — SANTUÁRIO TERAPÊUTICO
@@ -228,7 +230,9 @@
   --font-body: 'Lexend', system-ui, sans-serif;
 
   /* Font weights */
-  --font-weight-light: 300;
+  /* REGRA DE ACESSIBILIDADE: Pesos < 400 prejudicam legibilidade para pacientes idosos.
+     --font-weight-light é mapeado para --font-weight-regular para conformidade. */
+  --font-weight-light: var(--font-weight-regular);
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -276,8 +280,11 @@
 /* ============================================
    BODY BACKGROUND — Scoped
    Off-white #f8fafb ao invés de branco puro.
+   Aplicado ao .app-container quando data-redesign="true"
+   (não pode ser [data-redesign="true"] body pois data-redesign
+   está em .app-container, não em um ancestral de <body>).
    ============================================ */
-[data-redesign="true"] body {
+[data-redesign="true"] {
   background-color: var(--color-surface);
   color: var(--color-on-surface);
 }
