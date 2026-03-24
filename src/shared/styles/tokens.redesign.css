@@ -379,44 +379,51 @@
 }
 
 /* ============================================
-   BODY BACKGROUND — Scoped
-   Off-white #f8fafb ao invés de branco puro.
-   Aplicado ao .app-container quando data-redesign="true"
-   (não pode ser [data-redesign="true"] body pois data-redesign
-   está em .app-container, não em um ancestral de <body>).
+   TIPOGRAFIA BASE — aplicada ao .app-container
+   NOTA: [data-redesign="true"] está em .app-container, NÃO em um ancestral de body.
+   Portanto "[data-redesign="true"] body" NUNCA dá match.
+   As propriedades de tipografia base são aplicadas ao próprio .app-container
+   e herdam para todos os filhos dentro da app.
    ============================================ */
 [data-redesign="true"] {
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-lg);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-surface);
   color: var(--color-on-surface);
 }
 
 /* ============================================
-   W1: TIPOGRAFIA GLOBAL — Scoped
+   W1: HEADINGS — Tipografia Global Scoped
    ============================================ */
 [data-redesign="true"] h1,
 [data-redesign="true"] h2,
-[data-redesign="true"] h3 {
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-snug);
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-on-surface);
-}
-
+[data-redesign="true"] h3,
 [data-redesign="true"] h4,
 [data-redesign="true"] h5,
 [data-redesign="true"] h6 {
-  font-family: var(--font-body);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-snug);
-  color: var(--color-on-surface);
+  font-family: var(--font-display);
+  font-weight: var(--heading-font-weight);
+  line-height: var(--heading-line-height);
+  letter-spacing: var(--heading-letter-spacing);
 }
 
-[data-redesign="true"] p,
-[data-redesign="true"] span,
-[data-redesign="true"] label {
+[data-redesign="true"] h1 { font-size: var(--heading-1-size); font-weight: var(--heading-1-weight); }
+[data-redesign="true"] h2 { font-size: var(--heading-2-size); font-weight: var(--heading-2-weight); }
+[data-redesign="true"] h3 { font-size: var(--heading-3-size); font-weight: var(--heading-3-weight); }
+[data-redesign="true"] h4 { font-size: var(--heading-4-size); font-weight: var(--heading-4-weight); }
+[data-redesign="true"] h5 { font-size: var(--heading-5-size); font-weight: var(--heading-5-weight); }
+[data-redesign="true"] h6 { font-size: var(--heading-6-size); font-weight: var(--heading-6-weight); }
+
+/* Inputs e buttons tambem usam Lexend quando o redesign esta ativo */
+[data-redesign="true"] input,
+[data-redesign="true"] textarea,
+[data-redesign="true"] select,
+[data-redesign="true"] button {
   font-family: var(--font-body);
-  color: var(--color-on-surface-variant);
 }
 
 /* ============================================
