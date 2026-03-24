@@ -411,8 +411,8 @@
   letter-spacing: var(--heading-letter-spacing);
 }
 
-[data-redesign="true"] h1 { font-size: var(--heading-1-size); font-weight: var(--heading-1-weight); }
-[data-redesign="true"] h2 { font-size: var(--heading-2-size); font-weight: var(--heading-2-weight); }
+[data-redesign="true"] h1 { font-size: var(--heading-1-size); }
+[data-redesign="true"] h2 { font-size: var(--heading-2-size); }
 [data-redesign="true"] h3 { font-size: var(--heading-3-size); font-weight: var(--heading-3-weight); }
 [data-redesign="true"] h4 { font-size: var(--heading-4-size); font-weight: var(--heading-4-weight); }
 [data-redesign="true"] h5 { font-size: var(--heading-5-size); font-weight: var(--heading-5-weight); }
