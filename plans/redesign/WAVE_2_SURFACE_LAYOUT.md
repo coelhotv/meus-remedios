@@ -1,9 +1,9 @@
 # Wave 2 — Surface & Layout System
 
-**Status:** Pronto para execucao
-**Dependencias:** Wave 0 (tokens scoped) + Wave 1 (typography scoped) DEVEM estar completas
-**Branch:** `feature/redesign/wave-2-surface-layout`
-**Estimativa:** 3 sprints sequenciais
+**Status:** ✅ **COMPLETE** (2026-03-24)
+**Commit:** `1228894` | **PR:** #419 (squash merged)
+**Branch:** `feature/redesign/wave-2-surface-layout` (deleted post-merge)
+**Estimativa:** 3 sprints sequenciais ✅ COMPLETED IN SCOPE
 **Risco:** BAIXO — classes novas (nomes unicos) sao aditivas. Sem conflito com CSS existente.
 
 ---
