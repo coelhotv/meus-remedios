@@ -172,7 +172,7 @@
      ============================================ */
   --color-toggle-track: var(--color-surface-container-high);
   --color-toggle-track-dark: #374151;
-  --color-sun: #f59e0b;
+  --color-sun: var(--color-warning);
   --color-moon: #93c5fd;
 
   /* ============================================
