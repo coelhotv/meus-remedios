@@ -25,6 +25,7 @@ import TestConnection from '@shared/components/TestConnection'
 import BottomNav from '@shared/components/ui/BottomNav'
 import { OnboardingProvider, OnboardingWizard } from '@shared/components/onboarding'
 import { DashboardProvider } from '@dashboard/hooks/useDashboardContext.jsx'
+import { RedesignProvider, useRedesign } from '@shared/contexts/RedesignContext'
 import InstallPrompt from '@shared/components/pwa/InstallPrompt'
 import { OfflineBanner } from '@shared/components/ui/OfflineBanner'
 
@@ -50,7 +51,8 @@ function ViewSkeleton() {
   )
 }
 
-function App() {
+function AppInner() {
+  const { isRedesignEnabled } = useRedesign()
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [currentView, setCurrentView] = useState('dashboard')
@@ -238,7 +240,7 @@ function App() {
   return (
     <OnboardingProvider>
       <DashboardProvider>
-        <div className="app-container">
+        <div className="app-container" data-redesign={isRedesignEnabled ? 'true' : undefined}>
           <main style={{ paddingBottom: '80px', minHeight: '100vh', position: 'relative' }}>
             {renderCurrentView()}
 
@@ -299,6 +301,14 @@ function App() {
         </div>
       </DashboardProvider>
     </OnboardingProvider>
+  )
+}
+
+function App() {
+  return (
+    <RedesignProvider>
+      <AppInner />
+    </RedesignProvider>
   )
 }
 
