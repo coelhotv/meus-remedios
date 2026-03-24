@@ -1,10 +1,71 @@
 # Wave 1 — Typography & Icon System
 
-**Status:** Pronto para execucao
-**Dependencias:** Wave 0 (tokens.redesign.css com bloco `[data-redesign="true"]`) DEVE estar completa
-**Branch:** `feature/redesign/wave-1-typography-icons`
-**Estimativa:** 3 sprints sequenciais
-**Risco:** BAIXO — tipografia scoped, sem impacto em usuarios sem o flag. Lucide e install aditivo.
+**Status:** ✅ DELIVERED (2026-03-24, PR #418)
+**Dependencias:** Wave 0 (tokens.redesign.css com bloco `[data-redesign="true"]`) ✅ COMPLETA
+**Branch:** `feature/redesign/wave-1-typography-icons` → main (squash merged)
+**Estimativa:** 3 sprints sequenciais ✅ COMPLETADOS
+**Risco:** BAIXO — tipografia scoped, sem impacto em usuarios sem o flag. Lucide e install aditivo. ✅ VALIDADO
+
+---
+
+## 🎬 Conclusão e Validações Finais
+
+### Status de Entrega ✅
+
+| Componente | Status | Detalhes |
+|-----------|--------|----------|
+| **Sprint 1.1** | ✅ COMPLETE | Tokens tipográficos (type scale, weights, backward compat, heading defaults) |
+| **Sprint 1.2** | ✅ COMPLETE | lucide-react v1.0.1 instalado, imports funcionais |
+| **Sprint 1.3** | ✅ COMPLETE | Regras tipográficas globais scoped em `[data-redesign="true"]` |
+| **Build** | ✅ PASS | `npm run build` sem erros (96.18 kB gzip) |
+| **Lint** | ✅ PASS | 0 errors (1 unrelated coverage warning) |
+| **Tests** | ✅ PASS | 539/539 testes passando |
+| **Gemini Review** | ✅ PASS | 0 issues, PR approved |
+
+### Validações Executadas
+
+```bash
+# 1. Google Fonts @import — VERIFICADO
+✅ @import url('https://fonts.googleapis.com/css2?family=Public+Sans:...') — Line 21
+
+# 2. Font scoping — VERIFICADO
+✅ --font-display e --font-body dentro de [data-redesign="true"]
+
+# 3. typography.css current — INTACTO
+✅ Sem modificações, sem Public Sans/Lexend
+
+# 4. index.html — INTACTO
+✅ Sem links globais de fontes
+
+# 5. lucide-react — INSTALADO
+✅ v1.0.1 no package.json, imports: const { Calendar } = require('lucide-react') → OK
+
+# 6. Type scale — COMPLETO
+✅ Display, Headline, Title, Label, Body com tamanhos específicos
+
+# 7. Font weights — ACCESSIBLE
+✅ Todos ≥400, nenhum <300 (WCAG 2.1 AA para idosos)
+
+# 8. Heading hierarchy — COMPLETO
+✅ h1-h6 com --heading-N-size e --heading-N-weight específicas
+
+# 9. Max line width — PRESENTE
+✅ --max-line-width: 65ch para legibilidade
+
+# 10. Backward compat — PRESENTE
+✅ --text-xs até --text-5xl, --font-size-* aliases
+```
+
+### Documentação Atualizada
+
+- ✅ `.memory/journal/2026-W13.md` — Sprint analysis completo (learnings, metrics, next steps)
+- ✅ `.memory/MEMORY.md` — Wave 1 entry com 3 sprints, 539 tests, 0 issues
+- ✅ `.memory/rules.md` — 4 novas regras (R-137 a R-140): accessibility, icon pairing, @import, heading hierarchy
+- ✅ `plans/redesign/WAVE_1_TYPOGRAPHY_ICONS.md` — This file, status updated
+
+### Próximos Passos
+
+Wave 2 (Button Variants) pode começar imediatamente — todas as dependências (Wave 0 + Wave 1) estão 100% completas e validadas.
 
 ---
 
