@@ -12,16 +12,17 @@
 
 > **Esta wave NAO modifica `typography.css` nem adiciona `<link>` globais em `index.html`.**
 > Tokens tipograficos vao para `tokens.redesign.css` (bloco `[data-redesign="true"]`).
-> Fontes Google sao carregadas via CSS `@import` dentro do bloco scoped — apenas usuarios com o flag ativo as carregam.
+> Fontes Google sao carregadas via CSS `@import` (no topo do arquivo `tokens.redesign.css`).
+> As fontes sao globais, MAS os estilos de tipografia e as referencias de fonte familly sao aplicadas APENAS dentro do escopo `[data-redesign="true"]`.
 > Ver estrategia completa em `plans/redesign/EXEC_SPEC_GRADUAL_ROLLOUT.md`.
 
-**Motivo:** `<link>` de fonte no `<head>` e global e afeta todos os usuarios (mesmo sem o flag). Usando CSS `@import` dentro de `[data-redesign="true"] { }`, o browser so carrega Public Sans + Lexend quando o data-attribute estiver presente.
+**Motivo:** `<link>` de fonte no `<head>` e global e afeta todos os usuarios (mesmo sem o flag). Usando `@import` (que DEVE estar no topo do arquivo, nao dentro de seletores), as fontes sao carregadas SEMPRE, mas a CSS que as utiliza (`--font-family` dentro de `[data-redesign="true"]`) so se aplica quando o data-attribute estiver presente. Usuarios sem o flag nao veem as fontes em uso, minimizando impacto visual/latencia.
 
 **Excecao — lucide-react:** A instalacao via `npm install lucide-react` e segura e global. O pacote so impacta o bundle se importado no codigo — como sera usado apenas em componentes do redesign (W3+), nao ha impacto em producao enquanto nao for usado.
 
 ---
 
-> **IMPORTANTE para o agente executor:** Esta wave adiciona tokens tipograficos do Santuario Terapeutico ao arquivo scoped `tokens.redesign.css`. O objetivo e que, ao ativar `?redesign=1`, a tipografia mude para Public Sans (headlines) + Lexend (body) — sem impacto para usuarios sem o flag. O arquivo `typography.css` atual **NAO deve ser modificado nesta wave**. **REGRA CRITICA: Nunca usar peso de fonte abaixo de 400** — pacientes idosos nao conseguem ler fontes finas.
+> **IMPORTANTE para o agente executor:** Esta wave adiciona tokens tipograficos do Santuario Terapeutico ao arquivo scoped `tokens.redesign.css`. O objetivo e que, ao ativar `?redesign=1`, a tipografia mude para Public Sans (headlines) + Lexend (body) — sem impacto para usuarios sem o flag. O arquivo `typography.css` atual **NAO deve ser modificado nesta wave**. **REGRA CRITICA: Nunca usar peso de fonte abaixo de 400** — pacientes idosos nao conseguem ler fontes finas. Fontes light ou thin (300, 200) violam WCAG 2.1 AA para este grupo. Mapeie `--font-weight-light` para `--font-weight-regular` (400) para conformidade com as diretrizes de acessibilidade do projeto.
 
 ---
 

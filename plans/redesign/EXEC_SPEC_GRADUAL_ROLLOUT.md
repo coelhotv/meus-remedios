@@ -83,7 +83,7 @@ return (
 | Wave | Estratégia de Isolamento |
 |------|--------------------------|
 | W0 — Tokens | Sobrescrita CSS scoped em `[data-redesign="true"]` |
-| W1 — Typography | `@import` de fontes dentro de `[data-redesign="true"]` |
+| W1 — Typography | `@import` de fontes (global, topo do arquivo); aplicação dos estilos de tipografia scoped em `[data-redesign="true"]` |
 | W2 — Surface/Layout | Classes novas com prefixo `-sanctuary` ou scoped |
 | W3 — Components | CSS interno dos componentes lê `[data-redesign="true"]`; API de props NUNCA muda |
 | W4+ — Views | `useRedesign()` direciona para variante em `src/views/redesign/` |
