@@ -93,13 +93,15 @@ const SUMMARY_CARD_LAYOUT = {
  * @constant {Object}
  */
 const SUMMARY_TEXT_LAYOUT = {
-  topY: 114,
-  columnGap: 6,
+  topY: 112,
+  columnGap: 10,
   leftColumnWidth: 88,
-  rightColumnWidth: 92,
-  bodyOffsetY: 6,
+  rightColumnWidth: 88,
+  cardPaddingX: 4,
+  cardPaddingTop: 6,
+  bodyOffsetY: 11,
   bodyLineHeight: 4.2,
-  attentionTopY: 148,
+  attentionTopY: 162,
 }
 
 /**
@@ -233,16 +235,34 @@ function buildArcPath(centerX, centerY, radius, startAngle, endAngle) {
   return points
 }
 
+function drawArcSegments(doc, centerX, centerY, radius, startAngle, endAngle) {
+  const segments = Math.max(20, Math.ceil(Math.abs(endAngle - startAngle) / 6))
+  const radiansPerDegree = Math.PI / 180
+  const step = (endAngle - startAngle) / segments
+
+  for (let index = 0; index < segments; index += 1) {
+    const start = (startAngle + step * index) * radiansPerDegree
+    const end = (startAngle + step * (index + 1)) * radiansPerDegree
+    const startX = centerX + radius * Math.cos(start)
+    const startY = centerY + radius * Math.sin(start)
+    const endX = centerX + radius * Math.cos(end)
+    const endY = centerY + radius * Math.sin(end)
+    doc.line(startX, startY, endX, endY)
+  }
+}
+
 /**
  * Desenha o hero de adesao na pagina de resumo.
  * @param {Object} doc - Instancia do jsPDF.
  * @param {Object} pdfData - Dados do PDF.
  */
 function drawHeroGauge(doc, pdfData) {
-  const score = Math.max(0, Math.min(pdfData.adherence?.last30d?.score ?? 0, 100))
+  const selectedPeriodSummary = pdfData.adherence?.selectedPeriod || pdfData.adherence?.last30d || {}
+  const score = Math.max(0, Math.min(selectedPeriodSummary.score ?? 0, 100))
   const streak = pdfData.adherence?.currentStreak ?? 0
-  const taken = pdfData.adherence?.last30d?.taken ?? 0
-  const expected = pdfData.adherence?.last30d?.expected ?? 0
+  const taken = selectedPeriodSummary.taken ?? 0
+  const expected = selectedPeriodSummary.expected ?? 0
+  const periodLabel = selectedPeriodSummary.label || '30 dias'
   const tone = getScoreTone(score)
   const centerX = HERO_LAYOUT.x + HERO_LAYOUT.size / 2
   const centerY = HERO_LAYOUT.y + HERO_LAYOUT.size / 2
@@ -261,11 +281,13 @@ function drawHeroGauge(doc, pdfData) {
     doc.circle(centerX, centerY, radius, 'S')
   }
 
-  if (score > 0 && typeof doc.path === 'function') {
+  if (score > 0) {
     doc.setDrawColor(...rgb(accentColor))
-    doc.setLineWidth(4)
-    doc.setLineCap('round')
-    doc.path(buildArcPath(centerX, centerY, radius, -90, arcEnd), 'S')
+    doc.setLineWidth(4.4)
+    if (typeof doc.setLineCap === 'function') {
+      doc.setLineCap('round')
+    }
+    drawArcSegments(doc, centerX, centerY, radius, -90, arcEnd)
   }
 
   doc.setFont('helvetica', 'bold')
@@ -276,7 +298,7 @@ function drawHeroGauge(doc, pdfData) {
   doc.setFontSize(7)
   doc.setTextColor(...rgb(COLORS.muted))
   doc.setFont('helvetica', 'normal')
-  doc.text('Adesao 30d', centerX, centerY + 9, { align: 'center' })
+  doc.text(`Adesao ${periodLabel}`, centerX, centerY + 9, { align: 'center' })
 
   doc.setFontSize(7)
   doc.setTextColor(...rgb(COLORS.primary))
@@ -381,33 +403,75 @@ function renderSummaryPage(doc, pdfData) {
 
   const executiveText = doc.splitTextToSize(
     'Resumo pensado para decisao rapida em consulta: tratamentos ativos, adesao recente, alertas de estoque, prescricoes e titulacoes.',
-    SUMMARY_TEXT_LAYOUT.leftColumnWidth
+    SUMMARY_TEXT_LAYOUT.leftColumnWidth - SUMMARY_TEXT_LAYOUT.cardPaddingX * 2 - 4
   )
   const clinicalNotes = doc.splitTextToSize(
     pdfData.clinicalNotes.map((note) => `- ${note}`).join('\n'),
-    SUMMARY_TEXT_LAYOUT.rightColumnWidth
+    SUMMARY_TEXT_LAYOUT.rightColumnWidth - SUMMARY_TEXT_LAYOUT.cardPaddingX * 2 - 4
+  )
+
+  const notesX = PAGE.margin + SUMMARY_TEXT_LAYOUT.leftColumnWidth + SUMMARY_TEXT_LAYOUT.columnGap
+  const editorialHeight =
+    Math.max(executiveText.length, clinicalNotes.length) * SUMMARY_TEXT_LAYOUT.bodyLineHeight +
+    SUMMARY_TEXT_LAYOUT.cardPaddingTop +
+    8
+
+  doc.setFillColor(...rgb(COLORS.white))
+  doc.setDrawColor(...rgb(COLORS.line))
+  doc.roundedRect(
+    PAGE.margin,
+    SUMMARY_TEXT_LAYOUT.topY,
+    SUMMARY_TEXT_LAYOUT.leftColumnWidth,
+    editorialHeight,
+    4,
+    4,
+    'FD'
+  )
+  doc.roundedRect(
+    notesX,
+    SUMMARY_TEXT_LAYOUT.topY,
+    SUMMARY_TEXT_LAYOUT.rightColumnWidth,
+    editorialHeight,
+    4,
+    4,
+    'FD'
   )
 
   doc.setFontSize(10)
   doc.setTextColor(...rgb(COLORS.text))
-  doc.text('Mensagem executiva', PAGE.margin, SUMMARY_TEXT_LAYOUT.topY)
+  doc.text(
+    'Mensagem executiva',
+    PAGE.margin + SUMMARY_TEXT_LAYOUT.cardPaddingX,
+    SUMMARY_TEXT_LAYOUT.topY + SUMMARY_TEXT_LAYOUT.cardPaddingTop
+  )
   doc.setFontSize(8)
   doc.setTextColor(...rgb(COLORS.muted))
-  doc.text(executiveText, PAGE.margin, SUMMARY_TEXT_LAYOUT.topY + SUMMARY_TEXT_LAYOUT.bodyOffsetY)
+  doc.setFont('helvetica', 'normal')
+  doc.text(
+    executiveText,
+    PAGE.margin + SUMMARY_TEXT_LAYOUT.cardPaddingX,
+    SUMMARY_TEXT_LAYOUT.topY + SUMMARY_TEXT_LAYOUT.bodyOffsetY
+  )
 
-  const notesX = PAGE.margin + SUMMARY_TEXT_LAYOUT.leftColumnWidth + SUMMARY_TEXT_LAYOUT.columnGap
   doc.setFontSize(10)
   doc.setTextColor(...rgb(COLORS.text))
-  doc.text('Notas clinicas', notesX, SUMMARY_TEXT_LAYOUT.topY)
+  doc.text(
+    'Notas clinicas',
+    notesX + SUMMARY_TEXT_LAYOUT.cardPaddingX,
+    SUMMARY_TEXT_LAYOUT.topY + SUMMARY_TEXT_LAYOUT.cardPaddingTop
+  )
   doc.setFontSize(8)
   doc.setTextColor(...rgb(COLORS.muted))
-  doc.text(clinicalNotes, notesX, SUMMARY_TEXT_LAYOUT.topY + SUMMARY_TEXT_LAYOUT.bodyOffsetY)
+  doc.setFont('helvetica', 'normal')
+  doc.text(
+    clinicalNotes,
+    notesX + SUMMARY_TEXT_LAYOUT.cardPaddingX,
+    SUMMARY_TEXT_LAYOUT.topY + SUMMARY_TEXT_LAYOUT.bodyOffsetY
+  )
 
-  const editorialHeight =
-    Math.max(executiveText.length, clinicalNotes.length) * SUMMARY_TEXT_LAYOUT.bodyLineHeight
   const attentionTopY = Math.max(
     SUMMARY_TEXT_LAYOUT.attentionTopY,
-    SUMMARY_TEXT_LAYOUT.topY + SUMMARY_TEXT_LAYOUT.bodyOffsetY + editorialHeight + 6
+    SUMMARY_TEXT_LAYOUT.topY + editorialHeight + 8
   )
 
   drawAttentionList(doc, pdfData.attentionItems, PAGE.margin, attentionTopY, 86)
@@ -494,9 +558,9 @@ function renderAdherencePage(doc, autoTable, pdfData) {
 
   doc.setFontSize(9)
   doc.setTextColor(...rgb(COLORS.muted))
-  const summary = pdfData.adherence.last30d
+  const summary = pdfData.adherence.selectedPeriod || pdfData.adherence.last30d
   doc.text(
-    `30d: ${summary.score ?? 0}% | ${summary.taken ?? 0}/${summary.expected ?? 0} doses | Pontualidade ${summary.punctuality ?? 0}% | Sequencia ${summary.currentStreak ?? 0}d`,
+    `${pdfData.adherence.trendLabel}: ${summary.score ?? 0}% | ${summary.taken ?? 0}/${summary.expected ?? 0} doses | Pontualidade ${summary.punctuality ?? 0}% | Sequencia ${summary.currentStreak ?? 0}d`,
     PAGE.margin,
     24
   )
@@ -504,7 +568,7 @@ function renderAdherencePage(doc, autoTable, pdfData) {
   renderTable(autoTable, doc, {
     startY: 30,
     head: [['Data', 'Tomadas', 'Esperadas', 'Adesao', 'Leitura']],
-    body: pdfData.adherence.trend7d.map((row) => [
+    body: pdfData.adherence.trend.map((row) => [
       row.label,
       String(row.taken),
       String(row.expected),
@@ -520,11 +584,15 @@ function renderAdherencePage(doc, autoTable, pdfData) {
     },
     didParseCell: (hookData) => {
       if (hookData.section === 'body' && hookData.column.index === 3) {
-        const text = hookData.cell.raw || ''
-        if (String(text).includes('100') || String(text).includes('90')) {
-          hookData.cell.styles.textColor = COLORS.primary
-        } else if (String(text).includes('Sem')) {
+        const text = String(hookData.cell.raw || '')
+        const score = Number.parseInt(text, 10)
+
+        if (text.includes('Sem')) {
           hookData.cell.styles.textColor = COLORS.muted
+        } else if (Number.isFinite(score) && score <= 50) {
+          hookData.cell.styles.textColor = COLORS.danger
+        } else if (Number.isFinite(score) && score >= 90) {
+          hookData.cell.styles.textColor = COLORS.primary
         } else {
           hookData.cell.styles.textColor = COLORS.warning
         }

@@ -63,10 +63,12 @@ const mocks = vi.hoisted(() => {
         },
       ],
       adherence: {
+        selectedPeriod: { label: '30 dias', score: 82, taken: 24, expected: 30, punctuality: 90, currentStreak: 6 },
         last30d: { score: 82, taken: 24, expected: 30, punctuality: 90, currentStreak: 6 },
         last90d: { score: 76, taken: 72, expected: 90, punctuality: 85, currentStreak: 6 },
         currentStreak: 6,
-        trend7d: [
+        trendLabel: '30 dias',
+        trend: [
           { label: '18/03', taken: 1, expected: 2, score: 50, status: 'Atencao' },
           { label: '19/03', taken: 2, expected: 2, score: 100, status: 'Excelente' },
         ],
@@ -185,7 +187,7 @@ describe('consultationPdfService', () => {
       })
     )
     expect(doc.circle).toHaveBeenCalled()
-    expect(doc.path).toHaveBeenCalled()
+    expect(doc.line).toHaveBeenCalled()
     expect(doc.splitTextToSize).toHaveBeenCalledWith('Consulta Medica', expect.any(Number))
     expect(doc.splitTextToSize).toHaveBeenCalledWith('Joao Silva', expect.any(Number))
     expect(doc.output).toHaveBeenCalledWith('blob')

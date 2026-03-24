@@ -24,6 +24,21 @@ vi.mock('@shared/utils/supabase', () => ({
   },
 }))
 
+vi.mock('@shared/services/cachedServices', () => ({
+  cachedAdherenceService: {
+    getDailyAdherenceFromView: vi.fn((days) =>
+      Promise.resolve(
+        Array.from({ length: days }, (_, index) => ({
+          date: `2026-03-${String(index + 1).padStart(2, '0')}`,
+          taken: 10,
+          expected: 10,
+          adherence: 100,
+        }))
+      )
+    ),
+  },
+}))
+
 vi.mock('@features/consultation/services/consultationDataService', () => ({
   getConsultationData: mocks.getConsultationData,
 }))
@@ -56,6 +71,7 @@ describe('ReportGenerator', () => {
       logs: [{ id: 'log-1', protocol_id: 'prot-1', quantity_taken: 1 }],
       stockSummary: [],
       stats: { score: 90 },
+      dailyAdherence: [{ date: '2026-03-24', taken: 1, expected: 1, adherence: 100 }],
     })
 
     mocks.getUser.mockResolvedValue({
@@ -111,6 +127,7 @@ describe('ReportGenerator', () => {
           }),
           dashboardData: expect.objectContaining({
             medicines: [{ id: 'med-1', name: 'Ansitec' }],
+            dailyAdherence: expect.any(Array),
           }),
           period: '30d',
           title: 'Meus Remedios - Consulta Medica',

@@ -143,7 +143,7 @@ describe('consultationPdfDataBuilder', () => {
     expect(pdfData.period).toBe('30d')
     expect(pdfData.patient.name).toBe('Joao Silva')
     expect(pdfData.patient.handle).toBeNull()
-    expect(pdfData.summaryCards).toHaveLength(6)
+    expect(pdfData.summaryCards).toHaveLength(7)
     expect(pdfData.activeTreatments).toHaveLength(2)
     expect(pdfData.activeTreatments[0]).toMatchObject({
       label: 'Ansiedade - Ansitec',
@@ -160,7 +160,19 @@ describe('consultationPdfDataBuilder', () => {
     })
     expect(pdfData.titrationRows).toHaveLength(1)
     expect(pdfData.attentionItems.length).toBeGreaterThan(0)
-    expect(pdfData.adherence.trend7d).toHaveLength(7)
+    expect(pdfData.adherence.trend).toHaveLength(30)
+    expect(pdfData.adherence.trendLabel).toBe('30 dias')
+    expect(pdfData.adherence.selectedPeriod).toMatchObject({
+      label: '30 dias',
+      score: 82,
+      taken: 24,
+      expected: 30,
+    })
+    expect(pdfData.summaryCards[0]).toMatchObject({
+      label: 'Adesao 30 dias',
+      value: '82%',
+      meta: '24/30 doses',
+    })
     expect(pdfData.clinicalNotes[0]).toContain('Penicilina')
   })
 
@@ -181,10 +193,16 @@ describe('consultationPdfDataBuilder', () => {
       title: 'Consulta Medica',
     })
 
-    expect(pdfData.adherence.trend7d.slice(-2)).toEqual([
+    expect(pdfData.adherence.trend.slice(-2)).toEqual([
       expect.objectContaining({ taken: 8, expected: 10, score: 80 }),
       expect.objectContaining({ taken: 10, expected: 10, score: 100 }),
     ])
+    expect(pdfData.adherence.selectedPeriod).toMatchObject({
+      label: '7 dias',
+      score: 90,
+      taken: 18,
+      expected: 20,
+    })
   })
 
   it('usa o handle do email como fallback quando o nome nao existe', () => {
@@ -242,7 +260,7 @@ describe('consultationPdfDataBuilder', () => {
       title: 'Consulta Medica',
     })
 
-    const todayRow = pdfData.adherence.trend7d[pdfData.adherence.trend7d.length - 1]
+    const todayRow = pdfData.adherence.trend[pdfData.adherence.trend.length - 1]
     expect(todayRow.taken).toBe(1)
     expect(todayRow.expected).toBe(1)
     expect(todayRow.score).toBe(100)

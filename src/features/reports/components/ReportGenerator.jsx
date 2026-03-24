@@ -7,6 +7,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import { supabase } from '@shared/utils/supabase'
+import { cachedAdherenceService } from '@shared/services/cachedServices'
 import { getConsultationData } from '@features/consultation/services/consultationDataService'
 import { generateConsultationPDF } from '../services/consultationPdfService.js'
 import { shareReport, shareNative, copyToClipboard } from '../services/shareService'
@@ -81,7 +82,18 @@ export default function ReportGenerator() {
   const [shareError, setShareError] = useState(null)
   const [copied, setCopied] = useState(false)
 
-  const { medicines, protocols, logs, stockSummary, stats } = useDashboard()
+  const { medicines, protocols, logs, stockSummary, stats, dailyAdherence } = useDashboard()
+
+  const resolvePeriodDays = useCallback((selectedPeriod) => {
+    const periodMap = {
+      '7d': 7,
+      '30d': 30,
+      '90d': 90,
+      all: 90,
+    }
+
+    return periodMap[selectedPeriod] || 30
+  }, [])
 
   const dashboardData = useMemo(
     () => ({
@@ -90,8 +102,9 @@ export default function ReportGenerator() {
       logs,
       stockSummary,
       stats,
+      dailyAdherence,
     }),
-    [medicines, protocols, logs, stockSummary, stats]
+    [medicines, protocols, logs, stockSummary, stats, dailyAdherence]
   )
 
   const consultationData = useMemo(
@@ -136,9 +149,18 @@ export default function ReportGenerator() {
     setShareError(null)
 
     try {
+      const periodDays = resolvePeriodDays(period)
+      const resolvedDailyAdherence =
+        periodDays <= 7
+          ? dailyAdherence || []
+          : await cachedAdherenceService.getDailyAdherenceFromView(periodDays)
+
       const blob = await generateConsultationPDF({
         consultationData,
-        dashboardData,
+        dashboardData: {
+          ...dashboardData,
+          dailyAdherence: resolvedDailyAdherence,
+        },
         period,
         title: 'Meus Remedios - Consulta Medica',
       })
@@ -161,7 +183,7 @@ export default function ReportGenerator() {
     } finally {
       setIsGenerating(false)
     }
-  }, [consultationData, dashboardData, period])
+  }, [consultationData, dailyAdherence, dashboardData, period, resolvePeriodDays])
 
   /**
    * Manipula o download do PDF gerado.

@@ -18,6 +18,34 @@ function safeText(value, fallback = '-') {
   return String(value)
 }
 
+function getTrendLabel(days) {
+  if (days >= 90) return '90 dias'
+  if (days >= 30) return '30 dias'
+  if (days >= 7) return '7 dias'
+  return `${days} dias`
+}
+
+function summarizeTrend(trend = [], fallbackCurrentStreak = 0) {
+  const totals = trend.reduce(
+    (accumulator, row) => ({
+      taken: accumulator.taken + Number(row.taken ?? 0),
+      expected: accumulator.expected + Number(row.expected ?? 0),
+    }),
+    { taken: 0, expected: 0 }
+  )
+
+  const score =
+    totals.expected > 0 ? Math.round((totals.taken / totals.expected) * 100) : 0
+
+  return {
+    score,
+    taken: totals.taken,
+    expected: totals.expected,
+    punctuality: score,
+    currentStreak: fallbackCurrentStreak,
+  }
+}
+
 function extractEmailHandle(email) {
   if (!email || typeof email !== 'string') return ''
   const [handle] = email.split('@')
@@ -377,14 +405,25 @@ export function buildConsultationPdfData({
   const stockSummary = dashboardData.stockSummary || []
   const patientInfo = consultationData?.patientInfo || {}
   const activeMedicines = consultationData?.activeMedicines || []
+  const periodDays = period === 'all' ? Math.max(dailyAdherence.length || 0, 90) : Math.max(parseInt(period, 10) || 7, 1)
   const activeTreatments = buildTreatmentRows(protocols, medicines)
   const stockRows = buildStockRows(stockSummary, protocols, medicines)
   const prescriptionRows = buildPrescriptionRows(consultationData?.prescriptionStatus || [], protocols, medicines)
   const titrationRows = buildTitrationRows(consultationData?.activeTitrations || [], protocols, medicines)
-  const adherenceTrend = buildAdherenceTrend(dailyAdherence, logs, protocols, 7)
+  const adherenceTrend = buildAdherenceTrend(dailyAdherence, logs, protocols, periodDays)
 
   const adherence30d = consultationData?.adherenceSummary?.last30d || { score: 0, taken: 0, expected: 0, punctuality: 0 }
   const adherence90d = consultationData?.adherenceSummary?.last90d || { score: 0, taken: 0, expected: 0, punctuality: 0 }
+  const selectedPeriodLabel = getTrendLabel(periodDays)
+  const selectedPeriodSummary =
+    periodDays === 30
+      ? adherence30d
+      : periodDays === 90
+        ? adherence90d
+        : summarizeTrend(
+            adherenceTrend,
+            consultationData?.adherenceSummary?.currentStreak ?? adherence30d.currentStreak ?? 0
+          )
 
   const criticalStockCount = stockRows.filter((item) => item.severity === 'critical').length
   const warningStockCount = stockRows.filter((item) => item.severity === 'warning').length
@@ -393,6 +432,17 @@ export function buildConsultationPdfData({
   const activeTitrationCount = titrationRows.length
 
   const summaryCards = [
+    {
+      label: `Adesao ${selectedPeriodLabel}`,
+      value: `${selectedPeriodSummary.score ?? 0}%`,
+      meta: `${selectedPeriodSummary.taken ?? 0}/${selectedPeriodSummary.expected ?? 0} doses`,
+      tone:
+        (selectedPeriodSummary.score ?? 0) >= 80
+          ? 'success'
+          : (selectedPeriodSummary.score ?? 0) >= 50
+            ? 'warning'
+            : 'danger',
+    },
     {
       label: 'Adesao 30d',
       value: `${adherence30d.score ?? 0}%`,
@@ -409,10 +459,14 @@ export function buildConsultationPdfData({
     },
     {
       label: 'Pontualidade',
-      value: `${adherence30d.punctuality ?? 0}%`,
-      meta: 'Janela de tolerancia',
+      value: `${selectedPeriodSummary.punctuality ?? 0}%`,
+      meta: `Janela de tolerancia | ${selectedPeriodLabel}`,
       tone:
-        (adherence30d.punctuality ?? 0) >= 80 ? 'success' : (adherence30d.punctuality ?? 0) >= 50 ? 'warning' : 'danger',
+        (selectedPeriodSummary.punctuality ?? 0) >= 80
+          ? 'success'
+          : (selectedPeriodSummary.punctuality ?? 0) >= 50
+            ? 'warning'
+            : 'danger',
     },
     {
       label: 'Tratamentos ativos',
@@ -484,9 +538,14 @@ export function buildConsultationPdfData({
     summaryCards,
     activeTreatments,
     adherence: {
+      selectedPeriod: {
+        ...selectedPeriodSummary,
+        label: selectedPeriodLabel,
+      },
       last30d: adherence30d,
       last90d: adherence90d,
-      trend7d: adherenceTrend,
+      trend: adherenceTrend,
+      trendLabel: selectedPeriodLabel,
       currentStreak: consultationData?.adherenceSummary?.currentStreak ?? adherence30d.currentStreak ?? 0,
     },
     stockRows,

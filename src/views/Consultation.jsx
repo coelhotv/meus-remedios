@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import { getCurrentUser } from '@shared/utils/supabase'
+import { cachedAdherenceService } from '@shared/services/cachedServices'
 import { getConsultationData } from '@features/consultation/services/consultationDataService'
 import ConsultationView from '@features/consultation/components/ConsultationView'
 import Loading from '@shared/components/ui/Loading'
@@ -24,7 +25,7 @@ export default function Consultation({ onBack }) {
   const [error, setError] = useState(null)
 
   // Obtém dados do contexto do Dashboard
-  const { medicines, protocols, logs, stockSummary, stats } = useDashboard()
+  const { medicines, protocols, logs, stockSummary, stats, dailyAdherence } = useDashboard()
 
   const dashboardData = useMemo(
     () => ({
@@ -33,8 +34,9 @@ export default function Consultation({ onBack }) {
       logs,
       stockSummary,
       stats,
+      dailyAdherence,
     }),
-    [medicines, protocols, logs, stockSummary, stats]
+    [medicines, protocols, logs, stockSummary, stats, dailyAdherence]
   )
 
   // Agrega dados para o Modo Consulta
@@ -95,10 +97,15 @@ export default function Consultation({ onBack }) {
         timestamp: Date.now(),
       })
 
+      const resolvedDailyAdherence = await cachedAdherenceService.getDailyAdherenceFromView(30)
+
       // Gera relatório de consulta usando o pipeline dedicado
       const pdfBlob = await generateConsultationPDF({
         consultationData,
-        dashboardData,
+        dashboardData: {
+          ...dashboardData,
+          dailyAdherence: resolvedDailyAdherence,
+        },
         period: '30d',
       })
 
@@ -124,10 +131,15 @@ export default function Consultation({ onBack }) {
         timestamp: Date.now(),
       })
 
+      const resolvedDailyAdherence = await cachedAdherenceService.getDailyAdherenceFromView(30)
+
       // Gera PDF para compartilhamento
       const pdfBlob = await generateConsultationPDF({
         consultationData,
-        dashboardData,
+        dashboardData: {
+          ...dashboardData,
+          dailyAdherence: resolvedDailyAdherence,
+        },
         period: '30d',
       })
 
