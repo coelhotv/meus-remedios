@@ -2,15 +2,19 @@
  * TreatmentsRedesign — Orquestração da view de tratamentos redesenhada
  * Carrega dados, bifurca por persona, gerencia tabs e modal do wizard
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useComplexityMode } from '@dashboard/hooks/useComplexityMode'
 import { useTreatmentList } from '@protocols/hooks/useTreatmentList'
+import { medicineService, treatmentPlanService } from '@shared/services'
 import TreatmentTabBar from '@protocols/components/redesign/TreatmentTabBar'
 import AnvisaSearchBar from '@protocols/components/redesign/AnvisaSearchBar'
 import TreatmentsSimple from './TreatmentsSimple'
 import TreatmentsComplex from './TreatmentsComplex'
 import Loading from '@shared/components/ui/Loading'
 import TreatmentWizard from '@protocols/components/TreatmentWizard'
+import ProtocolForm from '@protocols/components/ProtocolForm'
+import Modal from '@shared/components/ui/Modal'
+import { protocolService } from '@shared/services'
 import './TreatmentsRedesign.css'
 
 export default function TreatmentsRedesign({ onNavigateToProtocol }) {
@@ -18,11 +22,28 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
   const [activeTab, setActiveTab] = useState('ativos')
   const [wizardOpen, setWizardOpen] = useState(false)
   const [wizardMedicine, setWizardMedicine] = useState(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [formProtocol, setFormProtocol] = useState(null)
+  const [medicines, setMedicines] = useState([])
+  const [treatmentPlans, setTreatmentPlans] = useState([])
 
   // Data + context
   const { isComplex } = useComplexityMode()
   const { activeItems, pausedItems, finishedItems, activeGroups, pausedGroups, finishedGroups, loading, error, refetch } =
     useTreatmentList()
+
+  // Fetch medicines and treatmentPlans on mount
+  useEffect(() => {
+    Promise.all([
+      medicineService.getAll(),
+      treatmentPlanService.getAll(),
+    ]).then(([med, plans]) => {
+      setMedicines(med || [])
+      setTreatmentPlans(plans || [])
+    }).catch(err => {
+      console.error('Erro ao carregar medicamentos/planos:', err)
+    })
+  }, [])
 
   // Memos — item list e groups por tab
   const tabItems = {
@@ -40,6 +61,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
 
   // Handlers
   function handleOpenWizard(medicine) {
+    // Wizard: apenas para medicamentos novos da busca ANVISA
     setWizardMedicine(medicine)
     setWizardOpen(true)
   }
@@ -48,6 +70,27 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
     setWizardOpen(false)
     setWizardMedicine(null)
     refetch()
+  }
+
+  function handleEditProtocol(protocolItem) {
+    // Form: para editar protocolo existente da lista
+    setFormProtocol(protocolItem)
+    setFormOpen(true)
+  }
+
+  function handleFormClose() {
+    setFormOpen(false)
+    setFormProtocol(null)
+  }
+
+  async function handleFormSave(protocolData) {
+    try {
+      await protocolService.update(formProtocol.id, protocolData)
+      handleFormClose()
+      refetch()
+    } catch (err) {
+      console.error('Erro ao salvar protocolo:', err)
+    }
   }
 
   if (loading) return <Loading />
@@ -87,13 +130,13 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
         <TreatmentsComplex
           key={activeTab}
           groups={currentGroups}
-          onEdit={handleOpenWizard}
+          onEdit={handleEditProtocol}
         />
       ) : (
-        <TreatmentsSimple key={activeTab} items={currentItems} onEdit={handleOpenWizard} />
+        <TreatmentsSimple key={activeTab} items={currentItems} onEdit={handleEditProtocol} />
       )}
 
-      {/* TreatmentWizard modal */}
+      {/* TreatmentWizard modal — apenas para novos protocolos via busca */}
       {wizardOpen && (
         <div className="treatments-redesign__modal-overlay">
           <div className="treatments-redesign__modal">
@@ -108,6 +151,22 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
           </div>
         </div>
       )}
+
+      {/* ProtocolForm modal — para editar protocolos existentes */}
+      <Modal isOpen={formOpen} onClose={handleFormClose}>
+        {formProtocol && (
+          <ProtocolForm
+            medicines={medicines}
+            treatmentPlans={treatmentPlans}
+            protocol={formProtocol}
+            onSave={handleFormSave}
+            onCancel={handleFormClose}
+            mode="full"
+            showTitration={true}
+            showTreatmentPlan={true}
+          />
+        )}
+      </Modal>
     </div>
   )
 }
