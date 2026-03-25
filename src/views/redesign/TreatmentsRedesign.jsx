@@ -160,20 +160,21 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
       )}
 
       {/* TreatmentWizard modal — apenas para novos protocolos via busca */}
-      {wizardOpen && (
-        <div className="treatments-redesign__modal-overlay">
-          <div className="treatments-redesign__modal">
-            <TreatmentWizard
-              preselectedMedicine={wizardMedicine}
-              onComplete={handleWizardComplete}
-              onCancel={() => {
-                setWizardOpen(false)
-                setWizardMedicine(null)
-              }}
-            />
-          </div>
-        </div>
-      )}
+      <Modal isOpen={wizardOpen} onClose={() => {
+        setWizardOpen(false)
+        setWizardMedicine(null)
+      }}>
+        {wizardMedicine && (
+          <TreatmentWizard
+            preselectedMedicine={wizardMedicine}
+            onComplete={handleWizardComplete}
+            onCancel={() => {
+              setWizardOpen(false)
+              setWizardMedicine(null)
+            }}
+          />
+        )}
+      </Modal>
 
       {/* ProtocolForm modal — para editar protocolos existentes */}
       <Modal isOpen={formOpen} onClose={handleFormClose}>

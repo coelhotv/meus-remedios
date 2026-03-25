@@ -1,41 +1,8 @@
-/* TreatmentsRedesign — Modal overlay and view-level styles */
-
-.treatments-redesign__modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 200;
-  padding: 1rem;
-}
-
-.treatments-redesign__modal {
-  width: 100%;
-  max-width: 480px;
-  max-height: 90dvh;
-  overflow-y: auto;
-  background: var(--color-surface, #fff);
-  border-radius: var(--radius-xl, 20px) var(--radius-xl, 20px) 0 0;
-  padding: 1.5rem 1rem;
-}
+/* TreatmentsRedesign — View-level styles */
 
 .treatments-redesign__error {
   padding: 2rem;
   text-align: center;
   color: var(--color-on-surface-variant, #49454f);
   font-size: 0.9375rem;
-}
-
-/* Desktop */
-@media (min-width: 1024px) {
-  .treatments-redesign__modal-overlay {
-    align-items: center;
-  }
-
-  .treatments-redesign__modal {
-    border-radius: var(--radius-xl, 20px);
-    max-height: 85dvh;
-  }
 }
