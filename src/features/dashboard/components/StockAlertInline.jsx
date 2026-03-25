@@ -10,6 +10,8 @@ import { AlertTriangle } from 'lucide-react'
 export default function StockAlertInline({ criticalItems = [], onNavigateToStock }) {
   if (!criticalItems || criticalItems.length === 0) return null
 
+  const PROGRESS_BAR_MAX_DAYS = 30
+
   const sorted = [...criticalItems].sort((a, b) => a.daysRemaining - b.daysRemaining)
   const mostCritical = sorted[0]
   const isCritical = mostCritical.stockStatus === 'critical'
@@ -18,7 +20,7 @@ export default function StockAlertInline({ criticalItems = [], onNavigateToStock
     ? 'var(--color-error, #ba1a1a)'
     : 'var(--color-tertiary, #7b5700)'
 
-  const progressPct = Math.max(0, Math.min((mostCritical.daysRemaining / 30) * 100, 100))
+  const progressPct = Math.max(0, Math.min((mostCritical.daysRemaining / PROGRESS_BAR_MAX_DAYS) * 100, 100))
 
   return (
     <div
@@ -67,7 +69,7 @@ export default function StockAlertInline({ criticalItems = [], onNavigateToStock
           role="progressbar"
           aria-valuenow={mostCritical.daysRemaining}
           aria-valuemin={0}
-          aria-valuemax={30}
+          aria-valuemax={PROGRESS_BAR_MAX_DAYS}
           aria-label={`${mostCritical.medicineName}: ${mostCritical.daysRemaining} dias restantes`}
           style={{
             height: '8px',
