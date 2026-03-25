@@ -28,9 +28,11 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
   const [treatmentPlans, setTreatmentPlans] = useState([])
 
   // Data + context
-  const { isComplex } = useComplexityMode()
+  const { mode } = useComplexityMode()
   const { activeItems, pausedItems, finishedItems, activeGroups, pausedGroups, finishedGroups, loading, error, refetch } =
     useTreatmentList()
+
+  const isComplex = mode === 'complex'
 
   // Fetch medicines and treatmentPlans on mount
   useEffect(() => {
