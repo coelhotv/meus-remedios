@@ -3,7 +3,7 @@ import './Sidebar.css'
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Hoje', Icon: Calendar },
-  { id: 'treatment', label: 'Tratamentos', Icon: Pill },
+  { id: 'treatment', label: 'Tratamento', Icon: Pill },
   { id: 'stock', label: 'Estoque', Icon: Package },
   { id: 'profile', label: 'Perfil', Icon: User },
 ]
