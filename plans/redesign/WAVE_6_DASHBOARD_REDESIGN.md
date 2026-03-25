@@ -1,10 +1,39 @@
 # Wave 6 — Dashboard Redesign
 
-**Status:** Pronto para execução (após W4 e W5 mergeadas)
-**Dependências:** W0-W5 DEVEM estar completas
-**Branch:** `feature/redesign/wave-6-dashboard-redesign`
-**Estimativa:** 6 sprints sequenciais
-**Risco:** ALTO — Dashboard é o coração da app. Compartilha lógica com Dashboard.jsx original.
+**Status:** ✅ COMPLETA (Entregue 2026-03-25)
+**Dependências:** W0-W5 ✅ completas
+**Branch:** `feature/redesign/wave-6-dashboard-redesign` — MERGED em PR #425 (2026-03-25)
+**Estimativa:** 6 sprints sequenciais ✅ (S6.1-S6.6 concluídos em single delivery)
+**Risco:** ALTO — Dashboard é o coração da app. Compartilha lógica com Dashboard.jsx original. ✅ **MITIGADO**
+
+### 📦 Entrega Completa
+
+**Sprints 6.1-6.6 — Dashboard Redesign (Single Delivery)** ✅
+
+**Componentes Novos:**
+- `src/features/dashboard/components/RingGaugeRedesign.jsx` (104 linhas) — SVG ring gauge com Framer Motion, 3 tamanhos responsivos
+- `src/features/dashboard/components/PriorityDoseCard.jsx` (110 linhas) — Gradient card para doses urgentes com callback handlers
+- `src/features/dashboard/components/CronogramaPeriodo.jsx` (126 linhas) — Cronograma por período (Manhã/Tarde/Noite) com dose status
+- `src/features/dashboard/components/StockAlertInline.jsx` (104 linhas) — Alert banner com progress bar dinâmico
+
+**View & Integração:**
+- `src/views/redesign/DashboardRedesign.jsx` (244 linhas) — View completa composing todos 4 componentes + modal para registro
+- `src/App.jsx` — Feature flag branching (isRedesignEnabled) + lazy loading com Suspense + ViewSkeleton fallback
+
+**Qualidade & Conformance:**
+- Zod validation em todos os schemas
+- R-010 hook ordering conformance (States → Memos → Effects → Handlers)
+- Magic number extraction (PROGRESS_BAR_MAX_DAYS = 30)
+- Framer Motion animations com prefers-reduced-motion support
+- Sanctuary Therapeutic color scheme integration
+- 0 lint errors, 546 tests passing
+- AI review cycle: 2 Medium fixes aplicadas (suggestion blocks implemented)
+
+**Impacto:**
+- Dashboard original (Dashboard.jsx) completamente preservado — ZERO breaking changes
+- DashboardRedesign separado em lazy chunk (5.11 kB gzip)
+- Feature flag permite A/B testing e rollout gradual
+- UI/UX completamente refatorada, dados compartilhados 100%
 
 ---
 
