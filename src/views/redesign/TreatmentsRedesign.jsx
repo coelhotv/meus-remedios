@@ -72,10 +72,16 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
     refetch()
   }
 
-  function handleEditProtocol(protocolItem) {
+  async function handleEditProtocol(protocolItem) {
     // Form: para editar protocolo existente da lista
-    setFormProtocol(protocolItem)
-    setFormOpen(true)
+    // Buscar protocolo completo do banco (TreatmentItem tem estrutura diferente)
+    try {
+      const fullProtocol = await protocolService.getById(protocolItem.id)
+      setFormProtocol(fullProtocol)
+      setFormOpen(true)
+    } catch (err) {
+      console.error('Erro ao carregar protocolo para edicao:', err)
+    }
   }
 
   function handleFormClose() {
