@@ -1,10 +1,10 @@
 # Wave 4 — Navigation Shell: BottomNav + Sidebar
 
-**Status:** Pronto para execução
-**Dependências:** Waves 0, 1, 2 e 3 DEVEM estar completas (tokens, typography, layout.redesign.css, components.redesign.css)
-**Branch:** `feature/redesign/wave-4-navigation-shell`
-**Estimativa:** 4 sprints sequenciais
-**Risco:** MÉDIO — envolve modificar App.jsx (arquivo crítico da aplicação)
+**Status:** ✅ COMPLETO — Merged 2026-03-25 (Commit b02c0b7)
+**Dependências:** Waves 0, 1, 2 e 3 DEVEM estar completas (tokens, typography, layout.redesign.css, components.redesign.css) ✅ ALL MET
+**Branch:** `feature/redesign/wave-4-navigation-shell` [MERGED]
+**Execução:** 4 sprints completados com sucesso
+**Risco:** MÉDIO — envolve modificar App.jsx (arquivo crítico da aplicação) ✅ MITIGATED
 
 ---
 
