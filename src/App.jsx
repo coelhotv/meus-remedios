@@ -22,6 +22,7 @@ const DLQAdmin = lazy(() => import('./views/admin/DLQAdmin'))
 const Consultation = lazy(() => import('./views/Consultation'))
 const Landing = lazy(() => import('./views/Landing'))
 const DashboardRedesign = lazy(() => import('./views/redesign/DashboardRedesign'))
+const TreatmentsRedesign = lazy(() => import('./views/redesign/TreatmentsRedesign'))
 const ChatWindow = lazy(() => import('@features/chatbot/components/ChatWindow'))
 const BottomNavRedesign = lazy(() => import('@shared/components/ui/BottomNavRedesign'))
 const Sidebar = lazy(() => import('@shared/components/ui/Sidebar'))
@@ -154,7 +155,16 @@ function AppInner() {
           </Suspense>
         )
       case 'protocols':
-        return (
+        return isRedesignEnabled ? (
+          <Suspense fallback={<ViewSkeleton />}>
+            <TreatmentsRedesign
+              onNavigateToProtocol={(item) => {
+                setCurrentView('protocols')
+                // TODO: Passar item.id se a view original aceitar selectedProtocolId prop
+              }}
+            />
+          </Suspense>
+        ) : (
           <Suspense fallback={<ViewSkeleton />}>
             <Protocols
               initialParams={initialProtocolParams}
