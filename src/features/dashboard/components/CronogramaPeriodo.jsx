@@ -104,14 +104,16 @@ export default function CronogramaPeriodo({ allDoses = [], onRegister }) {
       style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
       aria-label="Cronograma de doses de hoje"
     >
-      {grouped.map(({ id, label, Icon, doses }) => (
+      {grouped.map(({ id, label, Icon, doses }) => {
+        const PeriodIcon = Icon
+        return (
         <section key={id} aria-label={`${label}: ${doses.length} dose${doses.length !== 1 ? 's' : ''}`}>
           {/* Header do período */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
             marginBottom: '0.75rem', paddingLeft: '0.25rem',
           }}>
-            <Icon size={16} color="var(--color-outline, #6d7a76)" aria-hidden="true" />
+            <PeriodIcon size={16} color="var(--color-outline, #6d7a76)" aria-hidden="true" />
             <h3 style={{
               margin: 0,
               fontFamily: 'var(--font-body, Lexend, sans-serif)',
@@ -142,7 +144,8 @@ export default function CronogramaPeriodo({ allDoses = [], onRegister }) {
             ))}
           </div>
         </section>
-      ))}
+        )
+      })}
     </div>
   )
 }
