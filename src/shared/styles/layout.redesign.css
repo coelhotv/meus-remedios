@@ -32,28 +32,23 @@
 }
 
 /* ============================================
-   MAIN WITH SIDEBAR — offset para sidebar fixa
-   Usado no <main> quando o usuario esta autenticado.
-   ============================================ */
-@media (min-width: 768px) {
-  .main-with-sidebar {
-    margin-left: 16rem; /* 256px sidebar width */
-  }
-}
-
-/* ============================================
    APP MAIN — container do conteudo principal
    ============================================ */
 .app-main {
   min-height: 100vh;
-  min-height: 100dvh; /* dynamic viewport height para mobile */
   position: relative;
-  padding-bottom: 5rem; /* 80px — espaco para BottomNav no mobile */
 }
 
+/* Scoped: quando redesign flag esta ativo */
+[data-redesign="true"] .app-main {
+  padding-bottom: 80px; /* espaço para BottomNavRedesign em mobile */
+}
+
+/* MAIN WITH SIDEBAR — offset para sidebar fixa */
 @media (min-width: 768px) {
-  .app-main {
-    padding-bottom: 0; /* sem BottomNav no desktop — sidebar substitui */
+  [data-redesign="true"] .main-with-sidebar {
+    margin-left: 16rem; /* 256px — largura da sidebar */
+    padding-bottom: 0; /* sem bottom nav em desktop */
   }
 }
 
