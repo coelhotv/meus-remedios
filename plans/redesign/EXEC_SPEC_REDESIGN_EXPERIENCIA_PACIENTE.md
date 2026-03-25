@@ -14,18 +14,23 @@
 | W1 | Typography + Lucide Icons | `WAVE_1_TYPOGRAPHY_ICONS.md` | ✅ MERGED #418 | main |
 | W2 | Surface & Layout System | `WAVE_2_SURFACE_LAYOUT.md` | ✅ MERGED #419 | main |
 | W3 | Component Library Primitives | `WAVE_3_COMPONENT_PRIMITIVES.md` | ✅ MERGED #420 | main |
-| W4 | Navigation Shell (BottomNav + Sidebar) | `WAVE_4_NAVIGATION_SHELL.md` | 🔜 PRONTO P/ EXECUÇÃO | — |
-| W5 | Motion Language | `WAVE_5_MOTION_LANGUAGE.md` | 🔜 PRONTO P/ EXECUÇÃO | — |
-| W6 | Dashboard Redesign | `WAVE_6_DASHBOARD_REDESIGN.md` | 🔜 PRONTO P/ EXECUÇÃO | — |
-| W7 | Tratamentos Redesign | — | ⏳ PENDENTE SPEC | — |
+| W4 | Navigation Shell (BottomNav + Sidebar) | `WAVE_4_NAVIGATION_SHELL.md` | ✅ MERGED #422 (2026-03-25) | main |
+| W5 | Motion Language | `WAVE_5_MOTION_LANGUAGE.md` | ✅ MERGED #424 (2026-03-25) | main |
+| W6 | Dashboard Redesign | `WAVE_6_DASHBOARD_REDESIGN.md` | ✅ MERGED #425 (2026-03-25) | main |
+| W7 | Tratamentos Redesign | — | 🔜 PRONTO P/ EXECUÇÃO | — |
 | W8 | Estoque Redesign | — | ⏳ PENDENTE SPEC | — |
 | W9 | Perfil & Saúde | — | ⏳ PENDENTE SPEC | — |
 | W10 | Progressive Disclosure | — | ⏳ PENDENTE SPEC | — |
 | W11 | Accessibility & Polish | — | ⏳ PENDENTE SPEC | — |
 | W12 | Landing, Auth & Onboarding | — | ⏳ PENDENTE SPEC | — |
 
-> **Próximo bloco de execução:** W4 → W5 → W6 (executar sequencialmente via `/deliver-sprint` por agentes coder)
-> **Specs executáveis:** W4, W5 e W6 estão completas com código de referência e checklists binários
+**Entregas Completas (2026-03-25):**
+- ✅ **W4:** BottomNavRedesign + Sidebar + App.jsx integration + page transitions (PR #422)
+- ✅ **W5:** motionConstants.js + useMotion hook + CSS keyframes + AI review cycle (PR #424)
+- ✅ **W6:** RingGaugeRedesign + PriorityDoseCard + CronogramaPeriodo + StockAlertInline + DashboardRedesign.jsx (PR #425)
+
+**Próximo bloco:** W7 (Tratamentos Redesign) — spec aguardando aprovação
+**Foundation (W0-W6):** 100% COMPLETO ✅ — Sistema de design, navegação, motion e dashboard completos
 
 
 > **Norte criativo:** "Um santuário terapêutico brasileiro: calmo, editorial e legível. Um espaço em camadas e respirável onde dados clínicos sensíveis são apresentados com contraste suave, hierarquia clara e calor humano suficiente para reduzir ansiedade sem parecer infantil."

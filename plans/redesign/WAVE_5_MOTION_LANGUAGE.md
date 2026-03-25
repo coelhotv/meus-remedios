@@ -1,10 +1,20 @@
 # Wave 5 — Motion Language
 
-**Status:** Pronto para execução (após W4 estar merged)
-**Dependências:** W0-W4 DEVEM estar completas
-**Branch:** `feature/redesign/wave-5-motion-language`
-**Estimativa:** 3 sprints sequenciais
+**Status:** ✅ COMPLETA (Entregue 2026-03-25)
+**Dependências:** W0-W4 ✅ completas
+**Branch:** `feature/redesign/wave-5-motion-language` — MERGED em PR #424
+**Estimativa:** 3 sprints sequenciais ✅ (S5.1 concluído)
 **Risco:** BAIXO — apenas arquivos novos + adições scoped a `components.redesign.css`
+
+### 📦 Entregas Completas
+
+**Sprint 5.1 — Motion Constants** ✅
+- `src/shared/utils/motionConstants.js` — 6 archetypes (subtle, calm, engaging, energetic, delightful, ceremonial)
+- `useMotion()` hook — wrapper safety-first
+- CSS keyframes em `components.redesign.css` scoped com `[data-redesign="true"]`
+- Framer Motion 12 integration
+- AI review cycle com fixes (staticFallback bug, useMemo optimization)
+- PR #424 merged com sucesso
 
 ---
 
