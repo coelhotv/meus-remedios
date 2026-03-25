@@ -603,6 +603,57 @@
   padding-left: 0.5rem;
 }
 
+/* Desktop — layout tabular para rows */
+@media (min-width: 1024px) {
+  .treatments-complex__rows {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 2fr 1.5fr;
+    gap: 0;
+    padding-left: 0;
+    align-items: stretch;
+  }
+
+  .treatments-complex__rows .protocol-row {
+    border-radius: 0;
+    box-shadow: none;
+    border-right: 1px solid var(--color-outline-variant, #cac4d0);
+    border-bottom: 1px solid var(--color-outline-variant, #cac4d0);
+  }
+
+  .treatments-complex__rows .protocol-row:last-child {
+    border-bottom: none;
+  }
+
+  .treatments-complex__rows .protocol-row__main {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .treatments-complex__rows .protocol-row__header {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .treatments-complex__rows .protocol-row__schedule {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .treatments-complex__rows .protocol-row__metrics {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .treatments-complex__rows .protocol-row__chevron {
+    display: none;
+  }
+}
+
 .treatments-complex__empty {
   padding: 2rem;
   text-align: center;
@@ -614,36 +665,5 @@
 @media (min-width: 1024px) {
   .treatments-redesign {
     padding: 1.5rem 2rem;
-  }
-
-  .treatments-complex--desktop .treatments-complex__rows {
-    padding-left: 0;
-  }
-
-  .treatments-complex--desktop .protocol-row {
-    border-radius: 0;
-    box-shadow: none;
-    border-bottom: 1px solid var(--color-outline-variant, #cac4d0);
-  }
-
-  .treatments-complex--desktop .protocol-row__main {
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .treatments-complex--desktop .protocol-row__header {
-    flex: 2;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .treatments-complex--desktop .protocol-row__schedule {
-    flex: 1.5;
-  }
-
-  .treatments-complex--desktop .protocol-row__metrics {
-    flex: 3;
-    flex-wrap: nowrap;
   }
 }
