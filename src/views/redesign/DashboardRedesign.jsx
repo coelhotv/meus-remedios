@@ -50,13 +50,28 @@ export default function DashboardRedesign({ onNavigate }) {
   const [isLoading, setIsLoading] = useState(true)
 
   // ── Computadas ──
-  const allDoses = useMemo(() => [
-    ...(zones.late    || []),
-    ...(zones.now     || []),
-    ...(zones.upcoming || []),
-    ...(zones.later   || []),
-    ...(zones.done    || []),
-  ], [zones])
+  // S7.5.4: Enriquecer doses com dados de estoque
+  const stockByMedicineId = useMemo(() => {
+    const map = new Map()
+    stockSummary?.items?.forEach(item => map.set(item.medicineId, item))
+    return map
+  }, [stockSummary])
+
+  const allDoses = useMemo(() => {
+    const doses = [
+      ...(zones.late    || []),
+      ...(zones.now     || []),
+      ...(zones.upcoming || []),
+      ...(zones.later   || []),
+      ...(zones.done    || []),
+    ]
+    // Enriquecer com dados de estoque
+    return doses.map(dose => ({
+      ...dose,
+      stockDays: stockByMedicineId.get(dose.medicineId)?.daysRemaining ?? null,
+      stockStatus: stockByMedicineId.get(dose.medicineId)?.stockStatus ?? null,
+    }))
+  }, [zones, stockByMedicineId])
 
   const urgentDoses = useMemo(() => [
     ...(zones.late || []).filter(d => !d.isRegistered),
@@ -268,15 +283,28 @@ export default function DashboardRedesign({ onNavigate }) {
           {/* Cronograma do Dia */}
           {allDoses.length > 0 && (
             <section aria-label="Cronograma de hoje">
-              <h2 style={{
-                margin: '0 0 1rem',
-                fontFamily: 'var(--font-display, Public Sans, sans-serif)',
-                fontSize: 'var(--text-title-lg, 1.125rem)',
-                fontWeight: '600',
-                color: 'var(--color-on-surface, #191c1d)',
-              }}>
-                Cronograma de Hoje
-              </h2>
+              <div style={{ marginBottom: '1rem' }}>
+                <h2 style={{
+                  margin: 0,
+                  fontFamily: 'var(--font-display, Public Sans, sans-serif)',
+                  fontSize: 'var(--text-title-lg, 1.125rem)',
+                  fontWeight: '600',
+                  color: 'var(--color-on-surface, #191c1d)',
+                }}>
+                  Cronograma Compacto
+                </h2>
+                <p style={{
+                  margin: '0.25rem 0 0',
+                  fontFamily: 'var(--font-body, Lexend, sans-serif)',
+                  fontSize: 'var(--text-label-md, 0.75rem)',
+                  color: 'var(--color-outline, #6d7a76)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontWeight: '600',
+                }}>
+                  {today}
+                </p>
+              </div>
               <CronogramaPeriodo
                 allDoses={allDoses}
                 onRegister={(dose) =>
@@ -286,6 +314,7 @@ export default function DashboardRedesign({ onNavigate }) {
                     dose.dosagePerIntake
                   )
                 }
+                variant={complexityMode === 'simple' ? 'simple' : 'complex'}
               />
             </section>
           )}

@@ -24,8 +24,6 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
   const [wizardMedicine, setWizardMedicine] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [formProtocol, setFormProtocol] = useState(null)
-  const [planFormOpen, setPlanFormOpen] = useState(false) // S7.5.5
-  const [planToEdit, setPlanToEdit] = useState(null) // S7.5.5
   const [medicines, setMedicines] = useState([])
   const [treatmentPlans, setTreatmentPlans] = useState([])
   const [errorMessage, setErrorMessage] = useState(null)
@@ -108,30 +106,17 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
     }
   }
 
-  // S7.5.5: Handlers para editar plano de tratamento
+  // S7.5.5: Handler para editar plano de tratamento — TODO: implementar TreatmentPlanForm se não existir
   async function handleEditPlan(group) {
     try {
       setErrorMessage(null)
       // Buscar plano completo via planId do grupo
       const fullPlan = await treatmentPlanService.getById(group.planId || group.groupKey.replace('plan-', ''))
-      setPlanToEdit(fullPlan)
-      setPlanFormOpen(true)
+      // TODO: abrir modal com TreatmentPlanForm preenchido com fullPlan
+      console.log('Edit plan:', fullPlan)
     } catch (err) {
       console.error('Erro ao carregar plano para edicao:', err)
       setErrorMessage('Erro ao carregar plano. Tente novamente.')
-    }
-  }
-
-  async function handlePlanSave(planData) {
-    try {
-      setErrorMessage(null)
-      await treatmentPlanService.update(planToEdit.id, planData)
-      setPlanFormOpen(false)
-      setPlanToEdit(null)
-      refetch()
-    } catch (err) {
-      console.error('Erro ao salvar plano:', err)
-      setErrorMessage('Erro ao salvar plano. Tente novamente.')
     }
   }
 
@@ -226,13 +211,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
         )}
       </Modal>
 
-      {/* TreatmentPlanForm modal — S7.5.5: para editar plano de tratamento */}
-      {/* TODO: implementar TreatmentPlanForm se não existir; por enquanto usar ProtocolForm ou placeholder */}
-      {/* Modal isOpen={planFormOpen} onClose={() => { setPlanFormOpen(false); setPlanToEdit(null) }}>
-        {planToEdit && (
-          <div>Editar Plano: {planToEdit.name || planToEdit.groupLabel}</div>
-        )}
-      </Modal> */}
+      {/* S7.5.5: TreatmentPlanForm modal — TODO: implementar quando TreatmentPlanForm estiver disponível */}
     </div>
   )
 }
