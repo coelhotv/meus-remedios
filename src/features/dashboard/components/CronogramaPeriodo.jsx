@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Sun, Moon, CheckCircle2, Circle, Sunrise, ChevronRight } from 'lucide-react'
+import { Sun, Moon, CheckCircle2, Circle, Sunrise, ChevronRight, Pill, PillBottle } from 'lucide-react'
 import { useMotion } from '@shared/hooks/useMotion'
 
 const PERIODS = [
@@ -24,14 +24,17 @@ function getHour(scheduledTime) {
 function CronogramaDoseItem({ dose, onRegister, stockDays, stockStatus }) {
   const done = dose.isRegistered
   const showStockBadge = stockStatus === 'critical' || stockStatus === 'low'
+  // S7.5 visual: mostrar ícone baseado no tipo de medicamento
+  const isSupplement = dose.medicineType === 'suplemento'
+  const MedicineIcon = isSupplement ? PillBottle : Pill
 
   return (
     <div className={`cronograma-dose-card ${done ? 'cronograma-dose-card--done' : ''}`}>
-      {/* Ícone em rounded square */}
-      <div className="cronograma-dose-card__icon-wrap">
+      {/* Ícone em rounded square — S7.5: Pill (medicamento) vs Capsule (suplemento) */}
+      <div className={`cronograma-dose-card__icon-wrap cronograma-dose-card__icon-wrap--${isSupplement ? 'supplement' : 'medicine'}`}>
         {done
           ? <CheckCircle2 size={20} color="var(--color-primary, #006a5e)" aria-hidden="true" />
-          : <Circle size={20} color="var(--color-outline, #6d7a76)" aria-hidden="true" />
+          : <MedicineIcon size={20} color="#ffffff" aria-hidden="true" />
         }
       </div>
 
@@ -76,7 +79,6 @@ function CronogramaDoseItem({ dose, onRegister, stockDays, stockStatus }) {
  */
 export default function CronogramaPeriodo({ allDoses = [], onRegister, variant = 'complex' }) {
   const { cascade } = useMotion()
-  const [openZones, setOpenZones] = useState({})
 
   // ── Computar grouped para inicialização de accordion (S7.5.2) ──
   const grouped = useMemo(() => {
@@ -100,23 +102,16 @@ export default function CronogramaPeriodo({ allDoses = [], onRegister, variant =
     }).filter(({ doses }) => doses.length > 0)
   }, [allDoses])
 
-  // Inicializar openZones via useEffect (S7.5.2: accordion state — apenas para complex)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // Nota: openZones não está no dependency array para evitar loop infinito
-    // A condição Object.keys(openZones).length === 0 garante que isso roda apenas uma vez
-    if (variant === 'complex' && Object.keys(openZones).length === 0 && grouped.length > 0) {
-      const currentZoneIndex = grouped.findIndex(g => g.isCurrent)
-      const initialOpen = Object.fromEntries(
-        grouped.map((z, idx) => {
-          // Abrir: zona atual, ou próxima zona se atual está completa
-          const shouldOpen = z.isCurrent || (currentZoneIndex >= 0 && idx === currentZoneIndex + 1 && grouped[currentZoneIndex].doses.every(d => d.isRegistered))
-          return [z.id, shouldOpen ? true : !z.isCollapsible]
-        })
-      )
-      setOpenZones(initialOpen)
-    }
-  }, [variant, grouped])
+  // Inicializar openZones: zonas passadas fechadas, atual + próximas abertas (S7.5.2)
+  const [openZones, setOpenZones] = useState(() => {
+    if (grouped.length === 0) return {}
+    return Object.fromEntries(
+      grouped.map(z => {
+        // Zonas passadas: começam fechadas | Atual + futuras: começam abertas
+        return [z.id, !z.isPast]
+      })
+    )
+  })
 
   // ── MODO SIMPLE: lista plana cronológica (S7.5.3) ──
   if (variant === 'simple') {
@@ -150,9 +145,9 @@ export default function CronogramaPeriodo({ allDoses = [], onRegister, variant =
       initial="hidden"
       animate="visible"
     >
-      {grouped.map(({ id, label, Icon, doses, isCollapsible }) => {
+      {grouped.map(({ id, label, Icon, doses, isPast }) => {
         const PeriodIcon = Icon
-        const isOpen = openZones[id] ?? true
+        const isOpen = openZones[id]
 
         return (
           <motion.section
@@ -160,49 +155,35 @@ export default function CronogramaPeriodo({ allDoses = [], onRegister, variant =
             aria-label={`${label}: ${doses.length} dose${doses.length !== 1 ? 's' : ''}`}
             variants={cascade.item}
           >
-            {/* Header com accordion se concluído (S7.5.2) */}
-            {isCollapsible ? (
-              <button
-                className="cronograma-period-header cronograma-period-header--done"
-                onClick={() => setOpenZones(prev => ({ ...prev, [id]: !prev[id] }))}
-                aria-expanded={isOpen}
-              >
-                <PeriodIcon size={16} color="var(--color-outline, #6d7a76)" aria-hidden="true" />
-                <span className="cronograma-period-header__label">{label}</span>
-                <span className="cronograma-period-header__done-tag">· Concluído</span>
-                <CheckCircle2 size={14} color="var(--color-primary, #006a5e)" aria-hidden="true" />
+            {/* Header accordion — S7.5.2: todos os headers clicáveis */}
+            {/* Zonas passadas aparecem com "Concluído", outras mostram contagem */}
+            <button
+              className="cronograma-period-header"
+              onClick={() => setOpenZones(prev => ({ ...prev, [id]: !prev[id] }))}
+              aria-expanded={isOpen}
+            >
+              <PeriodIcon size={16} color="var(--color-outline, #6d7a76)" aria-hidden="true" />
+              <span className="cronograma-period-header__label">{label}</span>
+
+              {/* Indicadores à direita: "Concluído" ou contagem + chevron */}
+              <div className="cronograma-period-header__right">
+                {isPast ? (
+                  <>
+                    <span className="cronograma-period-header__done-tag">· Concluído</span>
+                    <CheckCircle2 size={14} color="var(--color-primary, #006a5e)" aria-hidden="true" />
+                  </>
+                ) : (
+                  <span className="cronograma-period-header__count">
+                    {doses.filter(d => d.isRegistered).length}/{doses.length}
+                  </span>
+                )}
                 <ChevronRight
                   size={16}
                   className={`cronograma-period-header__chevron ${isOpen ? 'cronograma-period-header__chevron--open' : ''}`}
                   aria-hidden="true"
                 />
-              </button>
-            ) : (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                marginBottom: '0.75rem', paddingLeft: '0.25rem',
-              }}>
-                <PeriodIcon size={16} color="var(--color-outline, #6d7a76)" aria-hidden="true" />
-                <h3 style={{
-                  margin: 0,
-                  fontFamily: 'var(--font-body, Lexend, sans-serif)',
-                  fontSize: 'var(--text-label-md, 0.75rem)',
-                  fontWeight: 'var(--font-weight-bold, 700)',
-                  color: 'var(--color-outline, #6d7a76)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                }}>
-                  {label}
-                </h3>
-                <span style={{
-                  marginLeft: 'auto',
-                  fontSize: 'var(--text-label-sm, 0.625rem)',
-                  color: 'var(--color-outline, #6d7a76)',
-                }}>
-                  {doses.filter(d => d.isRegistered).length}/{doses.length}
-                </span>
               </div>
-            )}
+            </button>
 
             {/* Doses — renderizar se aberto */}
             {isOpen && (

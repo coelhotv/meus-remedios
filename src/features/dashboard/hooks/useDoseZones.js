@@ -19,6 +19,7 @@ import { parseLocalDate, getTodayLocal } from '@utils/dateUtils'
  * @property {string} protocolId
  * @property {string} medicineId
  * @property {string} medicineName
+ * @property {string} medicineType - 'medicamento' | 'suplemento'
  * @property {string} scheduledTime - "HH:MM"
  * @property {number} dosagePerIntake
  * @property {string|null} treatmentPlanId
@@ -121,6 +122,7 @@ export function expandProtocolsToDoses(protocols, todayLogs) {
         protocolId: protocol.id,
         medicineId: protocol.medicine_id,
         medicineName: protocol.medicine?.name || 'Desconhecido',
+        medicineType: protocol.medicine?.type || 'medicamento', // S7.5 visual: medicamento | suplemento
         scheduledTime: time,
         dosagePerIntake: protocol.dosage_per_intake ?? 1,
         treatmentPlanId: protocol.treatment_plan_id || null,
