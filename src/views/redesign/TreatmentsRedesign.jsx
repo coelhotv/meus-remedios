@@ -24,6 +24,8 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
   const [wizardMedicine, setWizardMedicine] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [formProtocol, setFormProtocol] = useState(null)
+  const [planFormOpen, setPlanFormOpen] = useState(false) // S7.5.5
+  const [planToEdit, setPlanToEdit] = useState(null) // S7.5.5
   const [medicines, setMedicines] = useState([])
   const [treatmentPlans, setTreatmentPlans] = useState([])
   const [errorMessage, setErrorMessage] = useState(null)
@@ -106,6 +108,33 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
     }
   }
 
+  // S7.5.5: Handlers para editar plano de tratamento
+  async function handleEditPlan(group) {
+    try {
+      setErrorMessage(null)
+      // Buscar plano completo via planId do grupo
+      const fullPlan = await treatmentPlanService.getById(group.planId || group.groupKey.replace('plan-', ''))
+      setPlanToEdit(fullPlan)
+      setPlanFormOpen(true)
+    } catch (err) {
+      console.error('Erro ao carregar plano para edicao:', err)
+      setErrorMessage('Erro ao carregar plano. Tente novamente.')
+    }
+  }
+
+  async function handlePlanSave(planData) {
+    try {
+      setErrorMessage(null)
+      await treatmentPlanService.update(planToEdit.id, planData)
+      setPlanFormOpen(false)
+      setPlanToEdit(null)
+      refetch()
+    } catch (err) {
+      console.error('Erro ao salvar plano:', err)
+      setErrorMessage('Erro ao salvar plano. Tente novamente.')
+    }
+  }
+
   if (loading) return <Loading />
   if (error) return <div className="treatments-redesign__error">Erro ao carregar tratamentos: {error}</div>
 
@@ -128,31 +157,36 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
         </div>
       )}
 
-      {/* ANVISA Search */}
-      <AnvisaSearchBar
-        existingProtocols={activeItems}
-        onNavigateToProtocol={onNavigateToProtocol}
-        onEditProtocol={handleEditProtocol}
-        onOpenWizard={handleOpenWizard}
-      />
+      {/* S7.5.6: Controls container — busca + filtros responsive layout */}
+      <div className="treatments-redesign__controls">
+        {/* ANVISA Search */}
+        <AnvisaSearchBar
+          existingProtocols={activeItems}
+          onNavigateToProtocol={onNavigateToProtocol}
+          onEditProtocol={handleEditProtocol}
+          onOpenWizard={handleOpenWizard}
+        />
 
-      {/* Tab Bar */}
-      <TreatmentTabBar
-        activeTab={activeTab}
-        counts={{
-          ativos: activeItems.length,
-          pausados: pausedItems.length,
-          finalizados: finishedItems.length,
-        }}
-        onChange={setActiveTab}
-      />
+        {/* Tab Bar — Ativos/Pausados/Finalizados */}
+        <TreatmentTabBar
+          activeTab={activeTab}
+          counts={{
+            ativos: activeItems.length,
+            pausados: pausedItems.length,
+            finalizados: finishedItems.length,
+          }}
+          onChange={setActiveTab}
+        />
+      </div>
 
       {/* Content — bifurca por persona */}
       {isComplex ? (
+        // S7.5.5: onEditPlan para editar plano de tratamento
         <TreatmentsComplex
           key={activeTab}
           groups={currentGroups}
           onEdit={handleEditProtocol}
+          onEditPlan={handleEditPlan}
           activeTab={activeTab}
         />
       ) : (
@@ -191,6 +225,14 @@ export default function TreatmentsRedesign({ onNavigateToProtocol }) {
           />
         )}
       </Modal>
+
+      {/* TreatmentPlanForm modal — S7.5.5: para editar plano de tratamento */}
+      {/* TODO: implementar TreatmentPlanForm se não existir; por enquanto usar ProtocolForm ou placeholder */}
+      {/* Modal isOpen={planFormOpen} onClose={() => { setPlanFormOpen(false); setPlanToEdit(null) }}>
+        {planToEdit && (
+          <div>Editar Plano: {planToEdit.name || planToEdit.groupLabel}</div>
+        )}
+      </Modal> */}
     </div>
   )
 }
