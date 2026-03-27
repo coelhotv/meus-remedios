@@ -55,6 +55,7 @@ export default function ProfileRedesign({ onNavigate }) {
       else if (error && error.code !== 'PGRST116') console.error(error)
     } catch (err) {
       console.error(err)
+      setError('Falha ao carregar os dados do perfil. Por favor, recarregue a página.')
     } finally {
       setIsLoading(false)
     }
