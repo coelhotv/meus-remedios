@@ -1,8 +1,8 @@
 # Plano de Redesign: Neon/Glass → Santuário Terapêutico
 
-**Versão:** 1.3
-**Data:** 2026-03-26
-**Status:** Em execução — Foundation Waves W0-W3 entregues ✅ | W4-W7.5 entregues ✅
+**Versão:** 1.4
+**Data:** 2026-03-27
+**Status:** Em execução — Foundation Waves W0-W3 entregues ✅ | W4-W8 entregues ✅ | W9 entregue ✅
 **Escopo:** Redesign completo de Design System, UI e UX — mobile-first + desktop responsivo
 
 
@@ -28,7 +28,7 @@
 | W7 | Tratamentos Redesign | `WAVE_7_TREATMENTS_REDESIGN.md` | ✅ MERGED #431 (2026-03-25) | main |
 | W7.5 | Dashboard "Hoje": Card Redesign + Zonas Inteligentes | `WAVE_7_5_DASHBOARD_HOJE_IMPROVEMENTS.md` | ✅ MERGED #432 (2026-03-26) | main |
 | W8 | Estoque Redesign | `WAVE_8_STOCK_REDESIGN.md` | ✅ MERGED #433 (2026-03-27) | main |
-| W9 | Perfil & Saúde | `WAVE_9_PROFILE_SAUDE_REDESIGN.md` | ⏳ PRONTA PARA EXECUÇÃO | — |
+| W9 | Perfil & Saúde | `WAVE_9_PROFILE_SAUDE_REDESIGN.md` | ✅ MERGED #434 (2026-03-27) | main |
 | W10 | Progressive Disclosure | — | ⏳ PENDENTE SPEC | — |
 | W11 | Accessibility & Polish | — | ⏳ PENDENTE SPEC | — |
 | W12 | Landing, Auth & Onboarding | — | ⏳ PENDENTE SPEC | — |
@@ -41,8 +41,9 @@
 - ✅ **W7** (2026-03-25): Treatments Redesign — 7 sprints, 2 personas (Simple/Complex), responsive layout, ANVISA search, 10 critical fixes (PR #431)
 - ✅ **W7.5** (2026-03-26): Dashboard "Hoje" — dose card redesign (Pill/PillBottle icons), accordion zonas inteligentes (S7.5.1-S7.5.6), edit plan button, adherence neutra (PR #432)
 - ✅ **W8** (2026-03-27): Stock Redesign — two-persona layout (Simple/Complex), CriticalAlertBanner, StockCardRedesign with Living Fill bars, EntradaHistorico history, useStockData shared hook, SYSTEM_NOTE_PREFIXES pattern, CSS var compliance, 6 refinement sprints (PR #433)
+- ✅ **W9** (2026-03-27): Profile & Health History & Emergency Redesign — ProfileRedesign + 3 sub-components + wrapper strategy for Health History & Emergency, two-column desktop layout, CSS-based state management, Consultation navigation bugfix (PR #434)
 
-**Foundation (W0-W8):** 100% COMPLETO ✅ — Sistema de design, navegação, motion, dashboard (hoje + zonas), tratamentos com refinamentos e estoque com dois personas
+**Foundation (W0-W9):** 100% COMPLETO ✅ — Sistema de design, navegação, motion, dashboard (hoje + zonas), tratamentos com refinamentos, estoque com dois personas, perfil com layout responsivo
 
 ---
 
