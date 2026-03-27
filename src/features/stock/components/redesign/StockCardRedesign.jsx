@@ -48,7 +48,7 @@ function formatLastPurchase(lastPurchase) {
  */
 function formatUsageLine(primaryProtocol) {
   if (!primaryProtocol) return null
-  const { time_schedule, dosage_per_intake } = primaryProtocol
+  const { time_schedule } = primaryProtocol
   const times = time_schedule || []
   const count = times.length
   const doses = `${count} dose${count !== 1 ? 's' : ''}/dia`

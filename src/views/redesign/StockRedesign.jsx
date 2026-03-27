@@ -10,7 +10,7 @@
  * - Complex (Carlos): grid responsivo, EntradaHistorico, bar-pct%, quantidade visível
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, startTransition } from 'react'
 import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { useMotion } from '@shared/hooks/useMotion'
@@ -96,13 +96,16 @@ export default function StockRedesign({ initialParams, onClearParams }) {
   }
 
   // ── initialParams: abrir modal pré-selecionado (deep link) ──
-  const modalInitialValues = useMemo(() => {
+  useEffect(() => {
     if (initialParams?.medicineId && medicines.length > 0) {
-      setSelectedMedicineId(initialParams.medicineId)
-      setIsModalOpen(true)
+      startTransition(() => {
+        setSelectedMedicineId(initialParams.medicineId)
+        setIsModalOpen(true)
+      })
     }
-    return selectedMedicineId ? { medicine_id: selectedMedicineId } : initialParams || null
-  }, [initialParams, medicines.length, selectedMedicineId])
+  }, [initialParams, medicines.length])
+
+  const modalInitialValues = selectedMedicineId ? { medicine_id: selectedMedicineId } : initialParams || null
 
   // ── Loading / Error ──
   if (isLoading) {

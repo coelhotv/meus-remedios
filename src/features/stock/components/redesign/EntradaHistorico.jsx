@@ -16,12 +16,6 @@ import { parseLocalDate } from '@utils/dateUtils'
 // Prefixos de ajustes automáticos do sistema (mesma lógica de StockCard.jsx original)
 const SYSTEM_PREFIXES = ['Dose excluída', 'Ajuste de dose']
 
-function classifyEntry(entry) {
-  if (SYSTEM_PREFIXES.some((p) => entry.notes?.startsWith(p))) return 'system'
-  if (entry.quantity > 0) return 'purchase'
-  return 'adjustment'
-}
-
 function formatDate(dateStr) {
   if (!dateStr) return '—'
   return parseLocalDate(dateStr).toLocaleDateString('pt-BR', {
