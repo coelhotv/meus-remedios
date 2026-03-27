@@ -41,6 +41,10 @@ export function getBarPercentage(totalQuantity, daysRemaining) {
   return Math.round((daysRemaining / 30) * 100)
 }
 
+// Prefixos de ajustes automáticos do sistema (mesma lógica de PR #402)
+// stockService.increase() gera entradas reais ao deletar doses — não são compras reais
+const SYSTEM_NOTE_PREFIXES = ['Dose excluída', 'Ajuste de dose']
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -96,9 +100,10 @@ export function useStockData() {
       const stockStatus = getStockStatus(stock.total, daysRemaining)
       const barPercentage = getBarPercentage(stock.total, daysRemaining)
 
-      // Última compra: entry mais recente com quantity > 0, ordenada por purchase_date
+      // Última compra REAL: quantity > 0 E não é ajuste automático do sistema
+      // Exclui entradas geradas por logService.delete() → stockService.increase()
       const purchaseEntries = (stock.entries || [])
-        .filter((e) => e.quantity > 0)
+        .filter((e) => e.quantity > 0 && !SYSTEM_NOTE_PREFIXES.some((p) => e.notes?.startsWith(p)))
         .sort((a, b) => new Date(b.purchase_date) - new Date(a.purchase_date))
       const latestEntry = purchaseEntries[0] || null
       const lastPurchase = latestEntry
@@ -131,8 +136,20 @@ export function useStockData() {
   }, [medicines, protocols, stockMap])
 
   // Sub-listas por urgência — ordenadas por criticidade (menor dias primeiro)
+
+  // Medicamentos órfãos: sem protocolo ativo, mas com estoque > 0
+  const orphanItems = useMemo(
+    () => items.filter((i) => !i.hasActiveProtocol && i.totalQuantity > 0),
+    [items]
+  )
+
+  // Critical items: urgente MAS excluir (estoque 0 E sem protocolo ativo)
+  // Racional: não fazem sentido como "críticos" se não há protocolo para reabastecimento
   const criticalItems = useMemo(
-    () => items.filter((i) => i.stockStatus === 'urgente').sort((a, b) => a.daysRemaining - b.daysRemaining),
+    () => items
+      .filter((i) => i.stockStatus === 'urgente')
+      .filter((i) => !(i.totalQuantity === 0 && !i.hasActiveProtocol))
+      .sort((a, b) => a.daysRemaining - b.daysRemaining),
     [items]
   )
   const warningItems = useMemo(
@@ -194,6 +211,7 @@ export function useStockData() {
     warningItems,
     okItems,
     highItems,
+    orphanItems,
     medicines,
     protocols,
     isLoading,

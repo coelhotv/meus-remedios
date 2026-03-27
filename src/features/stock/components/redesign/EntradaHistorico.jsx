@@ -1,15 +1,15 @@
 /**
- * EntradaHistorico — Histórico compacto de entradas de estoque (Wave 8).
- * Mostra as N mais recentes com "Ver tudo" para expandir.
+ * EntradaHistorico → "Histórico de Compras" (Wave 8)
+ * Mostra as N compras mais recentes com "Ver tudo" para expandir.
  *
- * Exibe: data + custo do lote (unit_price) para ambas personas
+ * Exibe: ícone tipo + data + nome medicamento + quantidade + custo total (unit_price × qty)
  * - Dona Maria: "última compra" per-card (não usa este componente)
- * - Carlos: histórico completo com custos (para análise de preço)
+ * - Carlos: histórico completo para auditoria e análise de preço
  */
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShoppingCart, Pencil, ChevronDown, ChevronUp } from 'lucide-react'
+import { Pill, Leaf, ChevronDown, ChevronUp } from 'lucide-react'
 import { useMotion } from '@shared/hooks/useMotion'
 import { parseLocalDate } from '@utils/dateUtils'
 
@@ -36,43 +36,60 @@ function formatQuantity(entry) {
 }
 
 /**
- * Formata o custo do lote: "R$ X,XX" ou null se não registrado.
- * Exibido para ambas as personas — é o ponto de referência para reposição.
+ * Formata o preço unitário: "R$ X,XX/un." ou null se não registrado.
+ * Custo total seria irreal pois FIFO decrementa quantity após cada dose.
  */
 function formatCost(entry) {
   if (entry.unit_price == null) return null
-  return entry.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  if (entry.unit_price < 0.01) return 'Grátis'
+  return `${entry.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/un.`
 }
 
-export default function EntradaHistorico({ entries = [], medicineName, maxVisible = 3 }) {
+export default function EntradaHistorico({ entries = [], maxVisible = 3 }) {
   const motionConfig = useMotion()
   const [expanded, setExpanded] = useState(false)
 
   if (entries.length === 0) return null
 
+  // Filtrar apenas compras reais (excluir ajustes automáticos e saídas por FIFO)
+  // Mesma lógica de PR #402: quantity > 0 E notes não é prefixo de sistema
+  const purchases = entries.filter(
+    (e) => e.quantity > 0 && !SYSTEM_PREFIXES.some((p) => e.notes?.startsWith(p))
+  )
+
   // Ordenar por data mais recente primeiro
-  const sorted = [...entries].sort((a, b) => new Date(b.purchase_date) - new Date(a.purchase_date))
+  const sorted = [...purchases].sort((a, b) => new Date(b.purchase_date) - new Date(a.purchase_date))
   const visible = expanded ? sorted : sorted.slice(0, maxVisible)
   const hasMore = sorted.length > maxVisible
 
   return (
     <div className="entrada-historico">
-      <motion.ul className="entrada-historico__list" variants={motionConfig.cascade.container} initial="hidden" animate="visible">
+      <motion.ul
+        key={expanded}
+        className="entrada-historico__list"
+        variants={motionConfig.cascade.container}
+        initial="hidden"
+        animate="visible"
+      >
         {visible.map((entry) => {
-          const type = classifyEntry(entry)
-          const Icon = type === 'purchase' ? ShoppingCart : Pencil
+          // Ícone de tipo de medicamento
+          const isSupplement = entry.medicineType === 'suplemento'
+          const TypeIcon = isSupplement ? Leaf : Pill
 
           return (
             <motion.li key={entry.id} className="entrada-historico__item" variants={motionConfig.cascade.item}>
-              <div className="entrada-historico__icon-wrap">
-                <Icon size={14} aria-hidden="true" />
+              {/* Ícone tipo de medicamento */}
+              <div className="entrada-historico__type-icon">
+                <TypeIcon size={16} aria-hidden="true" />
               </div>
+
+              {/* Data + Nome */}
               <div className="entrada-historico__info">
-                <span className="entrada-historico__desc">
-                  {type === 'purchase' ? 'Compra Realizada' : entry.notes || 'Ajuste Manual'}
-                </span>
-                {medicineName && <span className="entrada-historico__medicine">{medicineName}</span>}
+                <span className="entrada-historico__date">{formatDate(entry.purchase_date)}</span>
+                <span className="entrada-historico__medicine">{entry.medicineName}</span>
               </div>
+
+              {/* Quantidade */}
               <span
                 className={`entrada-historico__qty entrada-historico__qty--${
                   entry.quantity >= 0 ? 'positive' : 'negative'
@@ -80,11 +97,9 @@ export default function EntradaHistorico({ entries = [], medicineName, maxVisibl
               >
                 {formatQuantity(entry)}
               </span>
-              <div className="entrada-historico__meta">
-                <span className="entrada-historico__date">{formatDate(entry.purchase_date)}</span>
-                {/* Custo do lote — referência de preço para reposição (ambas as personas) */}
-                {formatCost(entry) && <span className="entrada-historico__cost">{formatCost(entry)}</span>}
-              </div>
+
+              {/* Custo total */}
+              {formatCost(entry) && <span className="entrada-historico__cost">{formatCost(entry)}</span>}
             </motion.li>
           )
         })}
