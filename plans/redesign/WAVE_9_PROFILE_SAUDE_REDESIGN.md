@@ -1,9 +1,10 @@
 # Wave 9 — Perfil & Saúde Redesign: Santuário Terapêutico
 
-**Status:** ⏳ PENDENTE
+**Status:** ✅ DELIVERED (2026-03-27)
 **Data de criação da spec:** 2026-03-27
+**Data de entrega:** 2026-03-27
+**PR:** #434 | **Commit:** c78e1a4 | **Branch:** `feature/redesign/wave-9-profile-saude` (merged)
 **Dependências:** W0 ✅ W1 ✅ W2 ✅ W3 ✅ W4 ✅ W5 ✅ W6 ✅ W6.5 ✅ W7 ✅ W7.5 ✅ W8 ✅ (todos mergeados em main)
-**Branch:** `feature/redesign/wave-9-profile-saude`
 **Risco:** BAIXO — nenhum hook compartilhado novo; lógica de negócio intocada; as views redesenhadas são wrappers visuais sobre os serviços existentes.
 
 ---
