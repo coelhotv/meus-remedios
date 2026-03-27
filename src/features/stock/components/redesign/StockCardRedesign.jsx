@@ -2,31 +2,29 @@
  * StockCardRedesign — Card de medicamento para o redesign do Estoque (Wave 8)
  * Dois modos: simples (Dona Maria) e complexo (Carlos).
  *
- * Simple: nome + StockPill + barra + dias + "última compra" + CTA (urgente/atencao apenas)
- * Complex: idem + linha de uso (dose/dia · Período) + bar-pct + EntradaHistorico integrado
- *
- * Reutiliza StockPill (W7.6) para consistência visual — sem sistema de badge próprio.
+ * Simple: nome + dosagem pill + barra + dias + "última compra" + CTA (urgente/atencao apenas)
+ * Complex: idem + linha de uso (dose/dia · Período) + bar-pct + quantidade visível
  */
 
 import { motion } from 'framer-motion'
-import { ShoppingCart } from 'lucide-react'
+import { ScanBarcode, ShoppingBasket, CalendarClock } from 'lucide-react'
 import { useMotion } from '@shared/hooks/useMotion'
-import StockPill from '@protocols/components/redesign/StockPill'
 import { parseLocalDate } from '@utils/dateUtils'
 import './StockCardRedesign.css'
 
-// Texto do CTA por status
+// Texto e ícone do CTA por status
 // Simple: CTA visível apenas para urgente e atencao; seguro/alto não têm botão
 // Complex: CTA visível para todos os status
-const CTA_LABELS = {
-  urgente: 'Comprar Agora',
-  atencao: 'Comprar em Breve',
-  seguro: 'Agendar Compra',
-  alto: 'Agendar Compra',
+const CTA_CONFIG = {
+  urgente: { label: 'Comprar Agora', Icon: ScanBarcode },
+  atencao: { label: 'Comprar em Breve', Icon: ShoppingBasket },
+  seguro: { label: 'Agendar Compra', Icon: CalendarClock },
+  alto: { label: 'Agendar Compra', Icon: CalendarClock },
 }
 
 /**
- * Formata "última compra: DD/MM · R$ X,XX" para o subtexto do card (modo simple).
+ * Formata "última compra: DD/MM · R$ X,XX/un." para o subtexto do card.
+ * Exibe o preço UNITÁRIO — custo total seria irreal pois FIFO decrementa quantity.
  * Sem unit_price: "última compra: DD/MM".
  */
 function formatLastPurchase(lastPurchase) {
@@ -36,11 +34,11 @@ function formatLastPurchase(lastPurchase) {
     month: '2-digit',
   })
   if (lastPurchase.unitPrice != null) {
-    const price = lastPurchase.unitPrice.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })
-    return `última compra: ${date} · ${price}`
+    const priceLabel =
+      lastPurchase.unitPrice < 0.01
+        ? 'Grátis'
+        : `${lastPurchase.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/un.`
+    return `última compra: ${date} · ${priceLabel}`
   }
   return `última compra: ${date}`
 }
@@ -73,7 +71,7 @@ export default function StockCardRedesign({ item, isComplex, onAddStock, index =
   const { medicine, totalQuantity, stockStatus, barPercentage, primaryProtocol, hasActiveProtocol, lastPurchase } = item
   const { number: daysNumber, label: daysLabel } = formatDays(item.daysRemaining, hasActiveProtocol)
   const usageLine = isComplex ? formatUsageLine(primaryProtocol) : null
-  const ctaLabel = CTA_LABELS[stockStatus] || 'Comprar Agora'
+  const ctaConfig = CTA_CONFIG[stockStatus] || { label: 'Comprar Agora', Icon: ScanBarcode }
   const showCta = isComplex || stockStatus === 'urgente' || stockStatus === 'atencao'
   const lastPurchaseText = formatLastPurchase(lastPurchase)
 
@@ -85,19 +83,19 @@ export default function StockCardRedesign({ item, isComplex, onAddStock, index =
       role="article"
       aria-label={`${medicine.name} — ${daysNumber} ${daysLabel}`}
     >
-      {/* ── Medicine name + StockPill (substitui badge row) ── */}
+      {/* ── Medicine name + dosage pill (inline) ── */}
       <div className="stock-card-r__name-row">
         <div className="stock-card-r__medicine">
-          <h3 className="stock-card-r__name">{medicine.name}</h3>
-          {medicine.dosage_per_pill && (
-            <span className="stock-card-r__dosage">
-              {medicine.dosage_per_pill}
-              {medicine.dosage_unit}
-            </span>
-          )}
+          <div className="stock-card-r__name-dosage">
+            <h3 className="stock-card-r__name">{medicine.name}</h3>
+            {medicine.dosage_per_pill && (
+              <span className="stock-card-r__dosage">
+                {medicine.dosage_per_pill}
+                {medicine.dosage_unit}
+              </span>
+            )}
+          </div>
         </div>
-        {/* StockPill reutilizado de W7.6 — consistência total com TreatmentsRedesign */}
-        <StockPill status={stockStatus} daysRemaining={Math.floor(item.daysRemaining)} />
       </div>
 
       {/* ── Complex only: linha de uso ── */}
@@ -110,30 +108,34 @@ export default function StockCardRedesign({ item, isComplex, onAddStock, index =
         </p>
       )}
 
-      {/* ── Dias restantes — número editorial (headline-md Public Sans 700) ── */}
-      <div className="stock-card-r__days" aria-label={`${daysNumber} ${daysLabel}`}>
-        <span className="stock-card-r__days-number">{daysNumber}</span>
-        <span className="stock-card-r__days-label">{daysLabel}</span>
-      </div>
+      {/* ── Dias restantes — escondido para órfãos (sem protocolo ativo) ── */}
+      {hasActiveProtocol && (
+        <>
+          <div className="stock-card-r__days" aria-label={`${daysNumber} ${daysLabel}`}>
+            <span className="stock-card-r__days-number">{daysNumber}</span>
+            <span className="stock-card-r__days-label">{daysLabel}</span>
+          </div>
 
-      {/* ── Progress bar (Living Fill — GPU scaleX) ── */}
-      <div className="stock-card-r__bar-track" aria-hidden="true">
-        <motion.div
-          className={`stock-card-r__bar-fill stock-card-r__bar-fill--${stockStatus}`}
-          style={{ width: `${barPercentage}%`, ...motionConfig.fill.style }}
-          initial={motionConfig.fill.initial}
-          animate={motionConfig.fill.animate}
-          transition={{
-            ...motionConfig.fill.transition,
-            delay: 0.5 + index * 0.05,
-          }}
-        />
-      </div>
-      {/* bar-pct: apenas no modo complex (Carlos quer precisão; Dona Maria não precisa) */}
-      {isComplex && (
-        <span className="stock-card-r__bar-pct" aria-hidden="true">
-          {barPercentage}%
-        </span>
+          {/* ── Progress bar (Living Fill — GPU scaleX) ── */}
+          <div className="stock-card-r__bar-track" aria-hidden="true">
+            <motion.div
+              className={`stock-card-r__bar-fill stock-card-r__bar-fill--${stockStatus}`}
+              style={{ width: `${barPercentage}%`, ...motionConfig.fill.style }}
+              initial={motionConfig.fill.initial}
+              animate={motionConfig.fill.animate}
+              transition={{
+                ...motionConfig.fill.transition,
+                delay: 0.5 + index * 0.05,
+              }}
+            />
+          </div>
+          {/* bar-pct: apenas no modo complex (Carlos quer precisão; Dona Maria não precisa) */}
+          {isComplex && (
+            <span className="stock-card-r__bar-pct" aria-hidden="true">
+              {barPercentage}%
+            </span>
+          )}
+        </>
       )}
 
       {/* ── Última compra — subtexto de referência de preço ── */}
@@ -147,10 +149,10 @@ export default function StockCardRedesign({ item, isComplex, onAddStock, index =
             e.stopPropagation()
             onAddStock?.()
           }}
-          aria-label={`${ctaLabel} ${medicine.name}`}
+          aria-label={`${ctaConfig.label} ${medicine.name}`}
         >
-          <ShoppingCart size={16} aria-hidden="true" />
-          {ctaLabel}
+          <ctaConfig.Icon size={14} aria-hidden="true" />
+          {ctaConfig.label}
         </button>
       )}
     </motion.div>
