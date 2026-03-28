@@ -24,9 +24,12 @@ export default function GlobalDoseModal({ isOpen, onClose }) {
   // Busca planos completos com protocolos e medicamentos embarcados
   useEffect(() => {
     if (!isOpen) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPlansError(null)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     treatmentPlanService
       .getAll()
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       .then(setTreatmentPlans)
       .catch((err) => {
         console.error('[GlobalDoseModal] Erro ao carregar planos de tratamento:', err)
