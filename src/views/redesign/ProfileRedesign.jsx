@@ -3,8 +3,9 @@
 // View centralizada: identidade + dados críticos + ferramentas de gestão
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Settings } from 'lucide-react'
-import { supabase, getUserId } from '@shared/utils/supabase'
+import { Settings, MapPinHouse, Phone, BriefcaseMedical, ClipboardPlus, History, CloudDownload } from 'lucide-react'
+import QRCode from 'qrcode'
+import { supabase } from '@shared/utils/supabase'
 import { parseLocalDate } from '@utils/dateUtils'
 import { validateUserProfile, BRAZILIAN_STATES } from '@schemas/userProfileSchema'
 import { emergencyCardService } from '@features/emergency/services/emergencyCardService'
@@ -28,6 +29,7 @@ export default function ProfileRedesign({ onNavigate }) {
   const [emergencyCard, setEmergencyCard] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [qrMiniatureUrl, setQrMiniatureUrl] = useState(null)
 
   // Edit profile
   const [isEditingProfile, setIsEditingProfile] = useState(false)
@@ -157,11 +159,6 @@ export default function ProfileRedesign({ onNavigate }) {
     [profileForm, user?.id, showFeedback]
   )
 
-  // ═══ Effects ═══
-  useEffect(() => {
-    loadProfile()
-  }, [loadProfile])
-
   // ═══ Derived Data ═══
   // Nome de exibição
   const displayName = useMemo(
@@ -211,6 +208,46 @@ export default function ProfileRedesign({ onNavigate }) {
     return parts.length > 0 ? parts.join(', ') : null
   }, [settings])
 
+  // ═══ Effects ═══
+  useEffect(() => {
+    loadProfile()
+  }, [loadProfile])
+
+  // Gerar QR code miniatura quando emergencyCard mudar
+  useEffect(() => {
+    if (!emergencyCard) {
+      setQrMiniatureUrl(null)
+      return
+    }
+
+    const generateMiniatureQR = async () => {
+      try {
+        // Formato compacto para QR code (mesma estrutura do EmergencyQRCode)
+        const payload = {
+          v: '1',
+          n: displayName,
+          bt: emergencyCard.blood_type || '',
+          a: emergencyCard.allergies?.join(', ') || '',
+          c: emergencyCard.emergency_contacts?.[0] ? `${emergencyCard.emergency_contacts[0].name} - ${emergencyCard.emergency_contacts[0].phone}` : '',
+        }
+        const qrString = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+        const miniatureUrl = await QRCode.toDataURL(qrString, {
+          width: 100,
+          margin: 1,
+          color: { dark: '#000000', light: '#FFFFFF' },
+          errorCorrectionLevel: 'L',
+          type: 'image/png',
+        })
+        setQrMiniatureUrl(miniatureUrl)
+      } catch (err) {
+        console.error('[ProfileRedesign] Erro ao gerar QR miniatura:', err)
+        setQrMiniatureUrl(null)
+      }
+    }
+
+    generateMiniatureQR()
+  }, [emergencyCard, displayName])
+
   // ═══ Render Loading ═══
   if (isLoading) {
     return <Loading />
@@ -219,16 +256,8 @@ export default function ProfileRedesign({ onNavigate }) {
   // ═══ Render Main ═══
   return (
     <div className="ph-view">
-      {/* ── Header com back + gear ── */}
+      {/* ── Header com gear (Profile é view mestra, sem back) ── */}
       <div className="ph-mobile-header">
-        <button
-          className="ph-mobile-header__back"
-          onClick={() => onNavigate('dashboard')}
-          aria-label="Voltar"
-          type="button"
-        >
-          ←
-        </button>
         <h1 className="ph-mobile-header__title">Perfil</h1>
         <button
           className="ph-mobile-header__settings"
@@ -254,7 +283,11 @@ export default function ProfileRedesign({ onNavigate }) {
             {bloodType && bloodType !== 'desconhecido' && (
               <span className="ph-header__blood-type">{bloodType}</span>
             )}
-            {location && <span className="ph-header__location">📍 {location}</span>}
+            {location && (
+              <span className="ph-header__location">
+                <MapPinHouse size={16} /> {location}
+              </span>
+            )}
           </div>
         </div>
         <button
@@ -318,11 +351,18 @@ export default function ProfileRedesign({ onNavigate }) {
                         href={`tel:${emergencyCard.emergency_contacts[0].phone}`}
                         className="ph-emergency-card__contact-phone"
                       >
-                        📞 {emergencyCard.emergency_contacts[0].phone}
+                        <Phone size={16} /> {emergencyCard.emergency_contacts[0].phone}
                       </a>
                     </div>
                   )}
                 </div>
+
+                {/* QR code miniatura */}
+                {qrMiniatureUrl && (
+                  <div className="ph-emergency-card__qr">
+                    <img src={qrMiniatureUrl} alt="QR Code Cartão de Emergência" className="ph-emergency-card__qr-image" />
+                  </div>
+                )}
               </div>
 
               <button
@@ -359,7 +399,9 @@ export default function ProfileRedesign({ onNavigate }) {
             }
           }}
         >
-          <div className="ph-consultation-card__icon">👨‍⚕️</div>
+          <div className="ph-consultation-card__icon">
+            <BriefcaseMedical size={32} />
+          </div>
           <div className="ph-consultation-card__content">
             <h3>Modo Consulta Médica</h3>
             <p>
@@ -376,19 +418,19 @@ export default function ProfileRedesign({ onNavigate }) {
         <h2 className="ph-tools__title">Ferramentas de Gestão</h2>
         <div className="ph-tools__grid">
           <ToolCard
-            icon="📄"
+            icon={ClipboardPlus}
             label="Relatório PDF"
             description="Gerar relatório completo dos últimos 30 dias"
             onClick={() => setIsReportModalOpen(true)}
           />
           <ToolCard
-            icon="📊"
+            icon={History}
             label="Histórico de Doses"
             description="Calendário, adesão e heatmap"
             onClick={() => onNavigate('health-history')}
           />
           <ToolCard
-            icon="📤"
+            icon={CloudDownload}
             label="Exportar Dados"
             description="Formato CSV ou JSON para outros sistemas"
             onClick={() => setIsExportDialogOpen(true)}
@@ -480,23 +522,24 @@ export default function ProfileRedesign({ onNavigate }) {
       </Modal>
 
       {/* ── Modais de Ferramentas ── */}
-      {isReportModalOpen && (
+      <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)}>
         <ReportGenerator onClose={() => setIsReportModalOpen(false)} />
-      )}
-      {isExportDialogOpen && (
-        <ExportDialog onClose={() => setIsExportDialogOpen(false)} />
-      )}
+      </Modal>
+      <ExportDialog isOpen={isExportDialogOpen} onClose={() => setIsExportDialogOpen(false)} />
     </div>
   )
 }
 
 /**
  * ToolCard — componente inline para grid de ferramentas
+ * @param {React.ComponentType} icon - Componente lucide-react
  */
-function ToolCard({ icon, label, description, onClick }) {
+function ToolCard({ icon: IconComponent, label, description, onClick }) {
   return (
     <button className="ph-tool-card" onClick={onClick} type="button">
-      <span className="ph-tool-card__icon">{icon}</span>
+      <span className="ph-tool-card__icon">
+        {IconComponent ? <IconComponent size={24} /> : null}
+      </span>
       <span className="ph-tool-card__label">{label}</span>
       {description && <span className="ph-tool-card__desc">{description}</span>}
     </button>

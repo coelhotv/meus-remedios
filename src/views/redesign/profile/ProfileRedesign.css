@@ -22,24 +22,6 @@
   margin-bottom: 1.5rem;
 }
 
-.ph-mobile-header__back {
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  cursor: pointer;
-  color: var(--color-on-surface);
-  padding: 0.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-}
-
-.ph-mobile-header__back:hover {
-  background: var(--color-surface-container-low);
-}
-
 .ph-mobile-header__title {
   font-family: var(--font-display, 'Public Sans', sans-serif);
   font-size: 1.25rem;
@@ -47,6 +29,7 @@
   color: var(--color-on-surface);
   margin: 0;
   flex: 1;
+  text-align: center;
 }
 
 .ph-mobile-header__settings {
@@ -147,6 +130,17 @@
   font-size: 0.75rem;
 }
 
+.ph-header__location {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-on-surface);
+}
+
+.ph-header__location svg {
+  color: var(--color-primary);
+}
+
 .ph-header__edit-btn {
   margin-left: auto;
   padding: 0.5rem 1rem;
@@ -211,6 +205,8 @@
   gap: 1rem;
   padding: 1rem 1.25rem;
   flex: 1;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .ph-emergency-card__data {
@@ -264,7 +260,9 @@
 }
 
 .ph-emergency-card__contact-phone {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   color: var(--color-primary);
   text-decoration: none;
   font-size: 0.8rem;
@@ -274,6 +272,24 @@
 
 .ph-emergency-card__contact-phone:hover {
   opacity: 0.8;
+}
+
+.ph-emergency-card__contact-phone svg {
+  flex-shrink: 0;
+}
+
+.ph-emergency-card__qr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.ph-emergency-card__qr-image {
+  width: 100px;
+  height: 100px;
+  border: 2px solid var(--color-outline-ghost);
+  border-radius: 0.5rem;
 }
 
 .ph-emergency-card__action {
@@ -351,7 +367,10 @@
 }
 
 .ph-consultation-card__icon {
-  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--color-primary);
 }
 
 .ph-consultation-card__content {
@@ -424,8 +443,10 @@
 }
 
 .ph-tool-card__icon {
-  font-size: 1.5rem;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
 }
 
 .ph-tool-card__label {
@@ -538,6 +559,16 @@
   .ph-emergency-card__body {
     flex-direction: column;
     gap: 0.75rem;
+    align-items: center;
+  }
+
+  .ph-emergency-card__qr {
+    padding: 0.5rem;
+  }
+
+  .ph-emergency-card__qr-image {
+    width: 80px;
+    height: 80px;
   }
 
   .ph-tools__grid {
