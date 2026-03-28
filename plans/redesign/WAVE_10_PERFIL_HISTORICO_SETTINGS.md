@@ -1,9 +1,14 @@
 # Wave 10 — Perfil Hub, Histórico Calendar-Driven & Settings Extraction
 
-**Status:** ⏳ EM PLANEJAMENTO
+**Status:** 🚀 EM PROGRESSO — Wave 10A ✅ ENTREGUE (2026-03-27)
 **Data de criação:** 2026-03-27
 **Dependências:** W0-W9 ✅ (todos mergeados em main)
 **Risco:** MÉDIO — inclui migração de dados (localStorage → Supabase) e mudança de paradigma de navegação no Histórico (infinite scroll → calendar-driven)
+
+### Sub-Wave Status:
+- **10A — Settings Extraction:** ✅ ENTREGUE (PR #435 mergeada em main, commit 50a0665)
+- **10B — Profile Hub:** ⏳ EM PLANEJAMENTO (roadmap Wave 10B)
+- **10C — Histórico Calendar-Driven:** ⏳ ROADMAP (Wave 10C)
 
 ---
 
@@ -74,9 +79,11 @@ A Wave 9 entregou a estrutura visual do Perfil (sidebar + seções + links), mas
 ## Sub-Waves: Ordem de Execução
 
 ### Wave 10A — Settings Extraction
+**Status:** ✅ ENTREGUE (2026-03-27)
 **Prioridade:** 1ª (menor escopo, desbloqueia Profile)
 **Estimativa:** ~150-200 linhas JSX + ~250 linhas CSS
 **Spec detalhada:** `WAVE_10A_SETTINGS_EXTRACTION.md`
+**Merge:** PR #435 → commit 50a0665 (squash merge)
 
 **Escopo:**
 1. Criar `SettingsRedesign.jsx` como view independente
@@ -220,13 +227,32 @@ Mocks de referência (designs aspiracionais, não spec pixel-perfect):
 
 ## Critérios de Conclusão (Wave 10 completa)
 
-- [ ] Settings é view separada, acessada via ⚙️ no header do Perfil
+### Wave 10A ✅ CONCLUÍDA
+- [x] Settings é view separada, acessada via ⚙️ no header do Perfil
+- [x] Integrações Telegram: gerar token, conectar/desconectar
+- [x] Preferências: controle de densidade (3 modos: Padrão/Automático/Detalhado)
+- [x] Segurança: alterar senha com validação Zod (authSchema.js)
+- [x] Área Administrativa: acesso a DLQ (condicional via telegram_chat_id)
+- [x] Logout + versão do app no footer
+- [x] ProfileRedesign limpeza: removido Settings, adicionado ⚙️ gear icon
+- [x] App.jsx integração: lazy loading com Suspense + ViewSkeleton
+- [x] ESLint 0 errors, todos testes passam (546 passed)
+- [x] Layout responsivo: mobile (<768px back button) + desktop (max-width 640px)
+- [x] Santuário design system: CSS vars + scope .sr-*
+- [x] Código review Gemini: 4 issues avaliadas, HIGH security fix + 3 refactors aplicadas
+
+### Wave 10B ⏳ PLANEJADO
 - [ ] Perfil é hub centralizado com dados do paciente, Cartão de Emergência, e Ferramentas
 - [ ] Dados de perfil persistidos no Supabase (não mais só localStorage)
+- [ ] Migration: emergency_card JSONB + profile fields (display_name, birth_date, city, state)
+- [ ] Editar Perfil: formulário com sync para Supabase
+
+### Wave 10C ⏳ PLANEJADO
 - [ ] Histórico navega por calendário (click dia → doses do dia)
+- [ ] KPI cards: adesão 30d, sequência, doses/mês
 - [ ] Modo Simples vs Complex funciona no Histórico (gráfico + padrão por período só no Complex)
 - [ ] Scroll infinito (Virtuoso) eliminado do redesign do Histórico
-- [ ] Todas as funcionalidades existentes preservadas (Emergency, Consulta, PDF, Export, Telegram, Senha)
-- [ ] ESLint 0 errors, testes críticos passam
-- [ ] Layout responsivo: mobile + desktop em todas as 3 sub-views
+
+### Wave 10 Geral
+- [x] Todas as funcionalidades existentes preservadas (Emergency, Consulta, PDF, Export, Telegram, Senha)
 - [ ] Views originais intactas (fallback quando redesign desligado)
