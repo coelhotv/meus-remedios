@@ -159,6 +159,8 @@ export default function SettingsRedesign({ onNavigate }) {
     return `Modo atual: Automático (${autoMode} — ${medicineCount} protocolo${medicineCount !== 1 ? 's' : ''} ativos)`
   }
 
+  const currentYear = new Date().getFullYear()
+
   const isTelegramConnected = settings?.telegram_chat_id !== null && settings?.telegram_chat_id !== undefined
 
   const isAdmin = user?.user_metadata?.role === 'admin' || String(settings?.telegram_chat_id) === import.meta.env.VITE_ADMIN_CHAT_ID
@@ -245,7 +247,7 @@ export default function SettingsRedesign({ onNavigate }) {
             </button>
 
             <button
-              className={`sr-density__option ${overrideMode === null && complexityMode !== 'complex' ? 'sr-density__option--selected' : overrideMode === null ? 'sr-density__option--selected' : ''}`}
+              className={`sr-density__option ${overrideMode === null ? 'sr-density__option--selected' : ''}`}
               onClick={() => handleComplexityChange('auto')}
               type="button"
             >
@@ -343,7 +345,7 @@ export default function SettingsRedesign({ onNavigate }) {
 
       {/* ═══ FOOTER ═══ */}
       <footer className="sr-footer">
-        MEUS REMÉDIOS V{import.meta.env.VITE_APP_VERSION || '3.3.0'} • {new Date().getFullYear()}
+        MEUS REMÉDIOS V{import.meta.env.VITE_APP_VERSION || '3.3.0'} • {currentYear}
       </footer>
     </div>
   )
