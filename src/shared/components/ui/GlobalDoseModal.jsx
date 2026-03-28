@@ -19,11 +19,20 @@ import LogForm from '@shared/components/log/LogForm'
 export default function GlobalDoseModal({ isOpen, onClose }) {
   const { protocols, refresh } = useDashboard()
   const [treatmentPlans, setTreatmentPlans] = useState([])
+  const [plansError, setPlansError] = useState(null)
 
   // Busca planos completos com protocolos e medicamentos embarcados
   useEffect(() => {
     if (!isOpen) return
-    treatmentPlanService.getAll().then(setTreatmentPlans).catch(() => setTreatmentPlans([]))
+    setPlansError(null)
+    treatmentPlanService
+      .getAll()
+      .then(setTreatmentPlans)
+      .catch((err) => {
+        console.error('[GlobalDoseModal] Erro ao carregar planos de tratamento:', err)
+        setPlansError('Não foi possível carregar os planos de tratamento.')
+        setTreatmentPlans([])
+      })
   }, [isOpen])
 
   const handleSave = useCallback(
@@ -42,6 +51,11 @@ export default function GlobalDoseModal({ isOpen, onClose }) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
+      {plansError && (
+        <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+          {plansError}
+        </p>
+      )}
       <LogForm
         protocols={protocols}
         treatmentPlans={treatmentPlans}
