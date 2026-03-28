@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Webhook, MonitorCog, UserKey, ShieldUser, Form, Wand2, Grid3x2, LogOut } from 'lucide-react'
 import { supabase, getUserId } from '@shared/utils/supabase'
 import { useComplexityMode } from '@dashboard/hooks/useComplexityMode'
+import { validatePasswordChange } from '@schemas/authSchema'
 import Button from '@shared/components/ui/Button'
 import './settings/SettingsRedesign.css'
 
@@ -107,12 +108,16 @@ export default function SettingsRedesign({ onNavigate }) {
   const handleUpdatePassword = useCallback(
     async (e) => {
       e.preventDefault()
-      if (newPassword.length < 6) {
-        setError('Senha deve ter no mínimo 6 caracteres.')
+
+      // Validação com Zod (de acordo com diretrizes do projeto)
+      const validation = validatePasswordChange({ newPassword })
+      if (!validation.success) {
+        setError(validation.error)
         return
       }
+
       try {
-        const { error } = await supabase.auth.updateUser({ password: newPassword })
+        const { error } = await supabase.auth.updateUser({ password: validation.data.newPassword })
         if (error) throw error
         setNewPassword('')
         setShowPasswordForm(false)
@@ -156,7 +161,7 @@ export default function SettingsRedesign({ onNavigate }) {
 
   const isTelegramConnected = settings?.telegram_chat_id !== null && settings?.telegram_chat_id !== undefined
 
-  const isAdmin = user?.user_metadata?.role === 'admin' || settings?.telegram_chat_id === import.meta.env.VITE_ADMIN_CHAT_ID
+  const isAdmin = user?.user_metadata?.role === 'admin' || String(settings?.telegram_chat_id) === import.meta.env.VITE_ADMIN_CHAT_ID
 
   return (
     <div className="sr-view">
