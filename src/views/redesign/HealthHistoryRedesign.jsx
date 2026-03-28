@@ -6,7 +6,7 @@ import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import { useComplexityMode } from '@dashboard/hooks/useComplexityMode'
 import { cachedLogService as logService } from '@shared/services'
 import { cachedAdherenceService as adherenceService } from '@shared/services'
-import { formatLocalDate } from '@utils/dateUtils'
+import { formatLocalDate, parseLocalDate } from '@utils/dateUtils'
 import Calendar from '@shared/components/ui/Calendar'
 import Modal from '@shared/components/ui/Modal'
 import LogForm from '@shared/components/log/LogForm'
@@ -168,7 +168,7 @@ export default function HealthHistoryRedesign({ onNavigate }) {
       if (result.data?.length > 0) {
         setSelectedDate(new Date(result.data[0].taken_at))
       } else {
-        setSelectedDate(new Date(year, month, 1))
+        setSelectedDate(parseLocalDate(`${year}-${String(month + 1).padStart(2, '0')}-01`))
       }
       return result
     } catch (err) {
@@ -198,6 +198,7 @@ export default function HealthHistoryRedesign({ onNavigate }) {
       await loadData()
       refresh()
     } catch (err) {
+      console.error('[HistoryRedesign] Erro ao salvar/atualizar log:', err)
       throw new Error(err.message)
     }
   }, [loadData, refresh, showSuccess])
