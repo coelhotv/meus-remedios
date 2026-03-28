@@ -1,10 +1,12 @@
 # Wave 10A — Settings Extraction: View Independente de Configurações
 
-**Status:** ⏳ PENDENTE EXECUÇÃO
+**Status:** ✅ ENTREGUE (2026-03-27)
 **Data de criação da spec:** 2026-03-27
+**Data de conclusão:** 2026-03-27
 **Dependências:** W0-W9 ✅ (todos mergeados em main)
 **Risco:** BAIXO — extração de código existente, zero lógica nova, zero mudança de banco
-**Branch:** `feature/redesign/wave-10a-settings`
+**Branch:** `feature/redesign/wave-10a-settings` (mergeada)
+**Merge:** PR #435 → commit 50a0665
 **Master doc:** `WAVE_10_PERFIL_HISTORICO_SETTINGS.md`
 
 ---
