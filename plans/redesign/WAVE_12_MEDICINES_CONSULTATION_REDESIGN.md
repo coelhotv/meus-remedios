@@ -137,10 +137,10 @@ function MedicineCardRedesign({ medicine, onEdit, onDelete, hasDependencies })
 - Nome: `var(--text-title-lg)` (1.125rem), weight 600, color `var(--color-on-surface)`
 - Active ingredient: `var(--text-body-md)`, color `var(--color-primary)`
 - Details: grid de 2 ou 3 colunas, labels em `var(--color-on-surface-variant)`, values em `var(--color-on-surface)`
-- Ícones: Lucide — `Pill` (header), `Building2` (laboratório), `Beaker` (dosagem), `Tag` (tipo), `Pencil` (editar), `Trash2` (excluir)
+- Ícones: Lucide — `Pill` (header), `Building-2` (laboratório), `Beaker` (dosagem), `Tag` (tipo), `Pencil` (editar), `Trash-2` (excluir)
 - Dependency warning: `var(--color-warning)` background sutil, ícone `AlertTriangle`
 - Botão Editar: `btn-ghost` + ícone `Pencil` + texto "Editar"
-- Botão Excluir: `btn-ghost` com color `var(--color-error)` + ícone `Trash2` + texto "Excluir"
+- Botão Excluir: `btn-ghost` com color `var(--color-error)` + ícone `Trash-2` + texto "Excluir"
 - Preço médio: se existir, mostrar em badge `var(--color-secondary-fixed)` background
 
 **CSS (`MedicineCardRedesign.css`):**
@@ -1096,7 +1096,7 @@ function ConsultationViewRedesign({ data, onGeneratePDF, onShare, onBack })
 |----------|----------|--------------------|
 | Header bg | Purple gradient `#667eea → #764ba2` | Verde Saúde gradient `var(--color-primary) → var(--color-primary-container)` (135deg) |
 | Header text | Branco | `var(--color-on-primary)` (branco) |
-| Back button | `← Voltar` (texto) | `ArrowLeft` (Lucide) + "Voltar" |
+| Back button | `← Voltar` (texto) | `arrow-left` (Lucide) + "Voltar" |
 | Section titles | Emoji + texto (💊, 📊, etc.) | Lucide icons + texto |
 | Section bg | White + border | `var(--color-surface-container-lowest)` + ambient shadow (NO borders) |
 | Table | Custom styles com borders | Sanctuary table: no borders, alternating row bg, large font |
@@ -1135,20 +1135,20 @@ function ConsultationViewRedesign({ data, onGeneratePDF, onShare, onBack })
 
 | Original | Lucide | Contexto |
 |----------|--------|----------|
-| 💊 | `Pill` | Medicamentos Ativos |
-| 📊 | `BarChart3` | Aderência ao Tratamento |
-| 📦 | `Package` | Alertas de Estoque |
-| 📝 | `ClipboardList` | Status das Prescrições |
-| 🎯 | `Target` | Progresso de Titulação |
-| ⚠️ (stock critical) | `AlertTriangle` | Alerta crítico |
-| ⚡ (stock warning) | `AlertCircle` | Alerta warning |
-| ❌ (vencida) | `XCircle` | Prescrição vencida |
-| ⚠️ (vencendo) | `AlertTriangle` | Prescrição vencendo |
-| ✅ (vigente) | `CheckCircle2` | Prescrição vigente |
-| 🔔 (transição) | `Bell` | Transição pendente |
-| 📄 | `FileText` | Gerar PDF |
-| ↗️ | `Share2` | Compartilhar |
-| ← | `ArrowLeft` | Voltar |
+| 💊 | `pill` | Medicamentos Ativos |
+| 📊 | `chart-bar` | Aderência ao Tratamento |
+| 📦 | `package` | Alertas de Estoque |
+| 📝 | `clipboard-list` | Status das Prescrições |
+| 🎯 | `crosshair` | Progresso de Titulação |
+| ⚠️ (stock critical) | `triangle-alert` | Alerta crítico |
+| ⚡ (stock warning) | `circle-alert` | Alerta warning |
+| ❌ (vencida) | `circle-x` | Prescrição vencida |
+| ⚠️ (vencendo) | `triangle-alert` | Prescrição vencendo |
+| ✅ (vigente) | `circle-check` | Prescrição vigente |
+| 🔔 (transição) | `bell` | Transição pendente |
+| 📄 | `file-text` | Gerar PDF |
+| ↗️ | `share-2` | Compartilhar |
+| ← | `arrow-left` | Voltar |
 
 ### CSS (`ConsultationViewRedesign.css`)
 
