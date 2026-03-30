@@ -1,6 +1,6 @@
 # Arquitetura de Referência: Monorepo React Native + Web PWA
 
-> **SUPERSEDIDO EM 2026-03-29:** Este documento foi substituído por `plans/EXEC_SPEC_HIBRIDO_WEB_NATIVE.md`. Consultar este arquivo apenas como referência histórica complementar.
+> **SUPERSEDIDO EM 2026-03-29:** Este documento foi substituído por `plans/MASTER_SPEC_HIBRIDO_WEB_NATIVE.md`. Consultar este arquivo apenas como referência histórica complementar.
 
 > **Contexto:** Este manual arquitetural é a a **Única Fonte da Verdade** para como a aplicação Meus Remédios lidará com o desenvolvimento simultâneo de Dual Stack (Web e Mobile Nativo).
 > **Atenção Agentes IA:** É mandatório ler este guia antes de qualquer decisão de arquitetura sobre onde alocar novos arquivos de negócio ou UI.

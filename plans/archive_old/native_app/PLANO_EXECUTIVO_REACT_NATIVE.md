@@ -1,6 +1,6 @@
 # Plano Executivo de Evolução: Meus Remédios PWA → React Native + Web PWA (Dual Stack)
 
-> **SUPERSEDIDO EM 2026-03-29:** Antes de usar este documento, ler `plans/EXEC_SPEC_HIBRIDO_WEB_NATIVE.md`. Este arquivo permanece como contexto histórico e não deve ser seguido isoladamente.
+> **SUPERSEDIDO EM 2026-03-29:** Antes de usar este documento, ler `plans/MASTER_SPEC_HIBRIDO_WEB_NATIVE.md`. Este arquivo permanece como contexto histórico e não deve ser seguido isoladamente.
 
 > **Contexto:** Este plano define o roteiro acionável para escalar o **Meus Remédios** habilitando o ecossistema mobile nativo (App Store, Notificações Apple/Google, Biometria, HealthKit) de forma **adicional e simultânea** à PWA Web/Desktop atual.
 > **Diretrizes Principais:** Arquitetura via **Monorepo (Turborepo)** e **Desacoplamento de UI** (O Web mantém seu desenvolvimento PWA intocado, enquanto o Native constrói do zero com primitivos nativos).
