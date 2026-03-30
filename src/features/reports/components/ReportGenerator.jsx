@@ -427,9 +427,7 @@ export default function ReportGenerator() {
               {copied ? 'Copiado!' : 'Copiar'}
             </Button>
           </div>
-          <p className="report-generator__share-expiry">
-            Link válido por 72 horas
-          </p>
+          <p className="report-generator__share-expiry">Link válido por 72 horas</p>
         </div>
       )}
 
