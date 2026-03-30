@@ -25,6 +25,30 @@ Este documento existe para impedir que agentes futuros:
 
 > **Addenda normativos complementares:** esta master spec agora deve ser lida em conjunto com `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`, `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`, `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md` e `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`.
 
+### Mapa documental oficial
+
+Os documentos oficiais e ativos deste projeto hybrid/native passam a ser:
+
+- `plans/native_app/MASTER_SPEC_HIBRIDO_WEB_NATIVE.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE0_GUARDRAILS.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE1_WORKSPACES.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE2_CORE_PURO.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE3_ADAPTERS_SHARED_DATA.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE4_MOBILE_SCAFFOLD.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE5_MVP_PRODUTO.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE6_PUSH_BETA_INTERNO.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_FASE7_MIGRACAO_WEB_APPS_WEB.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+
+Regra:
+
+- tudo que estiver em `plans/archive_old/native_app/` e historico
+- o maintainer e os agentes devem preferir sempre os docs de `plans/native_app/`
+- em caso de conflito, a precedence correta e: `MASTER_SPEC` -> `EXEC_SPEC_FASE_*` -> `ADDENDUM_*` aplicavel
+
 ---
 
 ## 2. Decisao Executiva
@@ -608,7 +632,7 @@ O primeiro beta interno deve conter somente:
 7. leitura de estoque
 8. perfil/configuracoes basicas
 9. vinculo Telegram
-10. registro de token de push native
+10. capacidade de push native completada na Fase 6
 
 ## 11.2. Fora do MVP
 
@@ -631,6 +655,11 @@ O MVP existe para provar:
 - consumo de dados reais
 - push native
 
+Leitura correta da sequencia:
+
+- Fase 5 entrega o MVP de produto sem push nativo operacional
+- Fase 6 completa o item de push native, permissao, token registration e beta interno
+
 O MVP **nao** existe para atingir paridade total da web.
 
 ---
@@ -638,6 +667,8 @@ O MVP **nao** existe para atingir paridade total da web.
 ## 12. Fases Executaveis
 
 ## Fase 0 - Alinhamento e Guardrails
+
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE0_GUARDRAILS.md`
 
 ### Objetivo
 
@@ -660,6 +691,8 @@ Criar o terreno correto para a execucao. Nenhum codigo native de produto entra a
 - nenhum arquivo de app foi movido ainda
 
 ## Fase 1 - Workspaces sem mover a web
+
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE1_WORKSPACES.md`
 
 ### Objetivo
 
@@ -687,6 +720,8 @@ Adicionar estrutura de monorepo sem quebrar o fluxo atual da web.
 
 ## Fase 2 - Extracao do core puro
 
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE2_CORE_PURO.md`
+
 ### Objetivo
 
 Extrair somente o que e de baixo risco.
@@ -711,6 +746,8 @@ Se o modulo exigir `window`, `document`, `navigator`, `localStorage`, `import.me
 
 ## Fase 3 - Adapters e shared-data
 
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE3_ADAPTERS_SHARED_DATA.md`
+
 ### Objetivo
 
 Criar contratos compartilhados para storage, config, query cache e acesso a dados.
@@ -734,6 +771,14 @@ Criar contratos compartilhados para storage, config, query cache e acesso a dado
 
 ## Fase 4 - Scaffold mobile
 
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE4_MOBILE_SCAFFOLD.md`
+
+**Addenda obrigatorios desta fase:**
+
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+
 ### Objetivo
 
 Subir o app Expo com auth, sessao, navegacao e tela de smoke.
@@ -741,6 +786,7 @@ Subir o app Expo com auth, sessao, navegacao e tela de smoke.
 ### Entregaveis obrigatorios
 
 - `apps/mobile` criado
+- `app.config.js` e `eas.json` criados
 - React Navigation configurado
 - cliente Supabase native configurado
 - `SecureStore` para auth
@@ -753,8 +799,17 @@ Subir o app Expo com auth, sessao, navegacao e tela de smoke.
 - app abre em Android emulator
 - login funciona
 - sessao persiste ao reabrir
+- `scheme` `meusremedios://` esta configurado
+- `development` e `preview` existem como build profiles
 
 ## Fase 5 - MVP de produto mobile
+
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE5_MVP_PRODUTO.md`
+
+**Addenda obrigatorios desta fase:**
+
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
 
 ### Objetivo
 
@@ -769,14 +824,26 @@ Entregar as telas do MVP e provar consumo real da camada compartilhada.
 5. Estoque
 6. Perfil / Settings
 7. vinculo Telegram
+8. stale states e politica online-first coerentes
+9. routing interno minimo coerente com o shell MVP
 
 ### Gates
 
 - fluxos principais validados manualmente
 - teste unitario de componentes criticos mobile
 - zero dependencia de componentes web
+- escrita offline continua bloqueada nesta etapa
 
 ## Fase 6 - Push native e beta interno
+
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE6_PUSH_BETA_INTERNO.md`
+
+**Addenda obrigatorios desta fase:**
+
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
 
 ### Objetivo
 
@@ -789,6 +856,9 @@ Adicionar notificacao nativa com arquitetura multicanal correta.
 - dispatcher multicanal
 - registro de device no login/app open
 - invalidacao/refresh de token
+- UX de permissao de notificacao
+- tratamento de foreground/background/cold start
+- roteamento seguro ao tocar na notificacao
 - beta interno/TestFlight
 
 ### Gates
@@ -797,8 +867,16 @@ Adicionar notificacao nativa com arquitetura multicanal correta.
 - push native funciona em iOS
 - push native funciona em Android
 - falhas sao observaveis
+- tap em notificacao leva para rota segura
 
 ## Fase 7 - Mover web para `apps/web` se necessario
+
+**Exec spec detalhada:** `plans/native_app/EXEC_SPEC_HIBRIDO_FASE7_MIGRACAO_WEB_APPS_WEB.md`
+
+**Addenda obrigatorios desta fase:**
+
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
+- `plans/native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
 
 ### Objetivo
 
@@ -810,14 +888,18 @@ So agora executar a migracao estrutural pesada da web.
 - imports compartilhados estabilizados
 - pipeline de testes verde
 - owner humano concorda com a mudanca estrutural
+- `apps/mobile/app.config.js` e `apps/mobile/eas.json` estaveis
 
 ### Gates
 
 - Vite build web identico ou melhor
 - scripts documentados e atualizados
 - Vercel configurado para novo root
+- tooling de release do mobile continua intacto
 
 ## Fase 8 - Pos-MVP native
+
+**Status da documentacao:** ainda sem exec spec detalhada propria. Ate la, esta fase permanece apenas como placeholder estrategico nesta master spec.
 
 - biometria
 - MMKV
@@ -866,6 +948,7 @@ Antes de instruir coders, o agente arquiteto deve especificar:
 8. a estrategia de dispatcher multicanal
 9. a navegacao do MVP mobile
 10. o que fica fora do MVP
+11. quais addendums transversais sao obrigatorios para a fase corrente
 
 Se algum desses itens nao estiver especificado, o trabalho de codigo **nao esta pronto para implementacao**.
 
@@ -885,6 +968,7 @@ Todo agente coder deve seguir a ordem abaixo:
 8. nao criar token de push em `profiles`
 9. nao quebrar Telegram durante push native
 10. validar com testes adequados da fase
+11. ler os addendums transversais aplicaveis antes de implementar detalhes operacionais
 
 ### Validacao minima por PR
 
