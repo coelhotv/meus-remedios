@@ -1,7 +1,7 @@
 # Exec Spec Definitivo: Estrategia Hibrida Web + Native
 
 > **Status:** Documento autoritativo para a evolucao dual stack do projeto
-> **Data:** 2026-03-29
+> **Data:** 2026-03-30
 > **Escopo:** Meus Remedios v3.3.0
 > **Supersede:** `plans/archive_old/native_app/analise-migracao-pwa-para-react-native.md`, `plans/archive_old/native_app/PLANO_EXECUTIVO_REACT_NATIVE.md`, `plans/archive_old/native_app/ARQUITETURA_RN_MONOREPO.md`, `plans/archive_old/native_app/EXEC_SPEC_RN_FASE1_CORE.md`, `plans/archive_old/native_app/EXEC_SPEC_RN_FASE2_MOBILE.md`
 
@@ -907,6 +907,41 @@ So agora executar a migracao estrutural pesada da web.
 - PDF native
 - emergency card avancado
 - chatbot native
+
+## 12.1. Addenda normativos de consumo transversal
+
+Os addendums abaixo nao substituem as fases. Eles complementam as fases com regras operacionais transversais.
+
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 4
+- Fase 6
+- Fase 7
+
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 4
+- Fase 5
+- Fase 6
+
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 5
+- Fase 6
+
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 4
+- Fase 6
+- Fase 7
 
 ---
 

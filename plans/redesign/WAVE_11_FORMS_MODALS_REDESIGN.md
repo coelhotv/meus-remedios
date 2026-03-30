@@ -1,7 +1,8 @@
 # Wave 11 — Forms & Modals Redesign
 
-**Status:** ⏳ PENDENTE
+**Status:** ✅ MERGED #439 (2026-03-30)
 **Data de criação:** 2026-03-29
+**Data de entrega:** 2026-03-30
 **Dependências:** W0-W10C ✅ (todos mergeados em main)
 **Risco:** ALTO — Modal.jsx é keystone blocker (12+ usages); forms são usados em onboarding (W13 depende)
 **Estimativa:** ~7 sprints, ~600 linhas CSS novo + ~200 linhas JSX alterado
