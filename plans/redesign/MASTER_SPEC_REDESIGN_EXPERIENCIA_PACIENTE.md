@@ -2,7 +2,7 @@
 
 **Versão:** 2.0
 **Data:** 2026-03-29
-**Status:** Em execução — Foundation Waves W0-W3 entregues ✅ | W4-W8 entregues ✅ | W9 entregue ✅ | W10 (10A+10B+10C) entregues ✅
+**Status:** Em execução — Foundation Waves W0-W3 entregues ✅ | W4-W8 entregues ✅ | W9 entregue ✅ | W10 (10A+10B+10C) entregues ✅ | W11 entregue ✅
 **Escopo:** Redesign completo de Design System, UI e UX — mobile-first + desktop responsivo
 
 
@@ -33,7 +33,7 @@
 | W10A | Settings Extraction | `WAVE_10A_SETTINGS_EXTRACTION.md` | ✅ MERGED #435 (2026-03-27) | main |
 | W10B | Profile Hub + Migração de Dados | `WAVE_10B_PROFILE_HUB.md` | ✅ MERGED #436 (2026-03-27) | main |
 | W10C | Histórico Calendar-Driven | `WAVE_10C_HISTORICO_CALENDAR.md` | ✅ MERGED #437 (2026-03-28) | main |
-| W11 | Forms & Modals Redesign | (seção 16 abaixo) | ⏳ PENDENTE | — |
+| W11 | Forms & Modals Redesign | (seção 16 abaixo) | ✅ MERGED #439 (2026-03-30) | main |
 | W12 | Medicines View & Consultation Mode | (seção 17 abaixo) | ⏳ PENDENTE | — |
 | W13 | Landing, Auth & Onboarding | (seção 18 abaixo) | ⏳ PENDENTE | — |
 | W14 | Shared Components & Chatbot | (seção 19 abaixo) | ⏳ PENDENTE | — |
@@ -52,11 +52,13 @@
 - ✅ **W10A** (2026-03-27): Settings Extraction — SettingsRedesign view independente, 4 cards por função (Integrações/Preferências/Segurança/Admin), geração de token Telegram, density settings com descrição, logout + versão app (PR #435)
 - ✅ **W10B** (2026-03-27): Profile Hub + Migração de Dados — ProfileRedesign rewrite como hub centralizado, 4 sub-componentes (ProfileHeader/EmergencyCard/ConsultationCard/EditProfileModal), migração localStorage → Supabase, schema Zod com validação, lucide icons, layout responsivo hub-grid (PR #436)
 - ✅ **W10C** (2026-03-28): Histórico Calendar-Driven — rewrite completo HealthHistoryRedesign (calendar-driven, phase-loading), HistoryLogCard (3 linhas), HistoryDayPanel, HistoryKPICards, GlobalDoseModal compartilhado, logService expandido, mobile FAB + Sidebar "Registrar Dose", Gemini review 13 sugestões processadas, Issue #438 backlog refactor (PR #437)
+- ✅ **W11** (2026-03-30): Forms & Modals Redesign — Modal base (lucide X, bottom sheet mobile, glass overlay, z-index 1200 hardcode), form utilities (form-row/form-actions/labels/error/checkbox), LogForm (Pill+Folders lucide icons, segmented control), MedicineForm, ProtocolForm, TitrationWizard, StockForm, TreatmentWizard, ExportDialog (format toggle segmented control, FileBracesCorner/FileDigit icons), ReportGenerator (legibilidade BEM over white bg), EmergencyCard, DailyDoseModal, z-index token --z-chatbot:1100, vite host:true, AP-W24 documentado (PR #439)
 
 **Foundation (W0-W9):** 100% COMPLETO ✅
 **Hub & Settings & Histórico (W10A-W10B-W10C):** 100% COMPLETO ✅
-**Views (W0-W10):** 100% — Todas as views principais redesenhadas (Dashboard, Treatments, Stock, Profile, Settings, HealthHistory, Emergency)
-**Próximo bloco — Interações (W11-W14):** Forms, Modals, Medicines view, Consultation, Landing/Auth/Onboarding, Shared components, Chatbot
+**Forms & Modals (W11):** 100% COMPLETO ✅
+**Views (W0-W11):** 100% — Todas as views e forms principais redesenhados
+**Próximo bloco — Medicines & Consultation (W12):** Medicines view, Consultation Mode, Landing/Auth/Onboarding
 **Polish (W15):** Accessibility & compliance
 **Closure (W16):** Feature flag removal, legacy cleanup, token consolidation
 
