@@ -1,5 +1,7 @@
 # Exec Spec: Fase 1 (Fundação do Monorepo e Extração do Core)
 
+> **SUPERSEDIDO EM 2026-03-29:** Este exec spec foi substituído por `plans/EXEC_SPEC_HIBRIDO_WEB_NATIVE.md`. Não executar esta fase isoladamente sem reconciliar com o documento definitivo.
+
 ## Contexto e Objetivo
 Garantir a transformação da aplicação PWA existente (Vite) em um Monorepo gerenciado pelo Turborepo, isolando as lógicas de backend, domínio (`schemas`), tipagens e serviços Supabase no pacote `@meus-remedios/core`.
 

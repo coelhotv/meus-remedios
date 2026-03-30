@@ -1,5 +1,7 @@
 # Exec Spec: Fase 2 (Bootstrap Mobile Native App)
 
+> **SUPERSEDIDO EM 2026-03-29:** Este exec spec foi substituído por `plans/EXEC_SPEC_HIBRIDO_WEB_NATIVE.md`. Não executar esta fase isoladamente sem reconciliar com o documento definitivo.
+
 ## Contexto e Objetivo
 Iniciar o `apps/mobile` no ecossistema Monorepo. Validar integração cross-plataformas do Supabase Auth e injeção do cache ultrarrápido (MMKV) através da abstração `StorageAdapter`. 
 
