@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-ambient);
-  z-index: 1000;
+  z-index: var(--z-chatbot, 1100);
   white-space: nowrap;
 }
 
@@ -45,5 +45,5 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  z-index: var(--z-chatbot, 1100);
 }

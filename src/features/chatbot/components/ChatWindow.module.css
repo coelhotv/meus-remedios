@@ -4,7 +4,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1100;
+  z-index: var(--z-chatbot, 1100);
 }
 
 /* Redesign mode: lighter overlay for light theme */
@@ -22,7 +22,7 @@
   background: var(--color-background, #0f0f0f);
   display: flex;
   flex-direction: column;
-  z-index: 1101;
+  z-index: calc(var(--z-chatbot, 1100) + 1);
 }
 
 /* Redesign mode: use light surface instead of dark background */
