@@ -1,7 +1,7 @@
 # Plano de Redesign: Neon/Glass → Santuário Terapêutico
 
-**Versão:** 1.4
-**Data:** 2026-03-27
+**Versão:** 2.0
+**Data:** 2026-03-29
 **Status:** Em execução — Foundation Waves W0-W3 entregues ✅ | W4-W8 entregues ✅ | W9 entregue ✅ | W10 (10A+10B+10C) entregues ✅
 **Escopo:** Redesign completo de Design System, UI e UX — mobile-first + desktop responsivo
 
@@ -32,9 +32,13 @@
 | W10 | Perfil Hub + Histórico Calendar-Driven + Settings | `WAVE_10_PERFIL_HISTORICO_SETTINGS.md` | ✅ COMPLETA (10A+10B+10C) | main |
 | W10A | Settings Extraction | `WAVE_10A_SETTINGS_EXTRACTION.md` | ✅ MERGED #435 (2026-03-27) | main |
 | W10B | Profile Hub + Migração de Dados | `WAVE_10B_PROFILE_HUB.md` | ✅ MERGED #436 (2026-03-27) | main |
-| W10C | Histórico Calendar-Driven | `WAVE_10C_HISTORICO_CALENDAR.md` | ✅ PR #437 (2026-03-28) | aguardando merge |
-| W11 | Accessibility & Polish | — | ⏳ PENDENTE SPEC | — |
-| W12 | Landing, Auth & Onboarding | — | ⏳ PENDENTE SPEC | — |
+| W10C | Histórico Calendar-Driven | `WAVE_10C_HISTORICO_CALENDAR.md` | ✅ MERGED #437 (2026-03-28) | main |
+| W11 | Forms & Modals Redesign | (seção 16 abaixo) | ⏳ PENDENTE | — |
+| W12 | Medicines View & Consultation Mode | (seção 17 abaixo) | ⏳ PENDENTE | — |
+| W13 | Landing, Auth & Onboarding | (seção 18 abaixo) | ⏳ PENDENTE | — |
+| W14 | Shared Components & Chatbot | (seção 19 abaixo) | ⏳ PENDENTE | — |
+| W15 | Accessibility & Polish | (seção 20 abaixo) | ⏳ PENDENTE | — |
+| W16 | Rollout Promotion & Legacy Cleanup | (seção 21 abaixo) | ⏳ PENDENTE | — |
 
 **Entregas Completas:**
 - ✅ **W4** (2026-03-25): BottomNavRedesign + Sidebar + App.jsx integration + page transitions (PR #422)
@@ -51,7 +55,10 @@
 
 **Foundation (W0-W9):** 100% COMPLETO ✅
 **Hub & Settings & Histórico (W10A-W10B-W10C):** 100% COMPLETO ✅
-**Próxima:** W11 — Accessibility & Polish (spec pendente)
+**Views (W0-W10):** 100% — Todas as views principais redesenhadas (Dashboard, Treatments, Stock, Profile, Settings, HealthHistory, Emergency)
+**Próximo bloco — Interações (W11-W14):** Forms, Modals, Medicines view, Consultation, Landing/Auth/Onboarding, Shared components, Chatbot
+**Polish (W15):** Accessibility & compliance
+**Closure (W16):** Feature flag removal, legacy cleanup, token consolidation
 
 ---
 
@@ -72,11 +79,15 @@
 13. [Wave 8 — Estoque Redesign](#13-wave-8--estoque-redesign)
 14. [Wave 9 — Perfil & Saúde Redesign](#14-wave-9--perfil--saúde-redesign)
 15. [Wave 10 — Perfil Hub, Histórico Calendar-Driven & Settings](#15-wave-10--perfil-hub-histórico-calendar-driven--settings-extraction)
-16. [Wave 11 — Accessibility & Polish](#16-wave-11--accessibility--polish)
-17. [Wave 12 — Landing, Auth & Onboarding](#17-wave-12--landing-auth--onboarding)
-18. [Checklist de Validação por Wave](#18-checklist-de-validação-por-wave)
-19. [Mapeamento de Arquivos](#19-mapeamento-de-arquivos)
-20. [Riscos e Mitigações](#20-riscos-e-mitigações)
+16. [Wave 11 — Forms & Modals Redesign](#16-wave-11--forms--modals-redesign)
+17. [Wave 12 — Medicines View & Consultation Mode](#17-wave-12--medicines-view--consultation-mode)
+18. [Wave 13 — Landing, Auth & Onboarding](#18-wave-13--landing-auth--onboarding)
+19. [Wave 14 — Shared Components & Chatbot](#19-wave-14--shared-components--chatbot)
+20. [Wave 15 — Accessibility & Polish](#20-wave-15--accessibility--polish)
+21. [Wave 16 — Rollout Promotion & Legacy Cleanup](#21-wave-16--rollout-promotion--legacy-cleanup)
+22. [Checklist de Validação por Wave](#22-checklist-de-validação-por-wave)
+23. [Mapeamento de Arquivos](#23-mapeamento-de-arquivos)
+24. [Riscos e Mitigações](#24-riscos-e-mitigações)
 21. [Definição de Sucesso](#21-definição-de-sucesso)
 - [Referências](#referências)
 
@@ -2268,110 +2279,526 @@ Design: "flat utility layout, no visual drama" (PRODUCT_STRATEGY)
 
 ---
 
-## 16. Wave 11 — Accessibility & Polish
+## 16. Wave 11 — Forms & Modals Redesign
 
-> **⚠️ ROLLOUT GRADUAL:** Esta wave aplica-se às **views redesenhadas** (`src/views/redesign/`). As auditorias de acessibilidade, ARIA e focus management devem ser executadas nas variantes redesenhadas — não nas views originais.
+> **Escopo:** Redesenhar TODOS os formulários, modais e wizards do produto para o design system Santuário. Estas são as superfícies de interação mais críticas — onde o usuário INSERE dados. Sem esta wave, toda view redesenhada abre modais/forms com visual neon antigo.
 
-### Sprint 11.1 — Semantic HTML
+### Inventário de Gaps
 
-Garantir em TODAS as **views redesenhadas** (`src/views/redesign/`):
+| Componente | Arquivo | Usado em |
+|-----------|---------|----------|
+| Modal (base) | `src/shared/components/ui/Modal.jsx` | 12+ locais — **KEYSTONE BLOCKER** |
+| LogForm | `src/shared/components/log/LogForm.jsx` | History, GlobalDoseModal, Dashboard |
+| MedicineForm | `src/features/medications/components/MedicineForm.jsx` | Medicines view, Onboarding |
+| ProtocolForm | `src/features/protocols/components/ProtocolForm.jsx` | Protocols view, Onboarding |
+| TreatmentPlanForm | `src/features/protocols/components/TreatmentPlanForm.jsx` | Treatments view |
+| TitrationWizard | `src/features/protocols/components/TitrationWizard.jsx` | ProtocolForm |
+| TreatmentWizard | `src/features/protocols/components/TreatmentWizard.jsx` | Treatments view |
+| StockForm | `src/features/stock/components/StockForm.jsx` | Stock view, Onboarding |
+| EmergencyCardForm | `src/features/emergency/components/EmergencyCardForm.jsx` | Emergency view |
+| ExportDialog | `src/features/export/components/ExportDialog.jsx` | Profile, Settings |
+| ReportGenerator | `src/features/reports/components/ReportGenerator.jsx` | Profile, Settings |
+| DailyDoseModal | `src/features/dashboard/components/DailyDoseModal.jsx` | Dashboard |
+
+### Sprint 11.1 — Modal Base Redesign (KEYSTONE)
+
+**Arquivo:** `src/shared/components/ui/Modal.jsx` + `Modal.css`
+
+O Modal é usado por 12+ componentes. Redesenhá-lo primeiro desbloqueia todos os diálogos.
+
+- Scoped redesign via `[data-redesign="true"]` (mesmo CSS file, seletor condicional)
+- Overlay: `rgba(25,28,29,0.40)` + `backdrop-filter: blur(8px)` (glass effect)
+- Container: `surface-container-lowest` (#fff), border-radius `2rem`, padding `2rem`
+- Shadow: ambient only `0 24px 24px rgba(25,28,29,0.04)`
+- Close button: lucide `X` icon, top-right, 56px touch target
+- Title: `title-lg` (Lexend 600), `on-surface`
+- Focus trap + `role="dialog"` + `aria-modal="true"` (a11y prep para W15)
+- Entrance: fade + scale(0.95→1), 200ms ease-out
+- Exit: fade, 150ms
+- `prefers-reduced-motion`: fallback sem scale
+
+### Sprint 11.2 — LogForm Redesign
+
+**Arquivo:** `src/shared/components/log/LogForm.jsx` + `LogForm.css`
+
+O formulário de registro de dose é a interação mais frequente do app.
+
+- Inputs: 56px height, border-radius `xl` (1.25rem), `surface-container-low` background
+- Labels: `label-md` (Lexend 600), `on-surface`
+- Select dropdowns: sanctuary style, custom arrow icon
+- Date/time pickers: styled com tokens
+- CTA "Registrar Dose": primary gradient, 64px, full-width
+- Feedback: success toast com `primary-fixed` background
+- Validação inline: `error` color, mensagem abaixo do campo
+- Layout: vertical stack, `1rem` gap entre campos
+
+### Sprint 11.3 — MedicineForm Redesign
+
+**Arquivo:** `src/features/medications/components/MedicineForm.jsx` + `MedicineForm.css`
+
+- Mesmos padrões de input do Sprint 11.2
+- ANVISA search input: destaque visual, ícone de busca (lucide `Search`)
+- Type selector (comprimido/cápsula/líquido/etc): cards selecionáveis com ícones (lucide `Pill`, `Droplets`, `Syringe`, etc.)
+- Dosage inputs: layout inline (quantidade + unidade lado a lado)
+- CTA "Salvar Medicamento": primary gradient
+
+### Sprint 11.4 — ProtocolForm + TreatmentPlanForm + TitrationWizard + TreatmentWizard
+
+**Arquivos:**
+- `src/features/protocols/components/ProtocolForm.jsx` + CSS
+- `src/features/protocols/components/TreatmentPlanForm.jsx` + CSS
+- `src/features/protocols/components/TitrationWizard.jsx` + CSS
+- `src/features/protocols/components/TreatmentWizard.jsx` + CSS
+
+- ProtocolForm: frequency selector como segmented control, time schedule com chips
+- TreatmentPlanForm: protocol list com drag handles, add protocol inline
+- TitrationWizard: step cards com progress indicator (primary-fixed dots), sanctuary card style
+- TreatmentWizard: multi-step flow com back/next navigation sanctuary style
+
+### Sprint 11.5 — StockForm Redesign
+
+**Arquivo:** `src/features/stock/components/StockForm.jsx` + `StockForm.css`
+
+- Medicine selector: search + dropdown sanctuary style
+- Quantity + unit price: inline layout com prefixo "R$"
+- Expiration date: date picker styled
+- Notes: textarea com counter
+- CTA "Registrar Compra": primary gradient
+
+### Sprint 11.6 — ExportDialog + ReportGenerator
+
+**Arquivos:**
+- `src/features/export/components/ExportDialog.jsx` + CSS
+- `src/features/reports/components/ReportGenerator.jsx` + CSS
+
+- ExportDialog: opções como cards selecionáveis (JSON, CSV), preview, CTA "Exportar"
+- ReportGenerator: seleção de período, preview do relatório, CTA "Gerar PDF"
+- Ambos dentro de Modal redesenhado (S11.1)
+
+### Sprint 11.7 — EmergencyCardForm + DailyDoseModal
+
+**Arquivos:**
+- `src/features/emergency/components/EmergencyCardForm.jsx`
+- `src/features/dashboard/components/DailyDoseModal.jsx`
+
+- EmergencyCardForm: campos de contato com ícones, alergias como chips
+- DailyDoseModal: lista de doses pendentes, confirmação individual ou em lote
+
+### Critério de conclusão Wave 11
+
+- [ ] Modal.jsx renderiza sanctuary style quando `[data-redesign="true"]`
+- [ ] TODOS os 10 forms/dialogs listados seguem o design system (inputs 56px, radius xl, tokens CSS)
+- [ ] Nenhuma modal/form abre com visual neon quando redesign está ativo
+- [ ] `npm run validate:agent` passa
+- [ ] Wizards (TitrationWizard, TreatmentWizard, Onboarding) usam step indicators redesenhados
+
+---
+
+## 17. Wave 12 — Medicines View & Consultation Mode
+
+> **Escopo:** Duas views que NÃO têm branching `isRedesignEnabled` no App.jsx e ainda renderizam componentes antigos para todos os usuários.
+
+### Inventário de Gaps
+
+| View | Arquivo | Branching em App.jsx | Status |
+|------|---------|---------------------|--------|
+| Medicines | `src/views/Medicines.jsx` | **NENHUM** — sempre renderiza old | Sem redesign variant |
+| Consultation | `src/views/Consultation.jsx` | **NENHUM** — sempre renderiza old | Parcial — ConsultationView legacy |
+
+### Sprint 12.1 — MedicinesRedesign View
+
+**Arquivo:** `src/views/redesign/MedicinesRedesign.jsx` + CSS
+
+A view de medicamentos é a interface de CRUD primária. Precisa de redesign completo:
+
+- Page header: "Medicamentos" com ícone `Pill` (lucide), botão "Adicionar" (primary gradient)
+- Lista de medicamentos: cards sanctuary style com:
+  - Nome + concentração (dosage_per_pill + unit)
+  - Tipo (ícone + label)
+  - Protocolo(s) associado(s) se houver
+  - Badge de status (ativo/inativo)
+- Empty state: "Nenhum medicamento registrado. Comece adicionando seu primeiro remédio." + CTA
+- Click card → abre MedicineForm redesenhado (W11) em Modal
+- Delete: confirmação via Modal sanctuary (não `window.confirm()`)
+- Search/filter: campo de busca top com ícone Search
+- **App.jsx:** Adicionar branching `isRedesignEnabled` no `case 'medicines'`
+
+### Sprint 12.2 — ConsultationRedesign View
+
+**Arquivo:** `src/views/redesign/ConsultationRedesign.jsx` + CSS
+
+O modo consulta é usado para mostrar dados ao médico. Precisa parecer profissional e editorial:
+
+- Layout: leitura editorial — max-width `65ch`, tipografia `body-lg`
+- Seções: medicamentos ativos, protocolos, adesão, histórico recente
+- Print-friendly: CSS `@media print` com tokens de impressão
+- Navegação: botão "Voltar ao Perfil" com ícone `ArrowLeft`
+- CTA "Gerar PDF": usa ReportGenerator redesenhado (W11)
+- **App.jsx:** Adicionar branching `isRedesignEnabled` no `case 'consultation'`
+
+### Critério de conclusão Wave 12
+
+- [ ] `MedicinesRedesign.jsx` criado e integrado no App.jsx
+- [ ] `ConsultationRedesign.jsx` criado e integrado no App.jsx
+- [ ] CRUD de medicamentos funciona end-to-end no redesign (add/edit/delete)
+- [ ] Modo consulta renderiza dados em estilo editorial Santuário
+- [ ] `window.confirm()` eliminado — todas confirmações via Modal redesign
+
+---
+
+## 18. Wave 13 — Landing, Auth & Onboarding
+
+> **Escopo:** A jornada de entrada do usuário — da landing page à primeira dose registrada. Hoje essa jornada inteira está no visual antigo, incluindo 5 steps de onboarding que usam os forms legacy.
+> **Exceção rollout:** Landing.jsx é pré-autenticação — pode ser redesenhada direto SE aprovada para todos os usuários simultaneamente (decisão do product owner).
+
+### Inventário de Gaps
+
+| Componente | Arquivo | Status |
+|-----------|---------|--------|
+| Landing Page | `src/views/Landing.jsx` | Tem A/B test `?landingVariant=new` SEPARADO do `useRedesign()` |
+| Auth (Login/Signup) | `src/views/Auth.jsx` | `.glass-card`, `.auth-container` — visual neon puro |
+| OnboardingWizard | `src/shared/components/onboarding/OnboardingWizard.jsx` | 5 steps com forms legacy |
+| WelcomeStep | `src/shared/components/onboarding/WelcomeStep.jsx` | Old CSS |
+| FirstMedicineStep | `src/shared/components/onboarding/FirstMedicineStep.jsx` | Usa MedicineForm antigo |
+| FirstProtocolStep | `src/shared/components/onboarding/FirstProtocolStep.jsx` | Usa ProtocolForm antigo |
+| StockStep | `src/shared/components/onboarding/StockStep.jsx` | Usa StockForm antigo |
+| TelegramIntegrationStep | `src/shared/components/onboarding/TelegramIntegrationStep.jsx` | Old CSS |
+
+### Sprint 13.1 — Landing Page Redesign
+
+**Arquivo:** `src/views/redesign/LandingRedesign.jsx` + CSS
+
+- Hero com Verde Saúde gradient background
+- Typography: Public Sans display para headline
+- CTA: primary gradient button "Começar Agora", 64px
+- Features: 3 sanctuary cards com ícones lucide
+- Social proof: testimonials em estilo editorial
+- Footer: links + versão
+- **DECISÃO:** Integrar com `useRedesign()` OU substituir Landing direta (sem flag)
+- **App.jsx:** Adicionar branching no `case 'landing'`
+
+### Sprint 13.2 — Auth View Redesign
+
+**Arquivo:** `src/views/redesign/AuthRedesign.jsx` + CSS
+
+- Background: `surface`
+- Card: sanctuary style centered, max-width 400px
+- Logo: Verde Saúde identity topo
+- Inputs: 56px, radius xl, surface-container-low bg
+- Password toggle: eye icon (lucide `Eye`/`EyeOff`)
+- CTA Login/Signup: primary gradient, 64px
+- Toggle login/signup: link text, `primary` color
+- Error messages: `error` color, inline
+- **App.jsx:** Auth modal usa AuthRedesign quando flag ativo
+
+### Sprint 13.3 — Onboarding Wizard Redesign
+
+**Arquivo:** `src/shared/components/onboarding/redesign/OnboardingWizardRedesign.jsx` + CSS
+
+- Step indicators: circles com `primary-fixed` (active) / `outline-variant` (inactive)
+- Progress bar: thin line topo, `primary` fill animated
+- Cards: sanctuary style, max-width 560px
+- Copy: warm, encouraging, imperativo direto
+- Transitions: Soft Handoff entre steps (AnimatePresence)
+- Back/Skip: secondary buttons, 56px
+- Next/Concluir: primary gradient, 64px
+
+### Sprint 13.4 — Onboarding Steps Redesign
+
+**Arquivos:** 5 steps em `src/shared/components/onboarding/redesign/`
+
+- **WelcomeStepRedesign:** Ilustração/ícone verde, headline Public Sans, body Lexend, CTA "Vamos Começar"
+- **FirstMedicineStepRedesign:** Usa MedicineForm redesenhado (W11.3) dentro de wizard
+- **FirstProtocolStepRedesign:** Usa ProtocolForm redesenhado (W11.4) dentro de wizard
+- **StockStepRedesign:** Usa StockForm redesenhado (W11.5) dentro de wizard
+- **TelegramIntegrationStepRedesign:** QR code + token input, ícone `MessageCircle`, CTA "Conectar Telegram"
+
+### Critério de conclusão Wave 13
+
+- [ ] Landing page transmite Verde Saúde identity em 3 segundos
+- [ ] Auth form usa novo design system
+- [ ] Onboarding wizard 5 steps visualmente Santuário
+- [ ] Steps de onboarding usam forms redesenhados (W11)
+- [ ] Transições entre steps com Soft Handoff
+- [ ] Jornada completa (landing → auth → onboarding → dashboard) sem visual antigo
+
+---
+
+## 19. Wave 14 — Shared Components & Chatbot
+
+> **Escopo:** Componentes compartilhados que aparecem DENTRO das views redesenhadas mas ainda carregam visual antigo, mais o chatbot IA que é acessado globalmente.
+
+### Inventário de Gaps
+
+| Componente | Arquivo | Usado em | Status |
+|-----------|---------|----------|--------|
+| AlertList | `src/shared/components/ui/AlertList.jsx` | SmartAlerts, StockAlerts | OLD |
+| Loading | `src/shared/components/ui/Loading.jsx` | Todos os views | OLD |
+| EmptyState | `src/shared/components/ui/EmptyState.jsx` | Vários views | OLD |
+| Badge | `src/shared/components/ui/Badge.jsx` | Vários views | OLD |
+| Card | `src/shared/components/ui/Card.jsx` | Vários views | OLD |
+| Button | `src/shared/components/ui/Button.jsx` | Todos os forms | OLD |
+| Calendar | `src/shared/components/ui/Calendar.jsx` | History, Dashboard | PARCIAL (overrides em .hhr-view) |
+| FloatingActionButton | `src/shared/components/ui/FloatingActionButton.jsx` | Vários | OLD (substituído pelo FAB em App.jsx para redesign, mas componente persiste) |
+| ThemeToggle | `src/shared/components/ui/ThemeToggle.jsx` | Nav | OLD |
+| OfflineBanner | `src/shared/components/ui/OfflineBanner.jsx` | Todos | OLD |
+| InstallPrompt | `src/shared/components/pwa/InstallPrompt.jsx` | Global | OLD |
+| ChatWindow | `src/features/chatbot/components/ChatWindow.jsx` | Global FAB | OLD |
+| BadgeDisplay | `src/shared/components/gamification/BadgeDisplay.jsx` | Dashboard | OLD |
+| MilestoneCelebration | `src/shared/components/gamification/MilestoneCelebration.jsx` | Dashboard | OLD |
+| ConfettiAnimation | `src/shared/components/ui/animations/ConfettiAnimation.jsx` | Onboarding | OLD |
+
+### Sprint 14.1 — Core Primitives Redesign (Button, Card, Badge, EmptyState)
+
+**Arquivos:**
+- `src/shared/components/ui/Button.jsx` + CSS
+- `src/shared/components/ui/Card.jsx` + CSS
+- `src/shared/components/ui/Badge.jsx` + CSS
+- `src/shared/components/ui/EmptyState.jsx` + CSS
+
+Scoped redesign via `[data-redesign="true"]` no CSS:
+
+- **Button:** primary gradient (64px), secondary outline (56px), ghost (text only), danger (`error`). Radius `xl`. Hover `scale(1.02)`, active `scale(0.98)`
+- **Card:** `surface-container-lowest`, no borders, radius `2rem`, ambient shadow, padding `2rem`
+- **Badge:** pill shape, `label-md`, variantes: success/warning/error/info/neutral
+- **EmptyState:** ícone lucide muted, headline `title-lg`, body `body-lg`, CTA opcional. Copy encorajador.
+
+### Sprint 14.2 — Feedback Components (Loading, AlertList, OfflineBanner, Toast)
+
+**Arquivos:**
+- `src/shared/components/ui/Loading.jsx` + CSS
+- `src/shared/components/ui/AlertList.jsx` + CSS
+- `src/shared/components/ui/OfflineBanner.jsx` + CSS
+
+- **Loading:** spinner animado com `primary` stroke (não neon). Skeleton shimmer variant para lazy-loaded content.
+- **AlertList:** cards sanctuary com ícone + label por nível (critical=`AlertTriangle`, warning=`AlertCircle`, info=`Info`). Color por semantic token.
+- **OfflineBanner:** banner topo `error-container` background, ícone `WifiOff`, mensagem clara. Dismiss após reconectar.
+
+### Sprint 14.3 — Calendar Component Redesign
+
+**Arquivo:** `src/shared/components/ui/Calendar.jsx` + `Calendar.css`
+
+Hoje o Calendar tem tema neon independente. As views redesenhadas (HealthHistoryRedesign) usam overrides scoped em `.hhr-view`. Nesta wave:
+
+- Redesenhar Calendar.css com dual-theme: neon default (fallback) + sanctuary quando `[data-redesign="true"]`
+- Day cells: `surface-container-lowest`, radius `lg`, hover `surface-container-low`
+- Has-log indicator: `primary-fixed` dot ou ring (não neon glow)
+- Selected: `primary` background, `on-primary` text
+- Today: `primary-fixed` ring outline
+- Navigation arrows: lucide `ChevronLeft`/`ChevronRight`, 56px targets
+- **Remover** overrides scoped em HistoryRedesign.css quando Calendar nativo suporta redesign
+
+### Sprint 14.4 — PWA & Install Prompt
+
+**Arquivo:** `src/shared/components/pwa/InstallPrompt.jsx` + CSS
+
+- Banner bottom: sanctuary card style, glass background
+- Ícone app + "Instalar Meus Remédios"
+- CTA "Instalar": primary gradient, 56px
+- Dismiss: ghost button "Agora não"
+- Respeitar redesign tokens
+
+### Sprint 14.5 — Chatbot AI (ChatWindow)
+
+**Arquivo:** `src/features/chatbot/components/ChatWindow.jsx` + `ChatWindow.module.css`
+
+O chatbot é acessado via FAB global. Drawer com visual neon precisa migrar:
+
+- Drawer container: `surface`, radius top `2rem`, glass effect top border
+- Header: "Assistente IA" + ícone `Bot` (lucide), close button `X`
+- Messages: user → `primary-container` bubble, bot → `surface-container-low` bubble
+- Input: 56px, radius `xl`, send button com ícone `Send`
+- Loading: 3 dots animation `primary-fixed`
+- Typography: `body-lg` para mensagens, `label-md` para timestamps
+- Scoped via `[data-redesign="true"]` ou `isRedesignEnabled` prop
+
+### Sprint 14.6 — Gamification Components
+
+**Arquivos:**
+- `src/shared/components/gamification/BadgeDisplay.jsx`
+- `src/shared/components/gamification/MilestoneCelebration.jsx`
+- `src/shared/components/ui/animations/ConfettiAnimation.jsx`
+
+- **BadgeDisplay:** sanctuary card com ícone + label, `primary-fixed` highlight
+- **MilestoneCelebration:** Modal redesenhado (W11.1) com animação celebratória
+- **ConfettiAnimation:** adaptar cores para palette Santuário (primary, primary-fixed, tertiary)
+
+### Sprint 14.7 — DLQ Admin View
+
+**Arquivo:** `src/views/admin/DLQAdmin.jsx`
+
+View admin não precisa de variant separada (só admin vê). Redesign direto:
+
+- Table: tonal rows (alternating `surface`/`surface-container-low`), no borders
+- Status badges: sanctuary Badge component
+- Actions: Button component redesenhado
+- Modals: usa Modal redesenhado (W11.1)
+- **App.jsx:** Adicionar branching `isRedesignEnabled` no `case 'admin-dlq'`
+
+### Critério de conclusão Wave 14
+
+- [ ] Button, Card, Badge, EmptyState respondem a `[data-redesign="true"]`
+- [ ] Loading, AlertList, OfflineBanner redesenhados
+- [ ] Calendar tem tema sanctuary nativo (sem overrides hacky em views)
+- [ ] InstallPrompt segue design system
+- [ ] ChatWindow com visual Santuário
+- [ ] Gamification components atualizados
+- [ ] DLQAdmin redesenhado
+- [ ] ZERO componentes com visual neon visíveis quando redesign está ativo
+
+---
+
+## 20. Wave 15 — Accessibility & Polish
+
+> **Escopo:** Auditoria completa de acessibilidade em TODAS as views e componentes redesenhados (W0-W14). Esta wave é de compliance — não adiciona features, apenas garante que tudo que foi construído é acessível.
+
+### Sprint 15.1 — Semantic HTML Audit
+
+Garantir em TODAS as views redesenhadas (`src/views/redesign/` + componentes shared):
 - `<main>`, `<nav>`, `<section>`, `<header>` corretos
-- Heading hierarchy: `<h1>` per page → `<h2>` sections → `<h3>` subsections
+- Heading hierarchy: `<h1>` por page → `<h2>` sections → `<h3>` subsections
 - Buttons são `<button>`, não `<div onClick>`
 - Form inputs têm `<label>` visível (não apenas placeholder)
+- Lists usam `<ul>`/`<ol>` + `<li>`
 
-### Sprint 11.2 — ARIA & Screen Readers
+### Sprint 15.2 — ARIA & Screen Readers
 
 - RingGauge: `role="img"` + `aria-label="Adesão: 85%. Streak: 12 dias"`
 - Progress bars: `role="progressbar"` + `aria-valuenow` + `aria-valuemin` + `aria-valuemax`
 - Ícones decorativos: `aria-hidden="true"`
 - Navigation: `aria-current="page"` no item ativo
-- Modals: focus trap + `role="dialog"` + `aria-modal="true"`
+- Modals: focus trap + `role="dialog"` + `aria-modal="true"` (já prep em W11.1)
+- Calendar: `role="grid"` + `aria-label` nos dias
+- Forms: `aria-describedby` para mensagens de erro
+- Live regions: `aria-live="polite"` para toasts/feedback
 
-### Sprint 11.3 — Focus Management
+### Sprint 15.3 — Focus Management
 
-- Focus ring: 2px solid primary (#006a5e), visible on all backgrounds
-- Tab navigation: todos os elementos interativos acessíveis
-- Modal focus trap
-- Skip-to-content link
+- Focus ring: 2px solid `primary` (#006a5e), visible on all backgrounds
+- Tab navigation: todos os elementos interativos acessíveis via keyboard
+- Modal focus trap: foco preso dentro do modal aberto
+- Skip-to-content link: `<a href="#main-content">` hidden até focus
+- Dropdown/select: navegação por setas
+- Form validation: foco move para primeiro campo com erro
 
-### Sprint 11.4 — Color Contrast Audit
+### Sprint 15.4 — Color Contrast Audit
 
-Verificar WCAG AA compliance:
+Verificar WCAG AA compliance em TODAS as combinações:
 - `on-surface` (#191c1d) on `surface` (#f8fafb) → AAA ✅
 - `primary` (#006a5e) on white → AA ✅
 - `error` (#ba1a1a) on white → AA ✅
 - White text on primary gradient → TESTAR
+- `on-surface` at 40% opacity (muted text) → TESTAR
+- Badge text on badge backgrounds → TESTAR
 - All text-over-gradient combinations → TESTAR
 
-### Sprint 11.5 — Touch Target Audit
+### Sprint 15.5 — Touch Target Audit
 
-- Todos os targets interativos ≥ 56px
+- Todos os targets interativos ≥ 56px tall
 - Botões primários 64px
 - Gap mínimo 8px entre targets adjacentes
 - Testar com large text system setting
+- Verificar em Medicines, Protocols (forms com muitos inputs próximos)
 
-### Sprint 11.6 — Motion Audit
+### Sprint 15.6 — Motion & Reduced Motion Audit
 
 - Todos os Framer Motion animations checam `useReducedMotion()`
+- CSS animations checam `@media (prefers-reduced-motion: reduce)`
 - Nenhum content flash >3x/segundo
 - Progress bars visíveis sem animação (dados não dependem de motion)
+- Confetti/celebration pode ser desabilitado
 
-### Critério de conclusão Wave 11
+### Critério de conclusão Wave 15
 
 - [ ] Lighthouse Accessibility score ≥ 95
-- [ ] Semantic HTML correto em todas as views
-- [ ] ARIA labels em todos os widgets de dados
+- [ ] Semantic HTML correto em todas as views redesenhadas
+- [ ] ARIA labels em todos os widgets de dados (rings, bars, calendar)
 - [ ] Focus ring visível em todos os backgrounds
 - [ ] Touch targets ≥ 56px (primários 64px)
-- [ ] prefers-reduced-motion respeitado universalmente
+- [ ] `prefers-reduced-motion` respeitado universalmente
+- [ ] Skip-to-content link funcional
+- [ ] Keyboard navigation completa em todas as views
 
 ---
 
-## 17. Wave 12 — Landing, Auth & Onboarding
+## 21. Wave 16 — Rollout Promotion & Legacy Cleanup
 
-> **⚠️ ROLLOUT GRADUAL:** Landing.jsx, Auth.jsx e OnboardingWizard.jsx atuais NÃO são modificados.
-> Criar variantes em `src/views/redesign/` e `src/shared/components/onboarding/redesign/`.
-> **Exceção:** Landing.jsx é a primeira tela que todos veem (antes de autenticação). Dependendo da estratégia de rollout, pode ser redesenhada direto SE aprovada para todos os usuários simultaneamente — a decidir com o product owner antes da execução.
+> **Escopo:** Com 100% de cobertura visual alcançada (W0-W15), promover o redesign como default, remover o feature flag, limpar código legacy, e consolidar tokens.
 
-### Sprint 12.1 — Landing Page Redesign
+### Sprint 16.1 — Rollout Promotion
 
-**Arquivo:** `src/views/redesign/LandingRedesign.jsx` (NÃO editar `src/views/Landing.jsx` durante rollout)
+- `useRedesign()` retorna `true` por default (flag invertido)
+- Período de observação: 2 semanas com flag default true
+- Monitorar: erros console, métricas de uso, feedback telegram bot
 
-- Hero com Verde Saúde gradient background
-- Typography: Public Sans display para headline
-- CTA: primary gradient button "Começar Agora"
-- Imagery: illustration-style, não photography
-- Manter funcionalidade existente (isAuthenticated check)
+### Sprint 16.2 — Token Consolidation
 
-### Sprint 12.2 — Auth View Redesign
+- Mesclar `tokens.redesign.css` → `tokens/colors.css`, `tokens/shadows.css`, `tokens/typography.css`, `tokens/borders.css`
+- Remover scoping `[data-redesign="true"]` — tokens se tornam globais
+- Mesclar `layout.redesign.css` → `index.css`
+- Mesclar `components.redesign.css` → CSS individual de cada componente
+- Remover `tokens.redesign.css`, `layout.redesign.css`, `components.redesign.css`
 
-**Arquivo:** `src/views/redesign/AuthRedesign.jsx` (NÃO editar `src/views/Auth.jsx`)
+### Sprint 16.3 — Legacy View Removal
 
-- Background: surface
-- Card: sanctuary style centered
-- Inputs: novo style (56px, radius xl)
-- CTA: primary gradient
-- Logo: Verde Saúde identity
+Remover views e componentes legacy que não são mais necessários:
 
-### Sprint 12.3 — Onboarding Wizard Update
+- `src/views/Dashboard.jsx` → removido (DashboardRedesign é o default)
+- `src/views/Treatment.jsx` → removido
+- `src/views/Stock.jsx` → removido
+- `src/views/Profile.jsx` → removido
+- `src/views/HealthHistory.jsx` → removido
+- `src/views/Emergency.jsx` → removido
+- `src/views/Landing.jsx` → removido (ou mantido se Landing não teve flag)
+- `src/views/Auth.jsx` → removido
+- `src/views/Calendar.jsx` → removido (já deprecated)
+- `src/shared/components/ui/BottomNav.jsx` → removido (BottomNavRedesign é default)
+- `src/features/dashboard/components/RingGauge.jsx` → removido (RingGaugeRedesign é default)
+- Componentes antigos de `SmartAlerts`, `StockBars`, `ViewModeToggle`, etc.
+- CSS files antigos (neon theme): `animations.css` neon keyframes, `.glass-card`, etc.
 
-**Arquivo:** `src/shared/components/onboarding/redesign/OnboardingWizardRedesign.jsx` (NÃO editar `OnboardingWizard.jsx`)
+### Sprint 16.4 — Rename & Reorganize
 
-- Step indicators: primary-fixed dots
-- Cards: sanctuary style
-- Buttons: new style
-- Copy: warm, encouraging
+- Remover sufixo "Redesign" de todos os componentes e views:
+  - `DashboardRedesign.jsx` → `Dashboard.jsx` (mover para `src/views/`)
+  - `TreatmentsRedesign.jsx` → `Treatments.jsx`
+  - `StockRedesign.jsx` → `Stock.jsx`
+  - etc.
+- Atualizar App.jsx: remover todas as branches `isRedesignEnabled`
+- Atualizar imports em todo o codebase
+- Remover `RedesignContext.jsx`, `useRedesign.js`
 
-### Critério de conclusão Wave 12
+### Sprint 16.5 — Feature Flag Removal & Final Cleanup
 
-- [ ] Landing page transmite Verde Saúde identity em 3 segundos
-- [ ] Auth form usa novo design system
-- [ ] Onboarding wizard atualizado visualmente
+- Remover `RedesignProvider` de App.jsx
+- Remover `data-redesign` attribute de `app-container`
+- Remover `?redesign=true` URL param handling
+- Remover localStorage `mr_redesign` key handling
+- Limpar `vite.config.js` se houver chunks obsoletos
+- Atualizar testes: remover mocks de `useRedesign`
+- Git: cleanup de branches feature/redesign/* orphanadas
+
+### Sprint 16.6 — Onboarding Legacy Removal
+
+- Remover `src/shared/components/onboarding/OnboardingWizard.jsx` (legacy)
+- Remover 5 steps legacy (`WelcomeStep.jsx`, `FirstMedicineStep.jsx`, etc.)
+- Renomear `redesign/OnboardingWizardRedesign.jsx` → `OnboardingWizard.jsx`
+- Atualizar `OnboardingProvider.jsx`
+
+### Critério de conclusão Wave 16
+
+- [ ] Feature flag removido — redesign é o default e único visual
+- [ ] Zero referências a `isRedesignEnabled`, `useRedesign`, `data-redesign`
+- [ ] Zero views legacy em `src/views/` (apenas views Santuário)
+- [ ] Zero sufixos "Redesign" em nomes de arquivos
+- [ ] Tokens consolidados — arquivos `.redesign.css` removidos
+- [ ] `npm run validate:agent` passa
+- [ ] Bundle size igual ou menor que antes (dead code eliminated)
+- [ ] Build de produção verifica: 0 CSS classes neon restantes
 
 ---
 
-## 18. Checklist de Validação por Wave
+## 22. Checklist de Validação por Wave
 
 Cada wave DEVE passar nestes checks antes de merge:
 
@@ -2415,7 +2842,7 @@ Cada wave DEVE passar nestes checks antes de merge:
 
 ---
 
-## 19. Mapeamento de Arquivos
+## 23. Mapeamento de Arquivos
 
 > **⚠️ NOTA DE ROLLOUT:** Durante a fase de rollout gradual (W0-W3), os arquivos originais de tokens NÃO são modificados. Os tokens e overrides vivem em arquivos `.redesign.css` scoped em `[data-redesign="true"]`. As tabelas abaixo refletem o mapeamento correto por fase.
 
@@ -2450,17 +2877,20 @@ Cada wave DEVE passar nestes checks antes de merge:
 
 ### Views a CRIAR como variantes redesenhadas (NÃO editar originais durante rollout)
 
-| Arquivo Original | Variante Redesenhada | Wave | Mudanças |
-|------------------|----------------------|------|----------|
-| `src/views/Dashboard.jsx` | `src/views/redesign/DashboardRedesign.jsx` | 6 | Layout + grid + greeting |
-| `src/views/Treatment.jsx` | `src/views/redesign/TreatmentRedesign.jsx` | 7 | Category grouping + search + tabs |
-| `src/views/Stock.jsx` | `src/views/redesign/StockRedesign.jsx` | 8 | Grid cards + critical banner |
-| `src/views/Profile.jsx` | `src/views/redesign/ProfileRedesign.jsx` | 9 | Flat utility layout |
-| `src/views/HealthHistory.jsx` | `src/views/redesign/HealthHistoryRedesign.jsx` | 9 | Recolor |
-| `src/views/Emergency.jsx` | `src/views/redesign/EmergencyRedesign.jsx` | 9 | Recolor |
-| `src/views/Landing.jsx` | `src/views/redesign/LandingRedesign.jsx` | 12 | Verde Saúde identity |
-| `src/views/Auth.jsx` | `src/views/redesign/AuthRedesign.jsx` | 12 | New visual |
-| `src/shared/components/onboarding/OnboardingWizard.jsx` | `src/shared/components/onboarding/redesign/OnboardingWizardRedesign.jsx` | 12 | New visual |
+| Arquivo Original | Variante Redesenhada | Wave | Status |
+|------------------|----------------------|------|--------|
+| `src/views/Dashboard.jsx` | `src/views/redesign/DashboardRedesign.jsx` | 6 | ✅ COMPLETO |
+| `src/views/Treatment.jsx` | `src/views/redesign/TreatmentsRedesign.jsx` | 7 | ✅ COMPLETO |
+| `src/views/Stock.jsx` | `src/views/redesign/StockRedesign.jsx` | 8 | ✅ COMPLETO |
+| `src/views/Profile.jsx` | `src/views/redesign/ProfileRedesign.jsx` | 10B | ✅ COMPLETO |
+| `src/views/HealthHistory.jsx` | `src/views/redesign/HealthHistoryRedesign.jsx` | 10C | ✅ COMPLETO |
+| `src/views/Emergency.jsx` | `src/views/redesign/EmergencyRedesign.jsx` | 9 | ✅ COMPLETO |
+| `src/views/Settings.jsx` | `src/views/redesign/SettingsRedesign.jsx` | 10A | ✅ COMPLETO |
+| `src/views/Medicines.jsx` | `src/views/redesign/MedicinesRedesign.jsx` | **12** | ⏳ PENDENTE |
+| `src/views/Consultation.jsx` | `src/views/redesign/ConsultationRedesign.jsx` | **12** | ⏳ PENDENTE |
+| `src/views/Landing.jsx` | `src/views/redesign/LandingRedesign.jsx` | **13** | ⏳ PENDENTE |
+| `src/views/Auth.jsx` | `src/views/redesign/AuthRedesign.jsx` | **13** | ⏳ PENDENTE |
+| `src/shared/components/onboarding/OnboardingWizard.jsx` | `src/shared/components/onboarding/redesign/OnboardingWizardRedesign.jsx` | **13** | ⏳ PENDENTE |
 
 ### Componentes internos a CRIAR como paralelos (usados apenas pelas views redesenhadas)
 
@@ -2538,7 +2968,7 @@ Cada wave DEVE passar nestes checks antes de merge:
 
 ---
 
-## 20. Riscos e Mitigações
+## 24. Riscos e Mitigações
 
 | Risco | Impacto | Mitigação |
 |-------|---------|-----------|
@@ -2557,26 +2987,40 @@ Cada wave DEVE passar nestes checks antes de merge:
 ### Ordem de Execução Recomendada
 
 ```
-Wave 0 → Wave 1 → Wave 2 → Wave 3  (FOUNDATION — executar como bloco)
+Wave 0 → Wave 1 → Wave 2 → Wave 3  (FOUNDATION — executar como bloco)     ✅ COMPLETO
     ↓
-Wave 4 (Navigation — visual backbone)
+Wave 4 (Navigation — visual backbone)                                       ✅ COMPLETO
     ↓
-Wave 5 (Motion — reusable patterns)
+Wave 5 (Motion — reusable patterns)                                         ✅ COMPLETO
     ↓
-Wave 6 (Dashboard — highest impact)
+Wave 6 (Dashboard — highest impact)                                         ✅ COMPLETO
     ↓
-Wave 7 ─┬─ Wave 8 (podem ser paralelos)
+Wave 7 ─┬─ Wave 8 (podem ser paralelos)                                    ✅ COMPLETO
         │
-Wave 9 ─┘
+Wave 9 ─┘                                                                  ✅ COMPLETO
     ↓
-Wave 10 (Progressive Disclosure — polish)
+Wave 10 (Hub + Settings + Histórico)                                        ✅ COMPLETO
     ↓
-Wave 11 (Accessibility — compliance)
+Wave 11 (Forms & Modals — interação)         ← PRÓXIMA
     ↓
-Wave 12 (Landing/Auth — final touch)
+Wave 12 (Medicines + Consultation — views restantes)
+    ↓
+Wave 13 (Landing/Auth/Onboarding — jornada de entrada)
+    ↓
+Wave 14 (Shared Components + Chatbot — limpeza visual global)
+    ↓
+Wave 15 (Accessibility — compliance WCAG AA)
+    ↓
+Wave 16 (Rollout Promotion + Legacy Cleanup — flag removal)
 ```
 
-**Waves 0-3 DEVEM ser executadas juntas** antes de qualquer outra wave, pois estabelecem os tokens e primitivos que todo o resto usa. Durante o rollout, executá-las isoladamente é seguro (CSS scoped não afeta usuários sem o flag). Para o rollout completo (promoção global), o bloco 0-3 deve ser atômico para evitar estado visual parcialmente quebrado.
+**W11 é a próxima prioridade** porque Modal.jsx é o keystone blocker: 12+ componentes abrem modais com visual neon dentro de views Santuário. Redesenhar Modal primeiro desbloqueia todos os forms e dialogs.
+
+**W12-W13 podem ser paralelas** se houver dois agentes disponíveis (Medicines/Consultation não dependem de Landing/Auth).
+
+**W14 é sweep final** — componentes shared que aparecem em contexto redesign mas ainda carregam estilos antigos.
+
+**W15-W16 são sequenciais** — accessibility audit só faz sentido quando toda a UI está no novo design, e legacy cleanup é o passo final.
 
 ---
 

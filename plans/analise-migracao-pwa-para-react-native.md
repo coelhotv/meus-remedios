@@ -1,5 +1,7 @@
 # Análise Técnica: Migração PWA → React Native
 
+> **SUPERSEDIDO EM 2026-03-29:** Antes de usar este documento, ler `plans/EXEC_SPEC_HIBRIDO_WEB_NATIVE.md`. Este arquivo permanece apenas como contexto histórico de análise e não deve ser tratado como plano executável principal.
+
 > **Tipo:** Documento técnico de alto nível — análise de viabilidade e roadmap de esforço
 > **Contexto de produto:** `plans/canvas-produto-mercado.md`
 > **Baseline técnico:** v3.1.0 (React 19 + Vite 7 + Supabase + Vercel Hobby)
