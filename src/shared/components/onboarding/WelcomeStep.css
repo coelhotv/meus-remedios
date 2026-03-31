@@ -64,8 +64,8 @@
   height: 40px;
   min-width: 40px;
   border-radius: var(--radius-md, 8px);
-  background: var(--color-primary-light, #dbeafe);
-  color: var(--color-primary, #3b82f6);
+  background: var(--color-secondary-fixed, #ccebe5);
+  color: var(--color-primary, #006a5e);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,11 +94,11 @@
   padding: 1rem;
   background: linear-gradient(
     135deg,
-    var(--color-primary-light, #dbeafe) 0%,
-    var(--color-primary-lighter, #eff6ff) 100%
+    #ccebe5 0%,
+    #e6f4f1 100%
   );
   border-radius: var(--radius-lg, 12px);
-  border-left: 4px solid var(--color-primary, #3b82f6);
+  border-left: 4px solid var(--color-primary, #006a5e);
 }
 
 .welcome-note p {
@@ -178,6 +178,6 @@
   }
 
   .welcome-note {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(0, 106, 94, 0.15) 0%, rgba(0, 106, 94, 0.08) 100%);
   }
 }

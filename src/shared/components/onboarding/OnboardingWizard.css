@@ -93,10 +93,10 @@
 }
 
 .progress-step.active .step-number {
-  background: var(--color-primary, #3b82f6);
+  background: var(--color-primary, #006a5e);
   color: white;
   transform: scale(1.1);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 4px rgba(0, 106, 94, 0.2);
 }
 
 .progress-step.completed .step-number {
@@ -113,7 +113,7 @@
 }
 
 .progress-step.active .step-name {
-  color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, #006a5e);
   font-weight: 600;
 }
 
