@@ -34,7 +34,7 @@
 | W10B | Profile Hub + Migração de Dados | `WAVE_10B_PROFILE_HUB.md` | ✅ MERGED #436 (2026-03-27) | main |
 | W10C | Histórico Calendar-Driven | `WAVE_10C_HISTORICO_CALENDAR.md` | ✅ MERGED #437 (2026-03-28) | main |
 | W11 | Forms & Modals Redesign | (seção 16 abaixo) | ✅ MERGED #439 (2026-03-30) | main |
-| W12 | Medicines View & Consultation Mode | (seção 17 abaixo) | ⏳ PENDENTE | — |
+| W12 | Medicines View & Consultation Mode | (seção 17 abaixo) | ✅ MERGED #440 (2026-03-31) | main |
 | W13 | Landing, Auth & Onboarding | (seção 18 abaixo) | ⏳ PENDENTE | — |
 | W14 | Shared Components & Chatbot | (seção 19 abaixo) | ⏳ PENDENTE | — |
 | W15 | Accessibility & Polish | (seção 20 abaixo) | ⏳ PENDENTE | — |
@@ -53,12 +53,14 @@
 - ✅ **W10B** (2026-03-27): Profile Hub + Migração de Dados — ProfileRedesign rewrite como hub centralizado, 4 sub-componentes (ProfileHeader/EmergencyCard/ConsultationCard/EditProfileModal), migração localStorage → Supabase, schema Zod com validação, lucide icons, layout responsivo hub-grid (PR #436)
 - ✅ **W10C** (2026-03-28): Histórico Calendar-Driven — rewrite completo HealthHistoryRedesign (calendar-driven, phase-loading), HistoryLogCard (3 linhas), HistoryDayPanel, HistoryKPICards, GlobalDoseModal compartilhado, logService expandido, mobile FAB + Sidebar "Registrar Dose", Gemini review 13 sugestões processadas, Issue #438 backlog refactor (PR #437)
 - ✅ **W11** (2026-03-30): Forms & Modals Redesign — Modal base (lucide X, bottom sheet mobile, glass overlay, z-index 1200 hardcode), form utilities (form-row/form-actions/labels/error/checkbox), LogForm (Pill+Folders lucide icons, segmented control), MedicineForm, ProtocolForm, TitrationWizard, StockForm, TreatmentWizard, ExportDialog (format toggle segmented control, FileBracesCorner/FileDigit icons), ReportGenerator (legibilidade BEM over white bg), EmergencyCard, DailyDoseModal, z-index token --z-chatbot:1100, vite host:true, AP-W24 documentado (PR #439)
+- ✅ **W12** (2026-03-31): Medicines View & Consultation Mode Redesign — MedicineCardRedesign + ConfirmDialog (W12.1), MedicinesRedesign view com useDashboard() context + dependency in-memory calc (W12.2), ConsultationViewRedesign presenter com design tokens + color-mix() (W12.3), ConsultationRedesign container com temporal consistency (W12.4), Gemini + Codex review 10 sugestões processadas, fix modal close on "Depois" + preserve AbortError behavior, lint 0 erros, tests críticos pass (PR #440)
 
 **Foundation (W0-W9):** 100% COMPLETO ✅
 **Hub & Settings & Histórico (W10A-W10B-W10C):** 100% COMPLETO ✅
 **Forms & Modals (W11):** 100% COMPLETO ✅
-**Views (W0-W11):** 100% — Todas as views e forms principais redesenhados
-**Próximo bloco — Medicines & Consultation (W12):** Medicines view, Consultation Mode, Landing/Auth/Onboarding
+**Medicines & Consultation (W12):** 100% COMPLETO ✅
+**Views (W0-W12):** 100% — Todas as views e forms principais redesenhados
+**Próximo bloco — Landing/Auth/Onboarding (W13):** Login redesign, Landing page, Onboarding flow
 **Polish (W15):** Accessibility & compliance
 **Closure (W16):** Feature flag removal, legacy cleanup, token consolidation
 
