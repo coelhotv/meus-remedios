@@ -1,7 +1,9 @@
 # Wave 12 — Medicines View & Consultation Mode Redesign
 
-**Status:** ⏳ PENDENTE
+**Status:** ✅ ENTREGUE
 **Data de criação:** 2026-03-30
+**Data de entrega:** 2026-03-31
+**PR:** #440 (mergeado com squash)
 **Dependências:** W0-W11 (W11 entrega Modal + Forms redesenhados — **W11 é pré-requisito**)
 **Risco:** MÉDIO — duas views independentes; Medicines usa `window.confirm()` que deve ser eliminado; Consultation tem layout próprio (purple gradient) que muda completamente
 **Estimativa:** ~4 sprints, ~800 linhas JSX novo + ~600 linhas CSS novo
@@ -2319,15 +2321,15 @@ Sprint 12.4 (ConsultationRedesign container + App.jsx)
 
 ## Critérios de Conclusão Wave 12
 
-- [ ] `MedicinesRedesign.jsx` criado e integrado no App.jsx
-- [ ] `ConsultationRedesign.jsx` criado e integrado no App.jsx
-- [ ] `ConfirmDialog` criado como componente reutilizável
-- [ ] CRUD de medicamentos funciona end-to-end no redesign (add/edit/delete)
-- [ ] Zero `window.confirm()` na experiência redesign
-- [ ] Zero emojis no JSX das views redesign
-- [ ] Modo consulta renderiza dados em estilo Santuário (Verde Saúde, não purple)
-- [ ] Print layout funcional (header legível, footer oculto)
-- [ ] Responsivo: mobile single-column, desktop grid
-- [ ] Toggle redesign OFF → views originais funcionam normalmente
-- [ ] `npm run validate:agent` passa
-- [ ] ESLint 0 errors
+- [x] `MedicinesRedesign.jsx` criado e integrado no App.jsx
+- [x] `ConsultationRedesign.jsx` criado e integrado no App.jsx
+- [x] `ConfirmDialog` criado como componente reutilizável
+- [x] CRUD de medicamentos funciona end-to-end no redesign (add/edit/delete)
+- [x] Zero `window.confirm()` na experiência redesign
+- [x] Zero emojis no JSX das views redesign
+- [x] Modo consulta renderiza dados em estilo Santuário (Verde Saúde, não purple)
+- [x] Print layout funcional (header legível, footer oculto)
+- [x] Responsivo: mobile single-column, desktop grid
+- [x] Toggle redesign OFF → views originais funcionam normalmente
+- [x] `npm run validate:agent` passa
+- [x] ESLint 0 errors
