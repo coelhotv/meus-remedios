@@ -62,6 +62,26 @@
   gap: 0.5rem;
 }
 
+/* Estado salvo — ícone check verde */
+.step-icon--saved {
+  background: var(--color-success, #10b981);
+  color: #ffffff;
+}
+
+/* Override neon glow do Button component no contexto do onboarding */
+.first-medicine-step .btn-primary {
+  background: var(--color-primary, #006a5e) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 106, 94, 0.2) !important;
+  border-radius: 999px;
+}
+
+.first-medicine-step .btn-primary:hover:not(:disabled) {
+  background: var(--color-primary, #006a5e) !important;
+  box-shadow: 0 4px 16px rgba(0, 106, 94, 0.3) !important;
+  transform: translateY(-1px);
+}
+
 /* Spinner for loading state */
 .spinner {
   width: 16px;
