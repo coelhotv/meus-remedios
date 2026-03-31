@@ -13,7 +13,6 @@ import ConsultationViewRedesign from '@features/consultation/components/redesign
 import Loading from '@shared/components/ui/Loading'
 import { analyticsService } from '@dashboard/services/analyticsService'
 import { generateConsultationPDF } from '@features/reports/services/consultationPdfService'
-import { shareService } from '@features/reports/services/shareService'
 import { formatLocalDate } from '@utils/dateUtils.js'
 
 export default function ConsultationRedesign({ onBack }) {
@@ -48,7 +47,7 @@ export default function ConsultationRedesign({ onBack }) {
         }
         const data = getConsultationData(dashboardData, resolvedName, null, resolvedEmail)
         setConsultationData(data)
-      } catch (err) {
+      } catch {
         if (!isMounted) return
         setError('Não foi possível carregar os dados para consulta.')
       } finally {
@@ -79,8 +78,8 @@ export default function ConsultationRedesign({ onBack }) {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error('Erro ao gerar PDF:', err)
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error)
       alert('Erro ao gerar PDF. Tente novamente.')
     }
   }, [consultationData, dashboardData])
@@ -127,9 +126,9 @@ export default function ConsultationRedesign({ onBack }) {
 
       alert('PDF baixado com sucesso! Você pode compartilhá-lo manualmente.')
       analyticsService.track('consultation_shared', { method: 'download' })
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error('Share error:', err)
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Share error:', error)
         alert('Erro ao compartilhar. Tente novamente.')
       }
     }

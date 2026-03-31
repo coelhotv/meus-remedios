@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Pill, Plus, CheckCircle2, AlertCircle } from 'lucide-react'
-import { medicineService, protocolService, stockService } from '@shared/services'
+import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
+import { medicineService } from '@shared/services'
 import Loading from '@shared/components/ui/Loading'
 import Modal from '@shared/components/ui/Modal'
 import EmptyState from '@shared/components/ui/EmptyState'
@@ -10,52 +11,31 @@ import ConfirmDialog from '@shared/components/ui/ConfirmDialog'
 import './MedicinesRedesign.css'
 
 export default function MedicinesRedesign({ onNavigateToProtocol }) {
-  // 1. States
-  const [medicines, setMedicines] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  // 1. Context & Memos
+  const { medicines: contextMedicines, protocols, stockSummary, isLoading, refetchAll } = useDashboard()
+
+  // 2. States
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingMedicine, setEditingMedicine] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [filterType, setFilterType] = useState('all')
-  const [medicineDependencies, setMedicineDependencies] = useState({})
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [showProtocolPrompt, setShowProtocolPrompt] = useState(false)
   const [newMedicineId, setNewMedicineId] = useState(null)
 
-  // 2. Load medicines and dependencies
-  const loadMedicines = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      const meds = await medicineService.getAll()
-      setMedicines(meds)
-      await loadDependencies(meds)
-    } catch (err) {
-      setError('Erro ao carregar medicamentos: ' + err.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  const loadDependencies = useCallback(async (meds) => {
+  // 3. Calculate dependencies from dashboard context in-memory
+  const medicineDependencies = useMemo(() => {
     const deps = {}
-    for (const med of meds) {
-      const [protocols, stock] = await Promise.all([
-        protocolService.getByMedicineId(med.id),
-        stockService.getByMedicine(med.id),
-      ])
-      deps[med.id] = {
-        hasProtocols: protocols.length > 0,
-        hasStock: stock.length > 0,
-      }
-    }
-    setMedicineDependencies(deps)
-  }, [])
+    if (!contextMedicines || !protocols || !stockSummary) return deps
 
-  useEffect(() => {
-    loadMedicines()
-  }, [loadMedicines])
+    contextMedicines.forEach((med) => {
+      const hasProtocols = protocols.some(p => p.medicine_id === med.id)
+      const hasStock = stockSummary.some(s => s.medicine_id === med.id)
+      deps[med.id] = { hasProtocols, hasStock }
+    })
+    return deps
+  }, [contextMedicines, protocols, stockSummary])
 
   // 3. Feedback handlers
   const showSuccess = (msg) => {
@@ -74,7 +54,7 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
     setIsModalOpen(true)
   }
 
-  const handleSave = async (medicineData) => {
+  const handleSave = useCallback(async (medicineData) => {
     try {
       if (editingMedicine) {
         await medicineService.update(editingMedicine.id, medicineData)
@@ -85,32 +65,35 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
         // Show protocol prompt instead of window.confirm()
         setNewMedicineId(newMedicine.id)
         setShowProtocolPrompt(true)
-        return // Don't close modal yet
+        setIsModalOpen(false)
+        setEditingMedicine(null)
+        refetchAll({ force: true })
+        return // Don't close modal yet after refetch
       }
       setIsModalOpen(false)
       setEditingMedicine(null)
-      await loadMedicines()
+      refetchAll({ force: true })
     } catch (err) {
       setError('Erro ao salvar medicamento: ' + err.message)
     }
-  }
+  }, [editingMedicine, refetchAll])
 
-  const handleDeleteRequest = (medicine) => {
+  const handleDeleteRequest = useCallback((medicine) => {
     setDeleteTarget(medicine)
-  }
+  }, [])
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!deleteTarget) return
     try {
       await medicineService.delete(deleteTarget.id)
       showSuccess('Medicamento excluído com sucesso!')
-      await loadMedicines()
+      refetchAll({ force: true })
     } catch (err) {
       setError('Erro ao excluir medicamento: ' + err.message)
     } finally {
       setDeleteTarget(null)
     }
-  }
+  }, [deleteTarget, refetchAll])
 
   const handleProtocolPromptConfirm = () => {
     setShowProtocolPrompt(false)
@@ -126,7 +109,10 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
   }
 
   // 5. Derived state
-  const filteredMedicines = medicines.filter((m) => filterType === 'all' || m.type === filterType)
+  const filteredMedicines = useMemo(
+    () => contextMedicines?.filter((m) => filterType === 'all' || m.type === filterType) || [],
+    [contextMedicines, filterType]
+  )
 
   if (isLoading) {
     return (
@@ -184,7 +170,7 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
       )}
 
       {/* Content */}
-      {medicines.length === 0 ? (
+      {contextMedicines?.length === 0 ? (
         <EmptyState
           illustration="protocols"
           title="Nenhum medicamento cadastrado"
