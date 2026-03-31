@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { signIn, signUp } from '@shared/utils/supabase'
-import Button from '@shared/components/ui/Button'
 import './Auth.css'
 
 export default function Auth({ onAuthSuccess, onClose }) {
@@ -92,9 +91,9 @@ export default function Auth({ onAuthSuccess, onClose }) {
           {error && <div className="auth-error">{error}</div>}
           {message && <div className="auth-message">{message}</div>}
 
-          <Button type="submit" className="auth-submit-btn" disabled={isLoading}>
+          <button type="submit" className="auth-submit-btn" disabled={isLoading}>
             {isLoading ? 'Carregando...' : isLogin ? 'Entrar' : 'Cadastrar'}
-          </Button>
+          </button>
         </form>
 
         <div className="auth-footer">
