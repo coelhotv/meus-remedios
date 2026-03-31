@@ -27,6 +27,9 @@ export default function ConsultationRedesign({ onBack }) {
     [medicines, protocols, logs, stockSummary, stats, dailyAdherence]
   )
 
+  // Create single 'now' instance for temporal consistency across PDF export, share, and filename generation
+  const now = useMemo(() => new Date(), [])
+
   useEffect(() => {
     let isMounted = true
 
@@ -73,7 +76,7 @@ export default function ConsultationRedesign({ onBack }) {
       const url = URL.createObjectURL(pdfBlob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `consulta-medica-${formatLocalDate(new Date())}.pdf`
+      link.download = `consulta-medica-${formatLocalDate(now)}.pdf`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -82,7 +85,7 @@ export default function ConsultationRedesign({ onBack }) {
       console.error('Erro ao gerar PDF:', error)
       alert('Erro ao gerar PDF. Tente novamente.')
     }
-  }, [consultationData, dashboardData])
+  }, [consultationData, dashboardData, now])
 
   const handleShare = useCallback(async () => {
     try {
@@ -93,7 +96,7 @@ export default function ConsultationRedesign({ onBack }) {
         dashboardData: { ...dashboardData, dailyAdherence: resolvedDailyAdherence },
         period: '30d',
       })
-      const fileName = `consulta-medica-${formatLocalDate(new Date())}.pdf`
+      const fileName = `consulta-medica-${formatLocalDate(now)}.pdf`
 
       // 1. Tentar Web Share API (mobile nativo)
       if (navigator.share && navigator.canShare) {
@@ -132,7 +135,7 @@ export default function ConsultationRedesign({ onBack }) {
         alert('Erro ao compartilhar. Tente novamente.')
       }
     }
-  }, [consultationData, dashboardData])
+  }, [consultationData, dashboardData, now])
 
   const handleBack = useCallback(() => {
     analyticsService.track('consultation_mode_closed', { timestamp: Date.now() })
