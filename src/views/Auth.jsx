@@ -44,7 +44,7 @@ export default function Auth({ onAuthSuccess }) {
 
   return (
     <div className="auth-container">
-      <div className="auth-card glass-card">
+      <div className="auth-card">
         <div className="auth-header">
           <div className="logo-container">
             <img src="/logo-new.svg" alt="Meus Remédios" className="auth-logo" />
