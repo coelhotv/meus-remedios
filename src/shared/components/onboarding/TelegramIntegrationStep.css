@@ -393,21 +393,4 @@
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .benefit-card {
-    background: var(--color-surface-elevated-dark, #374151);
-  }
-
-  .notification {
-    background: rgba(255, 255, 255, 0.95);
-  }
-
-  .qr-code {
-    background: white;
-  }
-
-  .telegram-instructions {
-    background: var(--color-surface-elevated-dark, #374151);
-  }
-}
+/* TelegramIntegrationStep é sempre light (Sanctuary) — sem dark mode override */

@@ -171,13 +171,4 @@
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .benefit-item {
-    background: var(--color-surface-elevated-dark, #374151);
-  }
-
-  .welcome-note {
-    background: linear-gradient(135deg, rgba(0, 106, 94, 0.15) 0%, rgba(0, 106, 94, 0.08) 100%);
-  }
-}
+/* WelcomeStep é sempre light (Sanctuary) — sem dark mode override */

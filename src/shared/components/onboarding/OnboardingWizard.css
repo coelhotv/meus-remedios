@@ -1,5 +1,30 @@
 /* Onboarding Wizard Styles */
 
+/* ============================================
+   Tokens Sanctuary — sempre ativos no onboarding,
+   independente do tema ou isRedesignEnabled do usuário.
+   Definidos aqui para isolar completamente do tema neon.
+   ============================================ */
+.onboarding-overlay {
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f5;
+  --color-surface-container: #eceeef;
+  --color-surface-container-high: #e6e8e9;
+  --color-surface: #f8fafb;
+  --color-on-surface: #191c1d;
+  --color-on-surface-variant: #3e4946;
+  --color-primary: #006a5e;
+  --color-success: #10b981;
+  --color-error: #ba1a1a;
+  --color-secondary-fixed: #ccebe5;
+  --font-heading: 'Public Sans', ui-sans-serif, sans-serif;
+  --font-body: 'Lexend', ui-sans-serif, sans-serif;
+  --radius-xl: 1rem;
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
 .onboarding-overlay {
   position: fixed;
   top: 0;
@@ -295,35 +320,4 @@
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .onboarding-modal {
-    background: var(--color-surface-dark, #1f2937);
-  }
-
-  .onboarding-progress {
-    background: var(--color-surface-elevated-dark, #111827);
-    border-color: var(--color-border-dark, #374151);
-  }
-
-  .step-name {
-    color: var(--color-on-surface-variant, #3f484a);
-  }
-
-  .step-number {
-    background: var(--color-on-surface, #191c1d);
-    color: var(--color-on-surface-variant, #3f484a);
-  }
-
-  .step-connector {
-    background: var(--color-on-surface, #191c1d);
-  }
-
-  .btn-skip {
-    color: var(--color-on-surface-variant, #3f484a);
-  }
-
-  .btn-skip:hover {
-    color: var(--color-surface-container-high, #e6e8e9);
-  }
-}
+/* Onboarding é sempre light (Sanctuary) — sem dark mode override */
