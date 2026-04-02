@@ -29,7 +29,7 @@ function renderMessageContent(content) {
           if (part.startsWith('_') && part.endsWith('_') && part.length > 2) {
             return <em key={i}>{part.slice(1, -1)}</em>
           }
-          return part
+          return <span key={i}>{part}</span>
         })}
       </span>
     )

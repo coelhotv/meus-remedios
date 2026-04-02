@@ -71,10 +71,9 @@ export default function AlertList({
         {displayItems.map((alert) => (
           <div key={alert.id} className={`alert-list__item alert-list__item--${alert.severity}`}>
             <div className="alert-list__item-icon" aria-hidden="true">
-              {alert.severity === 'critical' && <AlertTriangle size={16} />}
-              {alert.severity === 'warning'  && <AlertCircle size={16} />}
-              {alert.severity === 'info'     && <Info size={16} />}
-              {!['critical', 'warning', 'info'].includes(alert.severity) && <Info size={16} />}
+              {alert.severity === 'critical' ? <AlertTriangle size={16} /> :
+               alert.severity === 'warning' ? <AlertCircle size={16} /> :
+               <Info size={16} />}
             </div>
 
             <div className="alert-list__item-content">
