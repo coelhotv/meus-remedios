@@ -22,7 +22,7 @@ import ConfirmDialog from '@shared/components/ui/ConfirmDialog'
 import { protocolService } from '@shared/services'
 import './TreatmentsRedesign.css'
 
-export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate }) {
+export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate, initialMedicineId, onClearInitialMedicine }) {
   // Estados
   const [activeTab, setActiveTab] = useState('ativos')
   const [wizardOpen, setWizardOpen] = useState(false)
@@ -54,6 +54,24 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
   } = useTreatmentList()
 
   const isComplex = mode === 'complex'
+
+  // Auto-abrir wizard com medicamento pré-selecionado (fluxo: novo medicamento → novo tratamento)
+  useEffect(() => {
+    if (!initialMedicineId) return
+    medicineService.getById(initialMedicineId)
+      .then((medicine) => {
+        if (medicine) {
+          setWizardMedicine(medicine)
+          setWizardOpen(true)
+        }
+      })
+      .catch((err) => {
+        console.error('Erro ao carregar medicamento inicial:', err)
+      })
+      .finally(() => {
+        onClearInitialMedicine?.()
+      })
+  }, [initialMedicineId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch medicines and treatmentPlans on mount
   useEffect(() => {
@@ -122,7 +140,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
       setFormOpen(true)
     } catch (err) {
       console.error('Erro ao carregar protocolo para edicao:', err)
-      setErrorMessage('Erro ao carregar protocolo. Tente novamente.')
+      setErrorMessage('Erro ao carregar tratamento. Tente novamente.')
     }
   }
 
@@ -139,7 +157,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
       refetch()
     } catch (err) {
       console.error('Erro ao salvar protocolo:', err)
-      setErrorMessage('Erro ao salvar protocolo. Tente novamente.')
+      setErrorMessage('Erro ao salvar tratamento. Tente novamente.')
     }
   }
 

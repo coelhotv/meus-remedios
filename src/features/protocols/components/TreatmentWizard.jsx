@@ -661,7 +661,7 @@ export default function TreatmentWizard({
               <h3 className="wizard__title">Pronto!</h3>
               <p className="wizard__complete-summary">
                 <strong>{result.medicine?.name || medicineData.name}</strong> cadastrado
-                {result.protocol && ` com protocolo ${FREQUENCY_LABELS[protocolData.frequency]}`}
+                {result.protocol && ` com tratamento ${FREQUENCY_LABELS[protocolData.frequency]}`}
                 {stockData.quantity && ` e ${stockData.quantity} comprimidos em estoque`}.
               </p>
               <div className="wizard__actions wizard__actions--center">

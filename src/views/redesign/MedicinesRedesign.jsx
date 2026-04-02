@@ -231,7 +231,7 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
         message={
           medicineDependencies[deleteTarget?.id]?.hasProtocols ||
           medicineDependencies[deleteTarget?.id]?.hasStock
-            ? 'Este medicamento possui protocolos e/ou estoque associados. Esta ação não pode ser desfeita.'
+            ? 'Este medicamento possui tratamentos e/ou estoque associados. Esta ação não pode ser desfeita.'
             : 'Esta ação não pode ser desfeita.'
         }
         confirmLabel="Excluir"
@@ -244,8 +244,8 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
       <ConfirmDialog
         isOpen={showProtocolPrompt}
         title="Medicamento criado!"
-        message="Deseja criar um protocolo de uso para ele agora?"
-        confirmLabel="Criar Protocolo"
+        message="Deseja criar um tratamento para ele agora?"
+        confirmLabel="Criar Tratamento"
         cancelLabel="Depois"
         variant="default"
         onConfirm={handleProtocolPromptConfirm}
