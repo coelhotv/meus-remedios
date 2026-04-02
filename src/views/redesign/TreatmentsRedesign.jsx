@@ -36,6 +36,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
   const [planFormOpen, setPlanFormOpen] = useState(false)
   const [planEditTarget, setPlanEditTarget] = useState(null)
   const [deletePlanTarget, setDeletePlanTarget] = useState(null)
+  const [deleteTreatmentTarget, setDeleteTreatmentTarget] = useState(null)
 
   // Data + context
   const { mode } = useComplexityMode()
@@ -160,6 +161,24 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
     setDeletePlanTarget({ id: planId, label: group.groupLabel })
   }
 
+  function handleDeleteTreatmentRequest(item) {
+    setDeleteTreatmentTarget(item)
+  }
+
+  async function handleDeleteTreatmentConfirm() {
+    if (!deleteTreatmentTarget) return
+    try {
+      setErrorMessage(null)
+      await protocolService.delete(deleteTreatmentTarget.id)
+      setDeleteTreatmentTarget(null)
+      refetch()
+    } catch (err) {
+      console.error('Erro ao excluir tratamento:', err)
+      setErrorMessage('Erro ao excluir tratamento. Tente novamente.')
+      setDeleteTreatmentTarget(null)
+    }
+  }
+
   async function handleDeletePlanConfirm() {
     if (!deletePlanTarget) return
     try {
@@ -231,6 +250,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
           key={activeTab}
           groups={currentGroups}
           onEdit={handleEditProtocol}
+          onDelete={handleDeleteTreatmentRequest}
           onEditPlan={handleEditPlan}
           onDeletePlan={handleDeletePlanRequest}
           activeTab={activeTab}
@@ -240,6 +260,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
           key={activeTab}
           items={currentItems}
           onEdit={handleEditProtocol}
+          onDelete={handleDeleteTreatmentRequest}
           activeTab={activeTab}
         />
       )}
@@ -323,6 +344,17 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
           />
         )}
       </Modal>
+
+      {/* ConfirmDialog — excluir tratamento */}
+      <ConfirmDialog
+        isOpen={!!deleteTreatmentTarget}
+        title={`Excluir tratamento "${deleteTreatmentTarget?.medicineName}"?`}
+        message="Esta ação não pode ser desfeita. O histórico de doses associado será mantido."
+        confirmLabel="Excluir"
+        variant="danger"
+        onConfirm={handleDeleteTreatmentConfirm}
+        onCancel={() => setDeleteTreatmentTarget(null)}
+      />
 
       {/* ConfirmDialog — excluir plano de tratamento */}
       <ConfirmDialog

@@ -14,7 +14,7 @@ import ProtocolRow from '@protocols/components/redesign/ProtocolRow'
  * TreatmentsComplex — Modo complexo com grupos colapsáveis
  * S7.5.5: Adicionar hoveredRow state para iluminar linha inteira em desktop
  */
-export default function TreatmentsComplex({ groups, onEdit, onEditPlan, onDeletePlan, activeTab }) {
+export default function TreatmentsComplex({ groups, onEdit, onDelete, onEditPlan, onDeletePlan, activeTab }) {
   const { cascade } = useMotion()
   const [collapsedGroups, setCollapsedGroups] = useState(new Set())
   const [expandedRow, setExpandedRow] = useState(null)
@@ -69,6 +69,7 @@ export default function TreatmentsComplex({ groups, onEdit, onEditPlan, onDelete
                         item={item}
                         isComplex={true}
                         onEdit={onEdit}
+                        onDelete={onDelete}
                         activeTab={activeTab}
                         variant="tabular"
                         isHovered={hoveredRow === item.id}
@@ -91,6 +92,7 @@ export default function TreatmentsComplex({ groups, onEdit, onEditPlan, onDelete
                         setExpandedRow((prev) => (prev === item.id ? null : item.id))
                       }
                       onEdit={onEdit}
+                      onDelete={onDelete}
                       activeTab={activeTab}
                       variant="card"
                     />
