@@ -1389,6 +1389,293 @@ Entregáveis mínimos:
 - `.memory/journal` atualizado
 - PR pronta para review
 
+## 15.3 Execução em 6 etapas sequenciais com gates obrigatórios
+
+Esta é a trilha oficial de execução para um agente coder usando `/deliver-sprint`.
+
+O agente deve executar **uma etapa por vez**.  
+Não pode iniciar a etapa seguinte sem passar no gate da etapa atual.
+
+### Etapa 1 — Banco
+
+**Objetivo**
+
+- criar a base estrutural do novo modelo;
+- deixar o banco pronto para suportar compras, ajustes e consumos por lote;
+- garantir backfill idempotente.
+
+**Escopo exato**
+
+- `docs/migrations/20260402_stock_purchases_refactor.sql`
+
+**Saída esperada**
+
+- novas tabelas, colunas, índices, RLS, policies e RPCs definidos;
+- backfill implementado no SQL;
+- invariantes do modelo cobertos pela migration.
+
+**Gate 1 — Validação obrigatória**
+
+O agente deve confirmar, antes de seguir:
+
+- [ ] a migration cria `purchases`
+- [ ] a migration cria `stock_adjustments`
+- [ ] a migration cria `stock_consumptions`
+- [ ] a migration adiciona `medicines.regulatory_category`
+- [ ] a migration adiciona `stock.purchase_id`
+- [ ] a migration adiciona `stock.original_quantity`
+- [ ] a migration adiciona `stock.entry_type`
+- [ ] a migration cria os 4 RPCs definidos na spec
+- [ ] o backfill é idempotente por `legacy_stock_id`
+- [ ] o SQL não introduz ajuste manual negativo
+
+**Revalidação da spec neste gate**
+
+O agente deve reler e confirmar coerência entre:
+
+- seção **4. Arquitetura alvo**
+- seção **6. Migration SQL detalhada**
+- seção **7. RPCs detalhadas**
+- seção **8. Backfill detalhado**
+
+Se houver divergência entre SQL planejado e comportamento esperado da UI redesign, o agente deve parar e corrigir a spec antes de implementar a Etapa 2.
+
+---
+
+### Etapa 2 — Services e Schemas
+
+**Objetivo**
+
+- migrar a camada de domínio para o novo modelo semântico;
+- remover a dependência de compra fake em `stock`;
+- fechar os contratos de leitura e escrita.
+
+**Escopo exato**
+
+- `src/features/stock/services/purchaseService.js`
+- `src/features/stock/services/stockService.js`
+- `src/shared/services/api/logService.js`
+- `src/shared/services/index.js`
+- `src/shared/services/cachedServices.js`
+- `src/schemas/stockSchema.js`
+- `src/schemas/medicineSchema.js`
+- testes unitários diretos desses módulos
+
+**Saída esperada**
+
+- `purchaseService` criado e exportado;
+- `stockService.add()` escrevendo compra via RPC;
+- `stockService.increase()` sem `insert` fake em `stock`;
+- `logService.create/update/delete()` usando consumo/restauração por log;
+- schemas refletindo os novos contratos.
+
+**Gate 2 — Validação obrigatória**
+
+- [ ] `purchaseService` existe com as 5 funções previstas
+- [ ] `stockService.add()` delega para compra, não para `stock.insert`
+- [ ] `stockService.decrease()` chama `consume_stock_fifo`
+- [ ] `stockService.increase()` usa `restore_stock_for_log` ou `apply_manual_stock_adjustment`
+- [ ] `logService.create()` não deixa log persistido com estoque inconsistente
+- [ ] `logService.update()` segue a ordem da spec
+- [ ] `logService.delete()` restaura antes de deletar
+- [ ] `stockSchema` aceita `pharmacy`, `laboratory`, `notes`
+- [ ] `medicineSchema` aceita `regulatory_category`
+
+**Revalidação da spec neste gate**
+
+O agente deve reler:
+
+- seção **9. Services e contratos**
+- seção **10. Schemas**
+- seção **18. Critérios de aceite**
+
+Pergunta obrigatória de revalidação:
+
+> Se a redesign pedisse “última compra” agora, os services já conseguem responder isso sem olhar para `stock.quantity` remanescente?
+
+Se a resposta for “não”, a Etapa 2 não passou.
+
+---
+
+### Etapa 3 — ANVISA
+
+**Objetivo**
+
+- propagar `regulatory_category` desde o ETL até a persistência do medicamento;
+- garantir que o redesign consiga usar a categoria regulatória para decidir o comportamento do formulário.
+
+**Escopo exato**
+
+- `scripts/process-anvisa.js`
+- `src/features/medications/services/medicineDatabaseService.js`
+- `src/features/medications/components/MedicineForm.jsx`
+- `src/features/protocols/components/TreatmentWizard.jsx`
+
+**Saída esperada**
+
+- `medicineDatabase.json` passa a incluir `regulatoryCategory`;
+- `medicineDatabaseService` expõe o campo;
+- `MedicineForm` e `TreatmentWizard` persistem `regulatory_category`.
+
+**Gate 3 — Validação obrigatória**
+
+- [ ] ETL gera `regulatoryCategory`
+- [ ] serviço ANVISA expõe `regulatoryCategory`
+- [ ] `MedicineForm` persiste `regulatory_category`
+- [ ] `TreatmentWizard` persiste `regulatory_category`
+- [ ] nenhum campo ANVISA antigo foi removido acidentalmente
+
+**Revalidação da spec neste gate**
+
+O agente deve reler:
+
+- seção **11.5 `StockForm.jsx`**
+- seção **12. ANVISA**
+
+Pergunta obrigatória de revalidação:
+
+> A UI redesign terá informação suficiente para decidir, sem heurística extra, quando mostrar ou ocultar o campo de laboratório por compra?
+
+Se a resposta for “não”, a Etapa 3 não passou.
+
+---
+
+### Etapa 4 — Redesign UI
+
+**Objetivo**
+
+- migrar somente a experiência redesign para o novo modelo;
+- fazer a redesign consumir histórico real de compras e última compra correta.
+
+**Escopo exato**
+
+- `src/features/stock/hooks/useStockData.js`
+- `src/features/stock/components/StockForm.jsx`
+- `src/features/stock/components/StockForm.css`
+- `src/features/stock/components/redesign/EntradaHistorico.jsx`
+- `src/features/stock/components/redesign/StockCardRedesign.jsx`
+- qualquer ajuste mínimo em `src/views/redesign/StockRedesign.jsx` estritamente necessário ao wiring
+
+**Saída esperada**
+
+- redesign calcula saldo por `stock`;
+- redesign lê histórico e última compra por `purchaseService`;
+- `EntradaHistorico` renderiza `purchases`;
+- `StockForm` segue a matriz regulatória;
+- não existe inferência de compra real a partir de `notes`.
+
+**Gate 4 — Validação obrigatória**
+
+- [ ] `useStockData()` carrega `lastPurchase` a partir de `purchaseService`
+- [ ] `useStockData()` carrega histórico completo apenas para o modo complexo
+- [ ] `EntradaHistorico.jsx` não usa mais `entries` de `stock` como histórico
+- [ ] `StockCardRedesign.jsx` usa `lastPurchase` derivado de compra real
+- [ ] `StockForm.jsx` implementa a matriz de visibilidade por categoria regulatória
+- [ ] nenhuma regra visual da redesign foi regressada desnecessariamente
+
+**Revalidação da spec neste gate**
+
+O agente deve reler:
+
+- seção **11. Redesign UI only**
+- seção **14. Cálculo de custos**
+
+Pergunta obrigatória de revalidação:
+
+> O fluxo `?redesign=1` já entrega o objetivo final do projeto, mesmo que a UI legacy continue tecnicamente funcionando do jeito antigo?
+
+Se a resposta for “não”, a Etapa 4 não passou.
+
+---
+
+### Etapa 5 — Telegram
+
+**Objetivo**
+
+- garantir que o bot escreva no novo modelo;
+- garantir que leituras continuem corretas sem depender da arquitetura antiga.
+
+**Escopo exato**
+
+- `server/bot/commands/adicionar_estoque.js`
+- revisão mínima de:
+  - `server/bot/commands/estoque.js`
+  - `server/bot/tasks.js`
+  - `server/bot/services/chatbotServerService.js`
+
+**Saída esperada**
+
+- bot deixa de inserir direto em `stock`;
+- bot continua lendo saldo por soma de `stock.quantity`;
+- bot não depende de `notes` para separar compras.
+
+**Gate 5 — Validação obrigatória**
+
+- [ ] `/adicionar_estoque` usa `create_purchase_with_stock`
+- [ ] `/adicionar_estoque` não usa `.from('stock').insert(...)`
+- [ ] `/estoque` continua somando saldo corretamente
+- [ ] tasks/alertas não dependem de prefixos em `notes`
+
+**Revalidação da spec neste gate**
+
+O agente deve reler:
+
+- seção **13. Telegram bot**
+- seção **18. Critérios de aceite**
+
+Pergunta obrigatória de revalidação:
+
+> Depois desta etapa, ainda existe algum writer importante fora do app web que continue alimentando o modelo antigo diretamente?
+
+Se a resposta for “sim”, a Etapa 5 não passou.
+
+---
+
+### Etapa 6 — Validação final, documentação e PR readiness
+
+**Objetivo**
+
+- provar que a entrega está consistente;
+- preparar o pacote final para PR, review Gemini e aprovação humana.
+
+**Escopo exato**
+
+- testes unitários
+- testes de integração
+- docs
+- `.memory/`
+- revisão final da spec vs implementação
+
+**Saída esperada**
+
+- validações verdes;
+- docs atualizadas;
+- memória atualizada;
+- branch pronta para PR.
+
+**Gate 6 — Validação obrigatória**
+
+- [ ] comandos da seção **16.6** passaram
+- [ ] `docs/architecture/DATABASE.md` foi atualizada
+- [ ] `docs/reference/SERVICES.md` foi atualizada
+- [ ] `.memory/journal/YYYY-WWW.md` foi atualizada
+- [ ] checklist da seção **18.1** está todo marcado
+
+**Revalidação final da spec**
+
+O agente deve reler integralmente:
+
+- seção **1. Objetivo**
+- seção **11. Redesign UI only**
+- seção **13. Telegram bot**
+- seção **18. Critérios de aceite**
+
+Pergunta final obrigatória:
+
+> O resultado implementado ainda cumpre simultaneamente os três compromissos centrais desta entrega: redesign-only rollout, ANVISA obrigatório e Telegram no mesmo ciclo?
+
+Se a resposta for “não”, a entrega não deve seguir para PR.
+
 ---
 
 ## 16. Testes obrigatórios
