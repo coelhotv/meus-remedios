@@ -3,7 +3,7 @@
 **Projeto:** Meus Remédios  
 **Tipo:** Especificação de execução detalhada  
 **Data:** 2026-04-02  
-**Status:** Pronto para implementação  
+**Status:** Desenvolvido no PR#443  
 **Entrada base:** `plans/VISION_STOCK_PURCHASES_REFACTOR.md`
 
 ---
