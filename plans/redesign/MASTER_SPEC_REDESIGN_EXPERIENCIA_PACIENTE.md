@@ -38,7 +38,7 @@
 | W13 | Landing, Auth & Onboarding | `WAVE_13_LANDING_AUTH_ONBOARDING_REDESIGN.md` | ✅ MERGED #441 (2026-03-31) | main |
 | W14 | Shared Components & Chatbot | `WAVE_14_SHARED_COMPONENTS_CHATBOT.md` | ✅ MERGED #442 (2026-04-02) | main |
 | W15 | Accessibility & Polish | `WAVE_15_ACCESSIBILITY_POLISH.md` | ⏳ PENDENTE | — |
-| W16 | Rollout Promotion & Legacy Cleanup | (seção 21 abaixo) | ⏳ PENDENTE | — |
+| W16 | Rollout Promotion & Legacy Cleanup | `WAVE_16_ROLLOUT_LEGACY_CLEANUP.md` | ⏳ PENDENTE | — |
 
 **Entregas Completas:**
 - ✅ **W4** (2026-03-25): BottomNavRedesign + Sidebar + App.jsx integration + page transitions (PR #422)
