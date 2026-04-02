@@ -17,7 +17,7 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
     protocols,
     stockSummary,
     isLoading,
-    refetchAll,
+    refresh,
   } = useDashboard()
 
   // 2. States
@@ -74,17 +74,17 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
           setShowProtocolPrompt(true)
           setIsModalOpen(false)
           setEditingMedicine(null)
-          refetchAll({ force: true })
+          refresh({ force: true })
           return // Don't close modal yet after refetch
         }
         setIsModalOpen(false)
         setEditingMedicine(null)
-        refetchAll({ force: true })
+        refresh({ force: true })
       } catch (err) {
         setError('Erro ao salvar medicamento: ' + err.message)
       }
     },
-    [editingMedicine, refetchAll]
+    [editingMedicine, refresh]
   )
 
   const handleDeleteRequest = useCallback((medicine) => {
@@ -96,13 +96,13 @@ export default function MedicinesRedesign({ onNavigateToProtocol }) {
     try {
       await medicineService.delete(deleteTarget.id)
       showSuccess('Medicamento excluído com sucesso!')
-      refetchAll({ force: true })
+      refresh({ force: true })
     } catch (err) {
       setError('Erro ao excluir medicamento: ' + err.message)
     } finally {
       setDeleteTarget(null)
     }
-  }, [deleteTarget, refetchAll])
+  }, [deleteTarget, refresh])
 
   const handleProtocolPromptConfirm = () => {
     setShowProtocolPrompt(false)

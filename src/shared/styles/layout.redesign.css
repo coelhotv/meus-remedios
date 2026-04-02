@@ -679,11 +679,17 @@
 }
 
 /* Treatments header layout — S7.5.6 */
-/* Top bar: título (esq) + busca ANVISA (dir) — W14.5 */
+/* Top bar: título + dropdown (esq) + busca ANVISA (dir) — W14.5 */
 .treatments-redesign__topbar {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.treatments-redesign__topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 @media (min-width: 1024px) {

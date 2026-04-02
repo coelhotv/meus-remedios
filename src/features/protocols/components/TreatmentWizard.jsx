@@ -8,7 +8,7 @@ import {
   REGULATORY_CATEGORIES,
   REGULATORY_CATEGORY_LABELS,
 } from '@schemas/medicineSchema'
-import { FREQUENCIES } from '@schemas/protocolSchema'
+import { FREQUENCIES, FREQUENCY_LABELS } from '@schemas/protocolSchema'
 import { formatLocalDate } from '@utils/dateUtils'
 import { toTitleCase, toSentenceCase } from '@utils/stringUtils'
 import Button from '@shared/components/ui/Button'
@@ -16,13 +16,6 @@ import MedicineAutocomplete from '@medications/components/MedicineAutocomplete'
 import LaboratoryAutocomplete from '@medications/components/LaboratoryAutocomplete'
 import './TreatmentWizard.css'
 
-const FREQUENCY_LABELS = {
-  diario: 'Diário',
-  dias_alternados: 'Dias alternados',
-  semanal: 'Semanal',
-  personalizado: 'Personalizado',
-  quando_necessario: 'Quando necessário',
-}
 
 const slideVariants = {
   enter: (direction) => ({ x: direction > 0 ? 300 : -300, opacity: 0 }),
@@ -61,7 +54,7 @@ export default function TreatmentWizard({
   })
 
   const [protocolData, setProtocolData] = useState({
-    frequency: 'diario',
+    frequency: 'diário',
     time_schedule: ['08:00'],
     dosage_per_intake: 1,
     start_date: formatLocalDate(new Date()),
@@ -690,7 +683,7 @@ export default function TreatmentWizard({
                       therapeutic_class: null,
                     })
                     setProtocolData({
-                      frequency: 'diario',
+                      frequency: 'diário',
                       time_schedule: ['08:00'],
                       dosage_per_intake: 1,
                       start_date: formatLocalDate(new Date()),

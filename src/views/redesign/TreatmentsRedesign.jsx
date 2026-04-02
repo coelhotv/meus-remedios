@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react'
 import { useComplexityMode } from '@dashboard/hooks/useComplexityMode'
+import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import { useTreatmentList } from '@protocols/hooks/useTreatmentList'
 import { medicineService, treatmentPlanService } from '@shared/services'
 import TreatmentTabBar from '@protocols/components/redesign/TreatmentTabBar'
@@ -13,6 +14,9 @@ import TreatmentsComplex from './TreatmentsComplex'
 import Loading from '@shared/components/ui/Loading'
 import TreatmentWizard from '@protocols/components/TreatmentWizard'
 import ProtocolForm from '@protocols/components/ProtocolForm'
+import TreatmentPlanForm from '@protocols/components/TreatmentPlanForm'
+import MedicineForm from '@medications/components/MedicineForm'
+import NewTreatmentDropdown from '@protocols/components/redesign/NewTreatmentDropdown'
 import Modal from '@shared/components/ui/Modal'
 import { protocolService } from '@shared/services'
 import './TreatmentsRedesign.css'
@@ -27,9 +31,12 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
   const [medicines, setMedicines] = useState([])
   const [treatmentPlans, setTreatmentPlans] = useState([])
   const [errorMessage, setErrorMessage] = useState(null)
+  const [medicineCreateOpen, setMedicineCreateOpen] = useState(false)
+  const [planFormOpen, setPlanFormOpen] = useState(false)
 
   // Data + context
   const { mode } = useComplexityMode()
+  const { refresh } = useDashboard()
   const {
     activeItems,
     pausedItems,
@@ -75,6 +82,23 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
     // Wizard: apenas para medicamentos novos da busca ANVISA
     setWizardMedicine(medicine)
     setWizardOpen(true)
+  }
+
+  // Handlers do dropdown [+ Novo]
+  function handleAddMedicine() {
+    // MedicineForm: cadastra apenas o medicamento, sem protocolo
+    setMedicineCreateOpen(true)
+  }
+
+  function handleAddTreatment() {
+    // TreatmentWizard sem preselectedMedicine = step 1 livre (med + dosagem em um fluxo)
+    setWizardMedicine(null)
+    setWizardOpen(true)
+  }
+
+  function handleAddPlan() {
+    // TreatmentPlanForm: cria agrupador de tratamentos
+    setPlanFormOpen(true)
   }
 
   function handleWizardComplete() {
@@ -135,9 +159,17 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
 
   return (
     <div className="treatments-redesign" data-redesign="true">
-      {/* Top bar: título (esq) + busca ANVISA (dir) */}
+      {/* Top bar: título + dropdown (esq) + busca ANVISA (dir) */}
       <div className="treatments-redesign__topbar">
-        <h1 className="treatments-redesign__title">Meus Tratamentos</h1>
+        <div className="treatments-redesign__topbar-left">
+          <h1 className="treatments-redesign__title">Meus Tratamentos</h1>
+          <NewTreatmentDropdown
+            isComplex={isComplex}
+            onAddMedicine={handleAddMedicine}
+            onAddTreatment={handleAddTreatment}
+            onAddPlan={handleAddPlan}
+          />
+        </div>
         <AnvisaSearchBar
           existingProtocols={activeItems}
           onNavigateToProtocol={onNavigateToProtocol}
@@ -146,6 +178,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
           onViewAllMedicines={onNavigate ? () => onNavigate('medicines') : undefined}
         />
       </div>
+
 
       {/* Tab bar — abaixo do título, alinhada à esquerda */}
       <TreatmentTabBar
@@ -190,7 +223,7 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
         />
       )}
 
-      {/* TreatmentWizard modal — apenas para novos protocolos via busca */}
+      {/* TreatmentWizard modal — busca ANVISA (com med pré-selecionado) ou dropdown "+ Medicamento" (livre) */}
       <Modal
         isOpen={wizardOpen}
         onClose={() => {
@@ -198,19 +231,17 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
           setWizardMedicine(null)
         }}
       >
-        {wizardMedicine && (
-          <TreatmentWizard
-            preselectedMedicine={wizardMedicine}
-            onComplete={handleWizardComplete}
-            onCancel={() => {
-              setWizardOpen(false)
-              setWizardMedicine(null)
-            }}
-          />
-        )}
+        <TreatmentWizard
+          preselectedMedicine={wizardMedicine || undefined}
+          onComplete={handleWizardComplete}
+          onCancel={() => {
+            setWizardOpen(false)
+            setWizardMedicine(null)
+          }}
+        />
       </Modal>
 
-      {/* ProtocolForm modal — para editar protocolos existentes */}
+      {/* ProtocolForm modal — editar tratamento existente */}
       <Modal isOpen={formOpen} onClose={handleFormClose}>
         {formProtocol && (
           <ProtocolForm
@@ -226,7 +257,36 @@ export default function TreatmentsRedesign({ onNavigateToProtocol, onNavigate })
         )}
       </Modal>
 
-      {/* S7.5.5: TreatmentPlanForm modal — TODO: implementar quando TreatmentPlanForm estiver disponível */}
+      {/* MedicineForm modal — criar medicamento via dropdown "+ Medicamento" */}
+      <Modal isOpen={medicineCreateOpen} onClose={() => setMedicineCreateOpen(false)}>
+        {medicineCreateOpen && (
+          <MedicineForm
+            onSave={async (data) => {
+              const saved = await medicineService.create(data)
+              setMedicineCreateOpen(false)
+              // Invalida cache do dashboard (usado por MedicinesRedesign) + lista de tratamentos
+              refresh({ force: true })
+              refetch()
+              return saved
+            }}
+            onCancel={() => setMedicineCreateOpen(false)}
+          />
+        )}
+      </Modal>
+
+      {/* TreatmentPlanForm modal — criar/editar plano de tratamento */}
+      <Modal isOpen={planFormOpen} onClose={() => setPlanFormOpen(false)}>
+        {planFormOpen && (
+          <TreatmentPlanForm
+            onSave={async (data) => {
+              await treatmentPlanService.create(data)
+              setPlanFormOpen(false)
+              refetch()
+            }}
+            onCancel={() => setPlanFormOpen(false)}
+          />
+        )}
+      </Modal>
     </div>
   )
 }
