@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 import './SmartAlertsRedesign.css';
 
@@ -21,8 +21,14 @@ export default function SmartAlertsRedesign({ alerts = [], onAction, isComplex =
 
   // Memos — ordenação e filtragem
   const severityOrder = { critical: 0, warning: 1, info: 2 };
-  const sorted = [...alerts].sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
-  const displayed = showAll ? sorted : sorted.slice(0, maxVisible);
+  const sorted = useMemo(
+    () => [...alerts].sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]),
+    [alerts]
+  );
+  const displayed = useMemo(
+    () => (showAll ? sorted : sorted.slice(0, maxVisible)),
+    [showAll, sorted, maxVisible]
+  );
   const hasMore = sorted.length > maxVisible;
 
   // Effects — nenhum necessário neste componente
@@ -58,7 +64,7 @@ export default function SmartAlertsRedesign({ alerts = [], onAction, isComplex =
   };
 
   return (
-    <div className="smart-alerts-redesign">
+    <div className="smart-alerts-redesign" id="smart-alerts-list">
       {displayed.map((alert) => (
         <div
           key={alert.id}
