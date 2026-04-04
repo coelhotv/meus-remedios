@@ -37,11 +37,10 @@ import './StockRedesign.css'
  * @param {object} protocol — protocolo com start_date, end_date, active
  * @returns {'ativa' | 'vencida' | 'vencendo' | 'finalizada'}
  */
-function deriveProtocolStatus(protocol) {
+function deriveProtocolStatus(protocol, now = new Date()) {
   if (!protocol.end_date) return 'ativa'
   const end = parseLocalDate(protocol.end_date)
-  const today = new Date()
-  const daysLeft = (end - today) / 86400000
+  const daysLeft = (end - now) / 86400000
   if (daysLeft < 0) return 'vencida'
   if (daysLeft <= 14) return 'vencendo'
   if (protocol.active === false) return 'finalizada'
