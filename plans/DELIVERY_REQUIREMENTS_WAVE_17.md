@@ -72,29 +72,29 @@ The spec (`WAVE_17_ROLLOUT_LEGACY_CLEANUP.md`) is complete and detailed. This se
 **Reason:** Each sprint depends on previous state. Reordering causes intermediate build failures.
 
 ```
-16.0 (Audit)
+17.0 (Audit)
     ↓
-16.1 (Soft Promotion — 2-week observation) ← SEPARATE DELIVERY, 2 WEEKS PAUSE
+17.1 (Soft Promotion — 2-week observation) ← SEPARATE DELIVERY, 2 WEEKS PAUSE
     ↓
-16.2 (Token Consolidation) ← depends on 16.1 complete + testing
+17.2 (Token Consolidation) ← depends on 17.1 complete + testing
     ↓
-16.3 (Layout Consolidation) ← depends on 16.2
+17.3 (Layout Consolidation) ← depends on 17.2
     ↓
-16.4 (Component CSS Consolidation) ← depends on 16.3
+17.4 (Component CSS Consolidation) ← depends on 17.3
     ↓
-16.5 (App.jsx Simplification) ← depends on 16.4 CSS complete
+17.5 (App.jsx Simplification) ← depends on 17.4 CSS complete
     ↓
-16.6 (Legacy View Deletion) ← depends on 16.5 removing all isRedesignEnabled checks
+17.6 (Legacy View Deletion) ← depends on 17.5 removing all isRedesignEnabled checks
     ↓
-16.7 (Rename Redesign Views) ← depends on 16.6 (legacy gone) + 16.5 (App.jsx no conditionals)
+17.7 (Rename Redesign Views) ← depends on 17.6 (legacy gone) + 17.5 (App.jsx no conditionals)
     ↓
-16.8 (Feature Flag Infrastructure Removal) ← depends on 16.7 (no imports of old names)
+17.8 (Feature Flag Infrastructure Removal) ← depends on 17.7 (no imports of old names)
     ↓
-16.9 (Token & CSS Cleanup) ← depends on 16.8 (no uses of RedesignContext) + grep validation
+17.9 (Token & CSS Cleanup) ← depends on 17.8 (no uses of RedesignContext) + grep validation
     ↓
-16.10 (Onboarding & Final Polish) ← depends on 16.9 (neon tokens gone)
+17.10 (Onboarding & Final Polish) ← depends on 17.9 (neon tokens gone)
     ↓
-16.11 (Validation Final) ← smoke test, coverage, lighthouse, zero-grep
+17.11 (Validation Final) ← smoke test, coverage, lighthouse, zero-grep
 ```
 
 ### Contracts Touched (CON-NNN)
@@ -103,7 +103,7 @@ No direct contract modifications. However, following contracts are affected by d
 
 | Contract | Impact | Mitigation |
 |----------|--------|-----------|
-| **CON-016: useRedesign()** | DELETED in Sprint 16.8. All consumers removed by 16.7. | All imports audited in 16.5 + verified grep in 16.8. |
+| **CON-016: useRedesign()** | DELETED in Sprint 17.8. All consumers removed by 17.7. | All imports audited in 17.5 + verified grep in 17.8. |
 | **CON-006: useCachedQuery()** | Not modified; still exported from same location. | No action required. |
 | **CON-001–CON-015** | Not touched; services/schemas/hooks remain stable. | No action required. |
 
@@ -111,17 +111,17 @@ No direct contract modifications. However, following contracts are affected by d
 
 | Rule | Sprint(s) | Application |
 |------|-----------|-------------|
-| **R-001** (Duplicate File Check) | 16.6 (Legacy Deletion), 16.7 (Rename) | Before deleting any .jsx/.css, grep for all imports; confirm deletions won't break build. |
-| **R-002** (Path Alias Verification) | 16.5 (App.jsx), 16.7 (Rename) | After rename, verify all imports use correct aliases (@shared, @views, etc.). |
-| **R-003** (Import Existence Check) | 16.5 (App.jsx), 16.6 (Delete), 16.7 (Rename) | `npm run build` after each sprint validates no imports to nonexistent files. |
-| **R-010** (Hook Declaration Order) | 16.5 (App.jsx simplification) | If refactoring App.jsx hooks, maintain state→memo→effect→handlers order. |
+| **R-001** (Duplicate File Check) | 17.6 (Legacy Deletion), 17.7 (Rename) | Before deleting any .jsx/.css, grep for all imports; confirm deletions won't break build. |
+| **R-002** (Path Alias Verification) | 17.5 (App.jsx), 17.7 (Rename) | After rename, verify all imports use correct aliases (@shared, @views, etc.). |
+| **R-003** (Import Existence Check) | 17.5 (App.jsx), 17.6 (Delete), 17.7 (Rename) | `npm run build` after each sprint validates no imports to nonexistent files. |
+| **R-010** (Hook Declaration Order) | 17.5 (App.jsx simplification) | If refactoring App.jsx hooks, maintain state→memo→effect→handlers order. |
 
 ### Anti-Patterns to Watch (AP-NNN)
 
 | AP | Risk | Mitigation |
 |----|------|-----------|
 | **AP-001** (Modify duplicate file) | Accidentally fix CSS in legacy `Dashboard.css` after copying to `DashboardRedesign.css` is already main. | Grep before delete; validate which file is actually imported. |
-| **AP-002** (Assume import location) | Assume `MedicinesRedesign.jsx` location without checking; rename to `Medicines` breaks if original `Medicines.jsx` was never deleted. | Grep audit in 16.6; 16.7 rename happens AFTER 16.6 legacy deletion. |
+| **AP-002** (Assume import location) | Assume `MedicinesRedesign.jsx` location without checking; rename to `Medicines` breaks if original `Medicines.jsx` was never deleted. | Grep audit in 17.6; 17.7 rename happens AFTER 17.6 legacy deletion. |
 | **AP-003** (Import nonexistent file) | Build crash if old import path still active. | `npm run build` mandatory after each sprint. |
 
 ### Quality Gates (C4)
@@ -142,7 +142,7 @@ npm run build
 # Agent validation (before final PR merge)
 npm run validate:agent
 
-# Lighthouse (Sprint 16.11 only, but trend throughout)
+# Lighthouse (Sprint 17.11 only, but trend throughout)
 npm run preview  # then manual Lighthouse audit in devtools
 ```
 
@@ -150,38 +150,38 @@ npm run preview  # then manual Lighthouse audit in devtools
 
 | Risk | Probability | Impact | Mitigation | Owned By |
 |------|-------------|--------|-----------|----------|
-| CSS of legacy view referenced by redesign via shared class | HIGH | MEDIUM | Grep before delete; visual test each view | 16.6 gate |
-| Neon token used in shared component not migrated to sanctuary | MEDIUM | MEDIUM | Grep `--neon-` after 16.9; retest components | 16.9 gate |
-| Import of legacy view forgotten in some component | LOW | HIGH | Grep required before 16.6 delete; `npm run build` validates | 16.6 gate |
-| `vite.config.js` manualChunks pointing to deleted files | MEDIUM | LOW | Check build output; `npm run build --analyze` shows chunk membership | 16.7 gate |
-| Regressively enable old neon tokens during testing | LOW | MEDIUM | Grep `--neon-` at end of 16.9; none should exist in src/ | 16.9+16.11 gates |
+| CSS of legacy view referenced by redesign via shared class | HIGH | MEDIUM | Grep before delete; visual test each view | 17.6 gate |
+| Neon token used in shared component not migrated to sanctuary | MEDIUM | MEDIUM | Grep `--neon-` after 17.9; retest components | 17.9 gate |
+| Import of legacy view forgotten in some component | LOW | HIGH | Grep required before 17.6 delete; `npm run build` validates | 17.6 gate |
+| `vite.config.js` manualChunks pointing to deleted files | MEDIUM | LOW | Check build output; `npm run build --analyze` shows chunk membership | 17.7 gate |
+| Regressively enable old neon tokens during testing | LOW | MEDIUM | Grep `--neon-` at end of 17.9; none should exist in src/ | 17.9+17.11 gates |
 
 ### Dependency Map
 
 ```
 spec (WAVE_17_ROLLOUT_LEGACY_CLEANUP.md)
- ├── 16.0 (Audit)
- ├── 16.1 (Soft Promotion)
+ ├── 17.0 (Audit)
+ ├── 17.1 (Soft Promotion)
  │    └── requires: main updated, 2-week observation window
- ├── 16.2 (Tokens)
+ ├── 17.2 (Tokens)
  │    └── requires: tokens.redesign.css fully audited
- ├── 16.3 (Layout)
- │    └── requires: sanctuary.css created (16.2)
- ├── 16.4 (Components)
- │    └── requires: layout.redesign.css scoping removed (16.3)
- ├── 16.5 (App.jsx)
- │    └── requires: all CSS inlined (16.4)
- ├── 16.6 (Delete Views)
- │    └── requires: no isRedesignEnabled in App.jsx (16.5)
- ├── 16.7 (Rename)
- │    └── requires: no legacy views (16.6)
- ├── 16.8 (Delete Context)
- │    └── requires: no imports of old component names (16.7)
- ├── 16.9 (Cleanup CSS)
- │    └── requires: no uses of RedesignContext/neon (16.8)
- ├── 16.10 (Polish)
- │    └── requires: onboarding migrated from neon (16.9)
- └── 16.11 (Validation)
+ ├── 17.3 (Layout)
+ │    └── requires: sanctuary.css created (17.2)
+ ├── 17.4 (Components)
+ │    └── requires: layout.redesign.css scoping removed (17.3)
+ ├── 17.5 (App.jsx)
+ │    └── requires: all CSS inlined (17.4)
+ ├── 17.6 (Delete Views)
+ │    └── requires: no isRedesignEnabled in App.jsx (17.5)
+ ├── 17.7 (Rename)
+ │    └── requires: no legacy views (17.6)
+ ├── 17.8 (Delete Context)
+ │    └── requires: no imports of old component names (17.7)
+ ├── 17.9 (Cleanup CSS)
+ │    └── requires: no uses of RedesignContext/neon (17.8)
+ ├── 17.10 (Polish)
+ │    └── requires: onboarding migrated from neon (17.9)
+ └── 17.11 (Validation)
       └── requires: all previous complete
 ```
 
@@ -207,19 +207,19 @@ Each sprint in Wave 17 has mandatory gates:
 
 | Sprint | Lint | Test | Build | Agent | Notes |
 |--------|------|------|-------|-------|-------|
-| 16.0 | ✓ | ✓ | ✓ | ✓ | Baseline only, no changes |
-| 16.1 | ✓ | ✓ | ✓ | ✓ | 2-week wait before 16.2 |
-| 16.2 | ✓ | ✓ | ✓ | ✓ | `npm run build` validates token moves |
-| 16.3 | ✓ | ✓ | ✓ | ✓ | Layout CSS removed from scoping |
-| 16.4 | ✓ | ✓ | ✓ | ✓ | Component CSS consolidated |
-| 16.5 | ✓ | ✓ | ✓ | ✓ | App.jsx simplified; visual regression test |
-| 16.6 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep validation before delete |
-| 16.7 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep for old names after rename |
-| 16.8 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep for useRedesign/RedesignContext |
-| 16.9 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep for --neon-* |
-| 16.10 | ✓ | ✓ | ✓ | ✓ | Final polish pass |
-| 16.11 | ✓ | ✓ | ✓ | ✓ | Lighthouse + smoke test |
-| 16.12 | ✓ | — | — | — | Release prep (version bump, docs, tag, release notes) |
+| 17.0 | ✓ | ✓ | ✓ | ✓ | Baseline only, no changes |
+| 17.1 | ✓ | ✓ | ✓ | ✓ | 2-week wait before 17.2 |
+| 17.2 | ✓ | ✓ | ✓ | ✓ | `npm run build` validates token moves |
+| 17.3 | ✓ | ✓ | ✓ | ✓ | Layout CSS removed from scoping |
+| 17.4 | ✓ | ✓ | ✓ | ✓ | Component CSS consolidated |
+| 17.5 | ✓ | ✓ | ✓ | ✓ | App.jsx simplified; visual regression test |
+| 17.6 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep validation before delete |
+| 17.7 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep for old names after rename |
+| 17.8 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep for useRedesign/RedesignContext |
+| 17.9 | ✓ | ✓ | ✓ | ✓ | **CRITICAL:** grep for --neon-* |
+| 17.10 | ✓ | ✓ | ✓ | ✓ | Final polish pass |
+| 17.11 | ✓ | ✓ | ✓ | ✓ | Lighthouse + smoke test |
+| 17.12 | ✓ | — | — | — | Release prep (version bump, docs, tag, release notes) |
 
 ### Deliver-Sprint Integration
 
@@ -246,7 +246,7 @@ Branch: feature/redesign/wave-17-rollout
 
 ## P5 — Pre-Delivery Checklist
 
-Before starting Sprint 16.0:
+Before starting Sprint 17.0:
 
 ### Code Readiness
 - [ ] Current `main` has W15 (Accessibility) merged
@@ -324,17 +324,17 @@ grep -r "tokens.redesign\|layout.redesign\|components.redesign" src/ --include="
 
 ---
 
-## Sprint 16.12 — Release v4.0.0 & Major Release Documentation
+## Sprint 17.12 — Release v4.0.0 & Major Release Documentation
 
 **Objetivo:** Formalizar Wave 17 como v4.0.0 major release com documentação completa
 
 ### Pré-condições
-- Sprint 16.11 (Validação Final) completo e aprovado
+- Sprint 17.11 (Validação Final) completo e aprovado
 - Todos os testes passando (0 failures)
 - Lighthouse validado: Accessibility ≥95, Performance ≥90
 - Smoke test visual completado em todas as views
 
-### 16.12.1 — Atualizar versão do projeto
+### 17.12.1 — Atualizar versão do projeto
 
 **Arquivo:** `package.json`
 ```json
@@ -345,7 +345,7 @@ grep -r "tokens.redesign\|layout.redesign\|components.redesign" src/ --include="
 }
 ```
 
-### 16.12.2 — Criar CHANGELOG.md
+### 17.12.2 — Criar CHANGELOG.md
 
 **Novo arquivo:** `CHANGELOG.md` (raiz do projeto)
 
@@ -434,7 +434,7 @@ grep -r "tokens.redesign\|layout.redesign\|components.redesign" src/ --include="
 ---
 ```
 
-### 16.12.3 — Atualizar README.md
+### 17.12.3 — Atualizar README.md
 
 **Arquivo:** `README.md` (adicionar/atualizar seções):
 
@@ -481,7 +481,7 @@ npm run dev  # http://localhost:5173
 ---
 ```
 
-### 16.12.4 — Criar docs/v4_0_0_RELEASE.md
+### 17.12.4 — Criar docs/v4_0_0_RELEASE.md
 
 **Novo arquivo:** Migration guide para usuários
 
@@ -531,7 +531,7 @@ None for users. For developers:
 ---
 ```
 
-### 16.12.5 — Atualizar docs/INDEX.md
+### 17.12.5 — Atualizar docs/INDEX.md
 
 **Arquivo:** `docs/INDEX.md` (update version header)
 
@@ -547,7 +547,7 @@ None for users. For developers:
 - [Migration from v3.x](v4_0_0_RELEASE.md)
 ```
 
-### 16.12.6 — Criar git tag e commit
+### 17.12.6 — Criar git tag e commit
 
 ```bash
 # Stage all changes
@@ -627,7 +627,7 @@ Author: Claude Code DEVFLOW"
 git push origin main --tags
 ```
 
-### 16.12.7 — Criar GitHub Release (opcional)
+### 17.12.7 — Criar GitHub Release (opcional)
 
 ```bash
 # Via GitHub CLI:
@@ -644,7 +644,7 @@ gh release create v4.0.0 \
 # 5. Publish
 ```
 
-### 16.12.8 — Validação Pós-Release
+### 17.12.8 — Validação Pós-Release
 
 ```bash
 # Verify production deployment
@@ -660,7 +660,7 @@ git tag -l v4.0.0  # Should list the tag
 grep "^## \[4.0.0\]" CHANGELOG.md  # Should find v4.0.0 section
 ```
 
-### 16.12.9 — Notificar equipe
+### 17.12.9 — Notificar equipe
 
 - [ ] Announcement em email/Slack to team
 - [ ] Update project status in tracking tool
@@ -669,7 +669,7 @@ grep "^## \[4.0.0\]" CHANGELOG.md  # Should find v4.0.0 section
 
 ---
 
-## Critério de Conclusão Sprint 16.12
+## Critério de Conclusão Sprint 17.12
 
 - [ ] `package.json` versão bumped para 4.0.0
 - [ ] `CHANGELOG.md` criado com v4.0.0 release notes
@@ -687,14 +687,14 @@ grep "^## \[4.0.0\]" CHANGELOG.md  # Should find v4.0.0 section
 ## Summary
 
 **Wave 17 Delivery Process:**
-- **12 sequential sprints** (16.0–16.12):
-  - Sprints 16.0–16.11: Code delivery (cleanup, consolidation, validation)
-  - Sprint 16.12: Release & documentation (v4.0.0 tag, release notes, docs update)
+- **12 sequential sprints** (17.0–17.12):
+  - Sprints 17.0–17.11: Code delivery (cleanup, consolidation, validation)
+  - Sprint 17.12: Release & documentation (v4.0.0 tag, release notes, docs update)
 - **Mandatory order** (dependencies documented)
-- **2-week observation** after soft promotion (16.1)
+- **2-week observation** after soft promotion (17.1)
 - **12 quality gates** (lint/test/build/agent per sprint)
 - **Zero contracts broken** (feature flag infrastructure is intentionally deprecated)
 - **Spec reference:** `plans/backlog-redesign/WAVE_17_ROLLOUT_LEGACY_CLEANUP.md`
 - **DEVFLOW integration:** Use `/deliver-sprint` for each sprint (Option 1 recommended)
 
-**Next Step:** Run `/deliver-sprint` starting with Sprint 16.0 (Audit) → continuous through 16.12 (Release).
+**Next Step:** Run `/deliver-sprint` starting with Sprint 17.0 (Audit) → continuous through 17.12 (Release).
