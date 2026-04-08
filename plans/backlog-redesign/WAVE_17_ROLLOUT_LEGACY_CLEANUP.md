@@ -101,9 +101,9 @@ Com W0–W15 completos, **100% das telas** estão no design Santuário Terapêut
 
 ---
 
-## Sprint 16.0 — Preparação e Auditoria
+## Sprint 17.0 — Preparação e Auditoria
 
-**Branch:** `feature/redesign/wave-16-rollout`
+**Branch:** `feature/redesign/wave-17-rollout`
 
 ### Verificações obrigatórias antes de começar
 
@@ -129,7 +129,7 @@ npm run validate:agent
 
 ---
 
-## Sprint 16.1 — Soft Promotion (Redesign Default)
+## Sprint 17.1 — Soft Promotion (Redesign Default)
 
 **Objetivo:** Fazer o redesign ser ativo por default para todos os usuários novos. A infraestrutura do flag **permanece** para rollback emergencial.
 
@@ -176,16 +176,16 @@ Também remover o import `useRedesign` da linha 8 e a desestruturação na linha
 
 ### Período de observação
 
-Após merge do S16.1: **aguardar 2 semanas** monitorando:
+Após merge do S17.1: **aguardar 2 semanas** monitorando:
 - Erros de console na Vercel (`Runtime Logs`)
 - Feedback via Telegram bot
 - `npm run validate:agent` verde
 
-Se tudo ok, prosseguir para S16.2+. Se houver regressão, reverter `resolveInitialFlag` para `return false` como hotfix.
+Se tudo ok, prosseguir para S17.2+. Se houver regressão, reverter `resolveInitialFlag` para `return false` como hotfix.
 
 ---
 
-## Sprint 16.2 — Token Consolidation
+## Sprint 17.2 — Token Consolidation
 
 **Objetivo:** Mover os tokens Santuário de `tokens.redesign.css` (com scoping `[data-redesign='true']`) para um arquivo global `tokens/sanctuary.css`.
 
@@ -197,10 +197,10 @@ Conteúdo: copiar o bloco inteiro do `[data-redesign='true'] { ... }` de `tokens
 /**
  * sanctuary.css — Tokens globais do design system Santuário Terapêutico
  *
- * Anteriormente scoped em [data-redesign="true"]. A partir da W16,
+ * Anteriormente scoped em [data-redesign="true"]. A partir da W17,
  * estes tokens são a paleta global do produto.
  *
- * Gerado de: tokens.redesign.css durante Wave 16 cleanup.
+ * Gerado de: tokens.redesign.css durante Wave 17 cleanup.
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap');
@@ -412,14 +412,14 @@ Substituir os imports existentes:
 
 /* ADICIONAR no lugar (antes dos demais imports): */
 @import './tokens/sanctuary.css';
-@import './layout.redesign.css';  /* mantém por enquanto — será inline no S16.3 */
+@import './layout.redesign.css';  /* mantém por enquanto — será inline no S17.3 */
 ```
 
-**Nota:** `tokens.css` (neon) continua importado por ora — será removido no S16.8 após todas as referências a `--neon-*` serem eliminadas das views legacy.
+**Nota:** `tokens.css` (neon) continua importado por ora — será removido no S17.8 após todas as referências a `--neon-*` serem eliminadas das views legacy.
 
 ---
 
-## Sprint 16.3 — Layout Consolidation
+## Sprint 17.3 — Layout Consolidation
 
 **Objetivo:** Mover as regras de `layout.redesign.css` para `index.css` sem scoping `[data-redesign='true']`.
 
@@ -462,7 +462,7 @@ Remover o `style={{ paddingBottom: isRedesignEnabled ? undefined : '80px' }}` do
 
 ---
 
-## Sprint 16.4 — Component CSS Consolidation
+## Sprint 17.4 — Component CSS Consolidation
 
 **Objetivo:** Mover as regras de `components.redesign.css` para os CSS individuais de cada componente, removendo o wrapper `[data-redesign='true']`.
 
@@ -518,7 +518,7 @@ Varrer `components.redesign.css` completo e mapear cada seção para o arquivo C
 
 ---
 
-## Sprint 16.5 — App.jsx Simplification
+## Sprint 17.5 — App.jsx Simplification
 
 **Objetivo:** Remover todas as branches `isRedesignEnabled ?` de `App.jsx`. Resultado: código 40% menor, zero conditional logic de UI.
 
@@ -540,7 +540,7 @@ const BottomNav = lazy(() => import('@shared/components/ui/BottomNav'))  // ou i
 // E os imports estáticos no final do bloco de imports:
 import BottomNav from '@shared/components/ui/BottomNav'  // linha ~38
 
-// MANTER os redesign lazy imports MAS atualizar paths após rename (S16.7):
+// MANTER os redesign lazy imports MAS atualizar paths após rename (S17.7):
 const Dashboard = lazy(() => import('./views/redesign/Dashboard'))
 const MedicinesView = lazy(() => import('./views/redesign/Medicines'))
 const StockView = lazy(() => import('./views/redesign/Stock'))
@@ -552,7 +552,7 @@ const EmergencyView = lazy(() => import('./views/redesign/Emergency'))
 const ConsultationView = lazy(() => import('./views/redesign/Consultation'))
 ```
 
-**Nota de nomenclatura:** Como os nomes dos arquivos após rename conflitam com as views legacy ainda em `src/views/`, usar nomes de variável diferentes no lazy import (ex: `MedicinesView`, `StockView`) até que os arquivos legacy sejam deletados. Após S16.6, podem ser renomeados para os nomes simples.
+**Nota de nomenclatura:** Como os nomes dos arquivos após rename conflitam com as views legacy ainda em `src/views/`, usar nomes de variável diferentes no lazy import (ex: `MedicinesView`, `StockView`) até que os arquivos legacy sejam deletados. Após S17.6, podem ser renomeados para os nomes simples.
 
 ### Mudança 2: Remover `useRedesign` import e uso
 
@@ -770,7 +770,7 @@ Remover o import `{ RedesignProvider }` da linha 41.
 
 ---
 
-## Sprint 16.6 — Legacy View Removal
+## Sprint 17.6 — Legacy View Removal
 
 **Objetivo:** Deletar as views legacy de `src/views/` que não são mais referenciadas.
 
@@ -822,7 +822,7 @@ rm src/shared/components/ui/BottomNav.css
 - `src/views/Protocols.jsx` — sem equivalente redesign, manter
 - `src/views/Settings.jsx` — verificar se SettingsRedesign já substitui completamente
 
-**Sobre `src/views/Settings.jsx`:** Após S16.1 (remoção do toggle), confirmar que `SettingsRedesign.jsx` tem paridade funcional (todas as mesmas opções), então deletar `Settings.jsx`.
+**Sobre `src/views/Settings.jsx`:** Após S17.1 (remoção do toggle), confirmar que `SettingsRedesign.jsx` tem paridade funcional (todas as mesmas opções), então deletar `Settings.jsx`.
 
 ### Atualizar `vite.config.js` após deletar views legacy
 
@@ -838,7 +838,7 @@ As referências em `manualChunks` precisam ser atualizadas:
 'feature-stock': ['./src/views/Stock.jsx'],     // ← arquivo deletado
 'feature-landing': ['./src/views/Landing.jsx'], // ← mantido
 
-// DEPOIS (após rename em S16.7):
+// DEPOIS (após rename em S17.7):
 'feature-history': [
   './src/views/redesign/HealthHistory.jsx',
   './src/features/adherence/components/AdherenceHeatmap.jsx',
@@ -850,7 +850,7 @@ As referências em `manualChunks` precisam ser atualizadas:
 
 ---
 
-## Sprint 16.7 — Rename & Reorganize Redesign Views
+## Sprint 17.7 — Rename & Reorganize Redesign Views
 
 **Objetivo:** Remover o sufixo "Redesign" de todos os nomes de arquivos de views e componentes.
 
@@ -984,7 +984,7 @@ Se encontrar, corrigir cada import.
 
 ---
 
-## Sprint 16.8 — Feature Flag Infrastructure Removal
+## Sprint 17.8 — Feature Flag Infrastructure Removal
 
 **Objetivo:** Deletar o sistema de feature flag completamente.
 
@@ -1020,7 +1020,7 @@ Linha 11 menciona `[data-redesign="true"]`. Atualizar o comentário:
 
 ---
 
-## Sprint 16.9 — Token & CSS Cleanup
+## Sprint 17.9 — Token & CSS Cleanup
 
 **Objetivo:** Remover os arquivos `.redesign.css` após confirmar que todos os tokens/regras foram migrados, e limpar as variáveis `--neon-*` de `tokens.css`.
 
@@ -1073,7 +1073,7 @@ Se houver arquivos em `src/views/redesign/` ou `src/shared/components/` usando `
 
 ### Remover CSS de componentes legacy que ficaram órfãos
 
-Após deletar as views legacy no S16.6, verificar se os CSS delas foram deletados junto. Se não:
+Após deletar as views legacy no S17.6, verificar se os CSS delas foram deletados junto. Se não:
 
 ```bash
 # Verificar CSS órfãos (sem JSX correspondente)
@@ -1096,7 +1096,7 @@ Garantir que `@import './tokens/sanctuary.css'` está presente e é o primeiro i
 
 ---
 
-## Sprint 16.10 — Onboarding & Final Polish
+## Sprint 17.10 — Onboarding & Final Polish
 
 **Objetivo:** Verificar estado do onboarding e fazer cleanup final.
 
@@ -1143,7 +1143,7 @@ Após todas as mudanças, varrer o arquivo e remover comentários que mencionam 
 
 ---
 
-## Sprint 16.11 — Validação Final
+## Sprint 17.11 — Validação Final
 
 ### Build de Produção
 
@@ -1165,7 +1165,7 @@ npm run validate:agent
 
 Critérios:
 - Zero test failures
-- Zero mocks de `useRedesign` remanescentes (devem ter sido removidos no S16.8)
+- Zero mocks de `useRedesign` remanescentes (devem ter sido removidos no S17.8)
 
 ### Grep de Limpeza Final
 
@@ -1205,7 +1205,7 @@ Navegar manualmente por cada view no browser:
 
 ---
 
-## Critério de Conclusão Wave 16
+## Critério de Conclusão Wave 17
 
 - [ ] `npm run validate:agent` passa (zero erros, zero falhas)
 - [ ] `npm run build` completa sem warnings de imports ausentes
@@ -1230,7 +1230,7 @@ Navegar manualmente por cada view no browser:
 | Import de view legacy esquecido em algum componente de feature | Baixa | Alto | Grep obrigatório antes de deletar; build produção valida imports |
 | `vite.config.js` manualChunks desatualizado causa chunk incorreto | Média | Baixo | Verificar output de `npm run build` — chunks sem conteúdo geram warning |
 | Onboarding com estilos neon não migrados | Baixa | Baixo | Verificar grep antes de remover neon tokens |
-| Regressão de acessibilidade com token de placeholder desaparecendo | Baixa | Médio | Lighthouse check obrigatório no S16.11 |
+| Regressão de acessibilidade com token de placeholder desaparecendo | Baixa | Médio | Lighthouse check obrigatório no S17.11 |
 
 ---
 
@@ -1238,9 +1238,9 @@ Navegar manualmente por cada view no browser:
 
 1. **Esta wave tem alta blast radius.** Commite por sprint, não tudo de uma vez. Cada sprint deve deixar o app em estado deployável.
 
-2. **Ordem dos sprints é obrigatória.** S16.2 (tokens) deve preceder S16.4 (component CSS) que deve preceder S16.5 (App.jsx). Reorganizar a ordem causará quebras intermediárias.
+2. **Ordem dos sprints é obrigatória.** S17.2 (tokens) deve preceder S17.4 (component CSS) que deve preceder S17.5 (App.jsx). Reorganizar a ordem causará quebras intermediárias.
 
-3. **S16.1 é um sprint separado com período de observação.** Não merge S16.2+ junto com S16.1 no mesmo PR.
+3. **S17.1 é um sprint separado com período de observação.** Não merge S17.2+ junto com S17.1 no mesmo PR.
 
 4. **Antes de deletar QUALQUER arquivo:** executar o grep de verificação de imports. Um arquivo deletado sem atualizar imports quebra o build imediatamente.
 
