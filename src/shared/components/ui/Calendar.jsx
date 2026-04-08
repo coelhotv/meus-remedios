@@ -191,7 +191,9 @@ export default function Calendar({
 
   // Preencher dias vazios no inicio
   for (let i = 0; i < firstDay; i++) {
-    days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>)
+    days.push(
+      <div key={`empty-${i}`} className="calendar-day empty" role="presentation" aria-hidden="true"></div>
+    )
   }
 
   const today = new Date()
@@ -226,12 +228,25 @@ export default function Calendar({
     const adherenceDayData = adherenceData[dateKey]
     const heatColor = getDayColor(adherenceDayData)
     const hasHeatColor = heatColor !== 'transparent'
+    const ariaLabelParts = [
+      `${d} de ${monthNames[month]} de ${year}`,
+      isToday ? 'Hoje' : null,
+      isSelected ? 'Selecionado' : null,
+      hasHeatColor
+        ? `Adesão ${adherenceDayData?.adherence ?? 0} por cento, ${adherenceDayData?.taken ?? 0} de ${adherenceDayData?.expected ?? 0} doses`
+        : hasLog
+          ? 'Com registro de dose'
+          : 'Sem registros',
+    ].filter(Boolean)
 
     days.push(
       <div
         key={d}
         className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${hasLog ? 'has-log' : ''} ${hasHeatColor ? 'has-adherence' : ''}`}
         style={hasHeatColor ? { '--heat-color': heatColor } : undefined}
+        role="gridcell"
+        aria-selected={isSelected}
+        aria-label={ariaLabelParts.join('. ')}
         onClick={() => onDayClick && onDayClick(dayDate)}
       >
         <span className="day-number">{d}</span>
@@ -311,7 +326,7 @@ export default function Calendar({
   return (
     <div className="calendar-widget">
       {renderControls()}
-      <div className="calendar-weekdays">
+      <div className="calendar-weekdays" aria-hidden="true">
         <div>Dom</div>
         <div>Seg</div>
         <div>Ter</div>
@@ -322,6 +337,8 @@ export default function Calendar({
       </div>
       <div
         className="calendar-grid"
+        role="grid"
+        aria-label={`Calendário de ${monthNames[month]} de ${year}`}
         onTouchStart={enableSwipe ? handleTouchStart : undefined}
         onTouchMove={enableSwipe ? handleTouchMove : undefined}
         onTouchEnd={enableSwipe ? handleTouchEnd : undefined}

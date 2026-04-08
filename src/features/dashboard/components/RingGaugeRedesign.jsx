@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const RADIUS = 46
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
@@ -19,9 +19,7 @@ export default function RingGaugeRedesign({
   const { svgSize, strokeWidth, fontSize, labelSize } = SIZE_MAP[size] || SIZE_MAP.medium
   const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE
   const isClickable = Boolean(onClick)
-
-  const prefersReducedMotion =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const prefersReducedMotion = useReducedMotion()
 
   return (
     <div
