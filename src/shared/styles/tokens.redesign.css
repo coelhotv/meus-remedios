@@ -22,9 +22,10 @@
 
 /* ============================================
    W0: DESIGN TOKENS — SANTUÁRIO TERAPÊUTICO
-   Todos os tokens abaixo só ativam com [data-redesign="true"]
+   CSS variables are global by design (no scoping).
+   All redesign tokens available to :root.
    ============================================ */
-{
+:root {
   /* ============================================
      BRAND COLORS — Verde Saúde (Primary)
      ============================================ */
@@ -384,7 +385,7 @@
    As propriedades de tipografia base são aplicadas ao próprio .app-container
    e herdam para todos os filhos dentro da app.
    ============================================ */
-{
+.app-container[data-redesign="true"] {
   font-family: var(--font-body);
   font-weight: var(--font-weight-regular);
   font-size: var(--text-body-lg);
