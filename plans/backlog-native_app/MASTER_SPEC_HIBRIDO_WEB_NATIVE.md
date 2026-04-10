@@ -1,8 +1,8 @@
 # Exec Spec Definitivo: Estrategia Hibrida Web + Native
 
 > **Status:** Documento autoritativo para a evolucao dual stack do projeto
-> **Data:** 2026-03-30
-> **Escopo:** Meus Remedios v3.3.0
+> **Data:** 2026-04-10 (rev.1 — atualizado pos-redesign v4.0.0)
+> **Escopo:** Meus Remedios v4.0.0
 > **Supersede:** `plans/archive_old/native_app/analise-migracao-pwa-para-react-native.md`, `plans/archive_old/native_app/PLANO_EXECUTIVO_REACT_NATIVE.md`, `plans/archive_old/native_app/ARQUITETURA_RN_MONOREPO.md`, `plans/archive_old/native_app/EXEC_SPEC_RN_FASE1_CORE.md`, `plans/archive_old/native_app/EXEC_SPEC_RN_FASE2_MOBILE.md`
 
 ---
@@ -23,7 +23,7 @@ Este documento existe para impedir que agentes futuros:
 - assumam que o projeto ja possui PWA completa com service worker e web push ativos
 - substituam Telegram por push nativo antes da arquitetura de notificacao estar desacoplada
 
-> **Addenda normativos complementares:** esta master spec agora deve ser lida em conjunto com `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md` e `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`.
+> **Addenda normativos complementares:** esta master spec agora deve ser lida em conjunto com `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DESIGN_TOKENS.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEPLOY_VERCEL_MONOREPO.md`, `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_TESTING_MOBILE.md` e `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_HUMAN_DEPENDENCIES.md`.
 
 ### Mapa documental oficial
 
@@ -42,6 +42,11 @@ Os documentos oficiais e ativos deste projeto hybrid/native passam a ser:
 - `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
 - `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
 - `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DESIGN_TOKENS.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEPLOY_VERCEL_MONOREPO.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_TESTING_MOBILE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_HUMAN_DEPENDENCIES.md`
+- `plans/backlog-native_app/PLANO_EXECUCAO_HIBRIDO.md`
 
 Regra:
 
@@ -85,24 +90,31 @@ Mas a execucao correta para este repositorio e:
 
 ## 3. Baseline Real Validada do Repositorio
 
-### 3.1. Fatos validados no codigo em 2026-03-29
+### 3.1. Fatos validados no codigo em 2026-04-10
 
-- O projeto esta em `v3.3.0`, nao `v3.1.0`
+- O projeto esta em `v4.0.0` (pos-redesign "Santuario Terapeutico"), nao `v3.3.0`
 - A app web atual e uma **SPA view-based**, sem router web formal
 - A navegacao atual depende de `setCurrentView` e shell central em `src/App.jsx`
+- O redesign v4.0.0 introduziu:
+  - **Sanctuary Design System** com tokens de cor, spacing, tipografia e radii
+  - **Motion Language** com `motionConstants.js` (6 arquetipos de animacao via `framer-motion`)
+  - **Navigation Shell** com `BottomNavRedesign` (mobile) + `Sidebar` (desktop)
+  - 17 waves de redesign (W01-W17), todas concluidas
 - A base atual possui aproximadamente:
-  - `120` componentes JSX
+  - `120+` componentes JSX
   - `39` views
-  - `128` arquivos CSS
-  - `60` arquivos de services
-  - `20` hooks
+  - `128+` arquivos CSS (incluindo tokens Sanctuary)
+  - `60+` arquivos de services
+  - `20+` hooks
   - `17` schemas
   - `8` utils globais
-- O projeto usa `framer-motion` em muitos componentes visuais
+- O projeto usa `framer-motion` em muitos componentes visuais (classificado como `PLATFORM_WEB`)
 - O cliente Supabase atual depende de `import.meta.env`
 - O cache atual depende de `window.localStorage`
 - Existem servicos que dependem diretamente de `document`, `navigator`, `window`, `localStorage`
 - O cron de notificacoes atual esta acoplado a Telegram
+- **Anomalia pre-existente:** `expo` consta como dependencia no `package.json` raiz sem scaffold correspondente — deve ser removido na Fase 0
+- **Dependencias web-only relevantes para inventario:** `framer-motion`, `jspdf`, `html2canvas`, `groq-sdk`, `react-virtuoso`
 
 ### 3.2. Inconsistencias documentais importantes
 
@@ -252,7 +264,8 @@ meus-remedios/
 │   ├── core/                 # puro
 │   ├── shared-data/          # compartilhado com injecao de dependencias
 │   ├── storage/              # contratos e implementacoes de persistencia
-│   └── config/               # leitura de env/config por plataforma
+│   ├── config/               # leitura de env/config por plataforma
+│   └── design-tokens/        # tokens visuais agnosticos (cores, spacing, radii, tipografia)
 └── package.json              # root com scripts retrocompativeis
 ```
 
@@ -267,7 +280,8 @@ meus-remedios/
 │   ├── core/
 │   ├── shared-data/
 │   ├── storage/
-│   └── config/
+│   ├── config/
+│   └── design-tokens/
 ├── api/
 └── server/bot/
 ```
@@ -327,6 +341,24 @@ Conteudo:
 - loader web
 - loader native
 - normalizacao de chaves
+
+### `packages/design-tokens`
+
+Conteudo permitido:
+
+- tokens de cor em formato JS/JSON (ex: `colors.js`)
+- tokens de spacing, radii, tipografia
+- constantes de design agnosticas de plataforma
+- funcoes utilitarias de cor (lighten, alpha) se puras
+
+Conteudo proibido:
+
+- CSS custom properties (ficam na web)
+- `StyleSheet` (fica no mobile)
+- `framer-motion` ou qualquer motion config
+- dependencia de `react`, `react-dom`, `react-native`
+
+Nota: os tokens Sanctuary existentes na web (`src/shared/styles/`) sao a fonte da verdade. Este pacote extrai a camada agnostica; cada plataforma converte para seu formato nativo. Ver addendum `EXEC_SPEC_HIBRIDO_ADDENDUM_DESIGN_TOKENS.md`.
 
 ---
 
@@ -469,6 +501,21 @@ Arquivos/classes nessa categoria devem permanecer na plataforma atual ou ser ree
 - todos os arquivos `.css`
 - `src/shared/components/pwa/**`
 - qualquer UX baseada em `framer-motion`
+- `src/shared/styles/motionConstants.js` (motion language e web-only)
+
+## 7.5. Compartilhavel como design tokens agnosticos
+
+Mover para `packages/design-tokens` (Fase 2 ou apos):
+
+- valores de cor do Sanctuary design system (extraidos de `src/shared/styles/`)
+- valores de spacing, radii, tipografia
+- constantes semanticas (ex: `STOCK_LEVELS` cores ja estao em schemas)
+
+O que **nao** entra:
+
+- CSS custom properties (`--sanctuary-*`) — ficam na web
+- motion constants — ficam na web
+- `StyleSheet` objects — ficam no mobile
 
 ---
 
@@ -594,7 +641,7 @@ Telegram so pode deixar de ser default quando:
 - Auth storage: `expo-secure-store`
 - Persistencia geral: `@react-native-async-storage/async-storage`
 - Notificacoes: `expo-notifications`
-- Testes mobile: `Jest` + `@testing-library/react-native`
+- Testes mobile: `Jest` + `@testing-library/react-native` (ver addendum `EXEC_SPEC_HIBRIDO_ADDENDUM_TESTING_MOBILE.md`)
 
 ## 10.2. Escolhas proibidas no MVP
 
@@ -943,6 +990,37 @@ Consumido obrigatoriamente por:
 - Fase 6
 - Fase 7
 
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_DESIGN_TOKENS.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 2 (extracao de tokens agnosticos para `packages/design-tokens`)
+- Fase 5 (consumo dos tokens no MVP mobile)
+
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_DEPLOY_VERCEL_MONOREPO.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 1 (workspaces sem quebrar deploy)
+- Fase 4 (EAS + Vercel env)
+- Fase 7 (migracao web para `apps/web`)
+
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_TESTING_MOBILE.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 4 (setup inicial Jest + RNTL)
+- Fase 5 (testes de componentes e fluxos)
+- Fase 6 (testes de dispatcher e canais)
+
+### `EXEC_SPEC_HIBRIDO_ADDENDUM_HUMAN_DEPENDENCIES.md`
+
+Consumido obrigatoriamente por:
+
+- Fase 0 (checklist de pre-requisitos humanos)
+- Fase 4 (contas e credenciais)
+- Fase 6 (distribuicao beta)
+
 ---
 
 ## 13. PR Slicing Obrigatorio
@@ -1047,5 +1125,9 @@ As decisoes abaixo ficam congeladas ate nova revisao explicita:
 - `notification_devices` guarda tokens/dispositivos
 - `StyleSheet + AsyncStorage` no MVP
 - `apps/web` so depois de estabilizacao
+- `packages/design-tokens` para tokens visuais agnosticos (Sanctuary)
+- `expo` removido do root `package.json` antes da Fase 1
+- `Jest + @testing-library/react-native` para testes mobile
+- deploy Vercel coexiste com monorepo via `vercel.json` configurado
 
 Qualquer agente que queira alterar uma dessas decisoes deve abrir uma ADR nova e justificar por que este documento deixou de ser a melhor opcao.

@@ -38,10 +38,71 @@ Esta fase **nao faz**:
 
 Antes de executar esta fase, o agente deve ler tambem:
 
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_TESTING_MOBILE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_HUMAN_DEPENDENCIES.md`
+
+### Estrategia de rollback para migracao de jobs
+
+A migracao de `checkReminders`, `checkStockAlerts` e `runDailyDigest` para o dispatcher multicanal e a mudanca mais arriscada do projeto — se o dispatcher falhar, lembretes param de funcionar.
+
+**Estrategia obrigatoria de migracao incremental:**
+
+1. **Sprint 1:** Criar dispatcher e canais, mas NAO conectar aos jobs existentes
+2. **Sprint 2:** Migrar apenas `checkReminders` (job mais importante) para o dispatcher
+3. **Sprint 3:** Manter Telegram funcional via dispatcher (mesmo caminho, nova arquitetura)
+4. **Sprint 4:** Adicionar canal `mobile_push` ao dispatcher
+5. **Sprint 5:** Migrar demais jobs (`checkStockAlerts`, `runDailyDigest`)
+
+**Rollback por job:** cada job migrado deve ter uma flag de rollback:
+
+```js
+// Em cada job migrado:
+const USE_DISPATCHER = process.env.USE_NOTIFICATION_DISPATCHER !== 'false'
+
+if (USE_DISPATCHER) {
+  await dispatcher.dispatch({ userId, kind, payload, channels })
+} else {
+  // fallback direto para Telegram (codigo legado)
+  await sendTelegramNotification(chatId, message)
+}
+```
+
+A flag `USE_NOTIFICATION_DISPATCHER` default para `true`. Se houver problema em producao, o maintainer pode desativar imediatamente via env var no Vercel.
+
+**Criterio para remover o fallback:** apos 2 semanas de operacao estavel com dispatcher ativo em todos os jobs.
+
+### Especificacao de `device_fingerprint`
+
+O campo `device_fingerprint` em `notification_devices` e metadado auxiliar para ajudar o usuario a identificar seus dispositivos. NAO e usado como identidade tecnica.
+
+Composicao recomendada:
+
+```js
+function generateDeviceFingerprint() {
+  return {
+    os: Platform.OS,                    // 'ios' | 'android'
+    osVersion: Platform.Version,
+    deviceModel: Device.modelName,      // expo-device
+    appVersion: Application.nativeApplicationVersion, // expo-application
+  }
+}
+```
+
+O fingerprint e armazenado como JSON string no campo `device_name` da tabela `notification_devices`. Nao requer dependencia adicional alem de `expo-device` e `expo-application` (ja incluidos no Expo).
+
+### Limites do Expo Push Service (free tier)
+
+O Expo Push Service nao tem limites publicados para projetos individuais, mas:
+
+- requests sao rate-limited por IP/projeto
+- tokens expiram e precisam ser refreshed
+- em escala, pode ser necessario migrar para APNs/FCM direto
+
+Para o beta interno (< 50 usuarios), o free tier e suficiente. Registrar como divida tecnica para revisao pos-beta se o projeto escalar.
 
 ### Resultado esperado
 

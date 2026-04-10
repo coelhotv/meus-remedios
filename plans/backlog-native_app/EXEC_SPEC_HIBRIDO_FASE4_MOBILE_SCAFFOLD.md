@@ -34,9 +34,42 @@ Esta fase **nao faz**:
 
 Antes de executar esta fase, o agente deve ler tambem:
 
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_RELEASE_ENGINEERING.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_PRIVACY_PERMISSIONS_COMPLIANCE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_TESTING_MOBILE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEPLOY_VERCEL_MONOREPO.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_HUMAN_DEPENDENCIES.md`
+
+### Pre-requisitos humanos obrigatorios
+
+Antes de iniciar esta fase, o maintainer deve ter completado os itens da Fase 4 no addendum `HUMAN_DEPENDENCIES.md`. Em particular:
+
+- conta Expo/EAS configurada
+- decisao sobre contas Apple/Google (necessarias para Fase 6, mas setup pode comecar aqui)
+- `bundleIdentifier` e `androidPackage` definidos (mesmo se placeholders)
+
+### Babel config obrigatoria
+
+O Expo requer `babel.config.js` na raiz de `apps/mobile/`. O template default do Expo pode nao reconhecer aliases dos packages compartilhados via workspace.
+
+Configuracao prescritiva:
+
+```js
+// apps/mobile/babel.config.js
+module.exports = function (api) {
+  api.cache(true)
+  return {
+    presets: ['babel-preset-expo'],
+  }
+}
+```
+
+A resolucao de `@meus-remedios/*` packages e feita pelo Metro (via `metro.config.js` com `watchFolders`), nao pelo Babel. O `babel.config.js` precisa apenas do preset Expo.
+
+### Zod no contexto Metro
+
+O projeto usa Zod v4 com ESM. Metro precisa transpilar `@meus-remedios/core` (que depende de `zod`). Confirmar que `zod` esta em `transformIgnorePatterns` correto no `metro.config.js` e no `jest.config.js` mobile.
 
 ---
 
