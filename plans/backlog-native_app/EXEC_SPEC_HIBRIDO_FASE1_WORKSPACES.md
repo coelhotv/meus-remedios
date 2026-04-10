@@ -344,6 +344,30 @@ Workspaces primeiro, orquestracao depois.
 
 ---
 
+## 8.1. Riscos de toolchain com workspaces
+
+### Husky e lint-staged
+
+O `package.json` atual tem `private: true` e usa `husky` com `lint-staged` via script `prepare`. Ao adicionar `workspaces`:
+
+- `npm install` muda o comportamento de hoisting
+- `husky install` pode falhar se o `.husky/` nao estiver na raiz correta
+- `lint-staged` pode nao encontrar arquivos se o working directory mudar
+
+**Validacao obrigatoria:** apos adicionar workspaces, confirmar que `git commit` com lint-staged continua funcionando.
+
+### Vitest globs
+
+Os configs Vitest (`vitest.config.js`, `vitest.critical.config.js`, `vitest.smoke.config.js`) usam globs como `src/**/*.test.js`. Com workspaces, o npm pode criar symlinks em `node_modules` que confundem a resolucao de modulos.
+
+**Validacao obrigatoria:** confirmar que os globs de teste NAO capturam `packages/*/src/**` involuntariamente. Se necessario, adicionar `exclude: ['packages/**']` nas configs Vitest.
+
+### Vercel deploy
+
+Ver addendum `EXEC_SPEC_HIBRIDO_ADDENDUM_DEPLOY_VERCEL_MONOREPO.md` — seção 3.1.
+
+---
+
 ## 9. Sprint interno 1.5 - Validacao do comportamento retrocompativel
 
 ### Objetivo
@@ -437,6 +461,10 @@ Erro:
 - [ ] `npm run dev` continua funcionando
 - [ ] `npm run build` continua funcionando
 - [ ] `npm run validate:agent` continua funcionando
+- [ ] `husky` + `lint-staged` continuam funcionando em `git commit`
+- [ ] globs Vitest nao capturam `packages/**` indevidamente
+- [ ] deploy Vercel preview funcional (validar com PR)
+- [ ] `buildCommand`, `outputDirectory` e `installCommand` confirmados em `vercel.json`
 
 ---
 

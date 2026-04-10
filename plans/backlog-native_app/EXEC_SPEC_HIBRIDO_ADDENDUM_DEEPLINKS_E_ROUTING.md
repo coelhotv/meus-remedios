@@ -176,23 +176,62 @@ Notificacao ou deep link pode chegar quando:
 
 Nesses casos:
 
-1. salvar intent em memoria de app ou storage leve aprovado
+1. salvar intent em storage aprovado (nao apenas memoria)
 2. levar o usuario ao login/bootstrap correto
 3. apos sessao valida, consumir intent uma unica vez
 
-Exemplo:
+### Distincao por estado do app
+
+**Background (app em memoria):** variavel em memoria e suficiente.
+
+**Cold start (app foi terminado):** a variavel em memoria nao existe. O intent deve ser:
+
+- capturado via `expo-notifications` `getLastNotificationResponseAsync()` no bootstrap
+- ou persistido em `AsyncStorage` com chave efemera (`pending_intent`) e TTL curto (5 min)
+
+**Cold start deslogado:** o intent deve ser persistido em `AsyncStorage` antes de mostrar login, e consumido apos autenticacao bem-sucedida.
+
+### Implementacao correta
 
 ```js
-let pendingIntent = null
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-export function setPendingIntent(intent) {
-  pendingIntent = intent
+const PENDING_INTENT_KEY = 'pending_intent'
+const INTENT_TTL_MS = 5 * 60 * 1000 // 5 minutos
+
+// In-memory fallback para o caso background
+let memoryIntent = null
+
+export async function setPendingIntent(intent) {
+  memoryIntent = intent
+  await AsyncStorage.setItem(PENDING_INTENT_KEY, JSON.stringify({
+    intent,
+    savedAt: Date.now(),
+  }))
 }
 
-export function consumePendingIntent() {
-  const intent = pendingIntent
-  pendingIntent = null
-  return intent
+export async function consumePendingIntent() {
+  // Tentar memoria primeiro (background case)
+  if (memoryIntent) {
+    const intent = memoryIntent
+    memoryIntent = null
+    await AsyncStorage.removeItem(PENDING_INTENT_KEY)
+    return intent
+  }
+
+  // Fallback para storage (cold start case)
+  const raw = await AsyncStorage.getItem(PENDING_INTENT_KEY)
+  if (!raw) return null
+
+  await AsyncStorage.removeItem(PENDING_INTENT_KEY)
+
+  try {
+    const { intent, savedAt } = JSON.parse(raw)
+    if (Date.now() - savedAt > INTENT_TTL_MS) return null // expirado
+    return intent
+  } catch {
+    return null
+  }
 }
 ```
 

@@ -267,12 +267,78 @@ Campos nao aceitaveis por padrao:
 
 ---
 
-## 11. Itens adiados
+## 11. LGPD e legislacao aplicavel
+
+O projeto lida com dados de saude de usuarios brasileiros. A LGPD (Lei Geral de Protecao de Dados) classifica dados de saude como **dados sensiveis** (Art. 5, II) com protecoes adicionais (Art. 11).
+
+### Implicacoes praticas para este projeto
+
+- **Consentimento explicito** e necessario para tratar dados de saude (Art. 11, I)
+- O app deve informar ao usuario **quais dados coleta** e **para que finalidade**
+- O usuario tem direito de **acessar, corrigir e excluir** seus dados (Art. 18)
+- **Incidentes de seguranca** envolvendo dados sensiveis devem ser comunicados (Art. 48)
+
+### Acoes obrigatorias para beta
+
+- [ ] Tela ou secao de "Privacidade" no app explicando dados coletados
+- [ ] Mecanismo de exclusao de conta (pode ser manual via suporte no beta)
+- [ ] Dados de saude nao saem do Supabase sem necessidade operacional
+
+### Acoes obrigatorias para publicacao em loja
+
+- [ ] Termos de uso em portugues
+- [ ] Politica de privacidade acessivel por URL publica
+- [ ] Mapeamento formal de dados coletados vs finalidade
+
+**Nota:** o projeto NAO precisa de DPO (Data Protection Officer) enquanto for uso pessoal/familiar. Se escalar para terceiros, reavaliar.
+
+---
+
+## 12. App Store Privacy Nutrition Label (iOS)
+
+A Apple exige que todo app declare suas praticas de dados no App Store Connect antes da publicacao. Para apps de saude, isso e especialmente escrutinado.
+
+### Categorias de dados que o projeto coleta
+
+| Categoria Apple | Dado | Vinculado ao usuario? | Usado para tracking? |
+|----------------|------|----------------------|---------------------|
+| Health & Fitness | Medicamentos, doses, horarios | Sim | Nao |
+| Health & Fitness | Adesao a tratamento | Sim | Nao |
+| Identifiers | User ID (Supabase Auth) | Sim | Nao |
+| Contact Info | Email (login) | Sim | Nao |
+| Usage Data | Nenhum (sem analytics de terceiros) | N/A | Nao |
+
+### Acoes obrigatorias antes do TestFlight
+
+- [ ] Preencher Privacy Nutrition Label no App Store Connect
+- [ ] Declarar que o app NAO faz tracking (nao usa IDFA, nao tem SDKs de analytics de terceiros)
+- [ ] Confirmar categoria "Health & Fitness" como primaria
+
+### Google Play Data Safety
+
+O Google Play tem formulario equivalente (Data Safety section). Preencher com os mesmos dados antes de publicar no Google Internal Testing.
+
+---
+
+## 13. Auditoria de logs existentes
+
+Antes de publicar o mobile, auditar os logs do backend para confirmar que PPC-003 e respeitado:
+
+```bash
+rg -n "(medicine|remedio|dose|treatment|protocolo)" server/bot/ api/ --glob '!node_modules'
+```
+
+Se logs com nomes de medicamentos ou doses forem encontrados em texto aberto, sanitizar antes da Fase 6.
+
+---
+
+## 14. Itens adiados
 
 - biometria e seus textos
 - HealthKit/Google Fit e seus consentimentos
-- politica completa de publicacao em loja
+- politica completa de publicacao em loja publica (pos-beta)
 - telemetria mais sofisticada com governanca formal
+- DPO e compliance formal (so se escalar para terceiros)
 
 ---
 

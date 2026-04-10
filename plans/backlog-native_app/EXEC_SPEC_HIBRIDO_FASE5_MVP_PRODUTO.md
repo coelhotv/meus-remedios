@@ -51,8 +51,34 @@ Nenhum agente deve antecipar `expo-notifications` nesta fase.
 
 Antes de executar esta fase, o agente deve ler tambem:
 
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
-- `plans/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DEEPLINKS_E_ROUTING.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_OFFLINE_SYNC.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_TESTING_MOBILE.md`
+- `plans/backlog-native_app/EXEC_SPEC_HIBRIDO_ADDENDUM_DESIGN_TOKENS.md`
+
+### Gap de contrato: vinculo Telegram no mobile
+
+O mecanismo atual de geracao de token de vinculo Telegram vive no bot (`server/bot/`). O mobile precisa de um endpoint acessivel para:
+
+1. Gerar um token de vinculacao unico para o usuario
+2. Exibir o token/link na tela de configuracoes
+3. Confirmar que o vinculo foi estabelecido
+
+**Opcoes (decidir antes de implementar sprint de Telegram):**
+
+- **Opcao A:** Supabase RPC/Edge Function que gera o token
+- **Opcao B:** Endpoint em `api/` (ex: rota nova em router existente)
+- **Opcao C:** Gerar token diretamente no client (se a logica for simples)
+
+O agente deve consultar o maintainer antes de implementar. Se nenhuma decisao for tomada, o vinculo Telegram pode ser adiado para pos-MVP sem impacto critico.
+
+### Testes mobile nesta fase
+
+Seguir o addendum `TESTING_MOBILE.md` secao 4.2. A cobertura obrigatoria inclui componentes criticos, hooks wrappers e fluxo de login/logout.
+
+### Design tokens no MVP
+
+O mobile deve consumir tokens de `@meus-remedios/design-tokens` para cores e spacing. Seguir addendum `DESIGN_TOKENS.md` secao 4.2.
 
 ---
 
