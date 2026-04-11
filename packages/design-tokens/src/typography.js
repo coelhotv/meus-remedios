@@ -13,8 +13,16 @@
  */
 
 // ============================================
-// FONT FAMILIES
+// FONT FAMILIES (Web-focused; mobile must adapt)
 // ============================================
+// NOTE: The 'primary' font stack is Web-specific (comma-separated fallback chain).
+// React Native does NOT support fallback chains; it requires a single fontFamily name.
+// Mobile consumers should:
+// 1. Map to a single installed font on the device
+// 2. Use fontFamilies.primary.split(',')[0].trim() to get the first choice
+// 3. Or define mobile-specific font families separately
+// Web will try: system-ui → -apple-system → BlinkMacSystemFont → 'Segoe UI' → ... → sans-serif
+// Mobile should use the system default or explicitly installed font (e.g., 'System' for iOS)
 const fontFamilies = {
   primary:
     "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
@@ -22,8 +30,12 @@ const fontFamilies = {
 }
 
 // ============================================
-// FONT SIZES - Based on Tailwind CSS scale
+// FONT SIZES - Based on Tailwind CSS scale (rem units)
 // ============================================
+// NOTE: All font sizes use 'rem' units (relative to 16px root).
+// For mobile consumption, convert: fontSize_px = parseFloat(value) * 16
+// Examples: '0.75rem' = 12px, '1rem' = 16px, '1.5rem' = 24px
+// Mobile StyleSheet should parse and multiply by 16 (or the device's base font size)
 const fontSizes = {
   '2xs': '0.625rem',
   xs: '0.75rem',

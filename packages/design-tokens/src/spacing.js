@@ -5,15 +5,25 @@
  * Extracted from src/shared/styles/tokens/spacing.css
  *
  * These tokens are platform-agnostic and can be consumed by:
- * - Web (CSS custom properties)
+ * - Web (CSS custom properties or direct string values with rem units)
  * - Mobile (React Native dimensions and spacing)
+ *
+ * IMPORTANT NOTE ON UNITS:
+ * - Values use 'rem' which is relative to browser's root font-size (default 16px)
+ * - React Native does NOT understand 'rem' or 'px' CSS units
+ * - For mobile consumption, convert: parseInt(value) or multiply by base font-size (16)
+ * - Example: '1rem' = 16 pixels; '0.5rem' = 8 pixels
+ * - Mobile StyleSheet should parse: const px = parseFloat(value) * 16 // assuming 16px root
  *
  * @module @meus-remedios/design-tokens/spacing
  */
 
 // ============================================
-// SPACING SCALE - Based on Tailwind CSS
+// SPACING SCALE - Based on Tailwind CSS (in rem units)
 // ============================================
+// NOTE: All values use 'rem' units (relative to 16px root font-size).
+// For mobile/React Native, convert rem to pixels: value_px = rem_multiplier * 16
+// Examples: '0.25rem' = 4px, '1rem' = 16px, '2rem' = 32px
 const spaceScale = {
   0: '0',
   px: '1px',

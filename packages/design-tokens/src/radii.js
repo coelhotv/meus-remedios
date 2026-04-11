@@ -5,8 +5,15 @@
  * Extracted from src/shared/styles/tokens/borders.css
  *
  * These tokens are platform-agnostic and can be consumed by:
- * - Web (CSS custom properties)
- * - Mobile (React Native borderRadius)
+ * - Web (CSS custom properties or direct string values with rem/px units)
+ * - Mobile (React Native borderRadius — numeric values only)
+ *
+ * IMPORTANT NOTE ON UNITS:
+ * - Tokens use 'rem' and 'px' string formats (CSS syntax)
+ * - React Native requires numeric values (no unit strings)
+ * - For mobile consumption, parse and convert: parseInt(value) or parseFloat(value) * 16
+ * - Example: '0.5rem' = 8px; '1px' = 1 pixel
+ * - Mobile should strip unit suffix and use numeric value directly
  *
  * @module @meus-remedios/design-tokens/radii
  */
@@ -37,8 +44,11 @@ const borderStyles = {
 }
 
 // ============================================
-// BORDER RADIUS - Base Scale
+// BORDER RADIUS - Base Scale (rem units, convert for mobile)
 // ============================================
+// NOTE: All radius values use 'rem' units (e.g., '0.5rem' = 8px).
+// For React Native, parse: parseInt(value) or parseFloat(value) * 16
+// Mobile consumer should map: 'sm' → 2, 'md' → 6, 'lg' → 8, etc.
 const radiusScale = {
   none: '0',
   0: '0',
