@@ -108,8 +108,12 @@ const healthScoreColors = {
 }
 
 // ============================================
-// GLOW EFFECTS
+// GLOW EFFECTS (WEB-ONLY: box-shadow CSS syntax)
 // ============================================
+// NOTE: These tokens use CSS box-shadow syntax for shadow effects.
+// They are Web-only and cannot be consumed directly by React Native.
+// Mobile platforms should use native shadow APIs (shadowColor, shadowOffset, shadowOpacity).
+// Reference: ADR-013 — Shadow System (ambient shadows over neon glows).
 const glowEffects = {
   cyan: '0 0 10px rgba(6, 182, 212, 0.5)',
   pink: '0 0 10px rgba(236, 72, 153, 0.5)',
@@ -122,8 +126,15 @@ const glowEffects = {
 }
 
 // ============================================
-// CONTEXTUAL GLOW EFFECTS
+// CONTEXTUAL GLOW EFFECTS (WEB-ONLY: box-shadow CSS syntax)
 // ============================================
+// NOTE: Derived from brand and status colors with contextual opacity/blur.
+// Web-only tokens using CSS box-shadow syntax.
+// Mobile platforms: map to native shadow APIs or alternative visual treatments.
+// Values are derived from:
+// - brand.primary (#ec4899) for primary effects
+// - brand.secondary (#06b6d4) for secondary effects
+// - status.success (#10b981), status.warning (#f59e0b), status.error (#ef4444) for state effects
 const contextualGlowEffects = {
   hoverPrimary: '0 0 20px rgba(236, 72, 153, 0.3)',
   hoverSecondary: '0 0 20px rgba(6, 182, 212, 0.3)',
@@ -143,12 +154,17 @@ const contextualGlowEffects = {
 // ============================================
 // STATE COLORS
 // ============================================
+// NOTE: State colors are derived from brand and neutral base colors.
+// primary states (hover, active, focus, loading) use brand.primary (#ec4899) at varying opacity.
+// disabled uses black at 10% opacity for accessibility.
+// These values should be updated if brand.primary changes.
+// Mobile platforms can map these directly (string values are color names + opacity).
 const stateColors = {
-  hover: 'rgba(236, 72, 153, 0.1)',
-  active: 'rgba(236, 72, 153, 0.2)',
-  focus: 'rgba(236, 72, 153, 0.3)',
-  disabled: 'rgba(0, 0, 0, 0.1)',
-  loading: 'rgba(236, 72, 153, 0.5)',
+  hover: 'rgba(236, 72, 153, 0.1)',      // brand.primary at 10% opacity
+  active: 'rgba(236, 72, 153, 0.2)',     // brand.primary at 20% opacity
+  focus: 'rgba(236, 72, 153, 0.3)',      // brand.primary at 30% opacity
+  disabled: 'rgba(0, 0, 0, 0.1)',        // black at 10% opacity
+  loading: 'rgba(236, 72, 153, 0.5)',    // brand.primary at 50% opacity
 }
 
 // ============================================
@@ -163,34 +179,48 @@ const opacityValues = {
 }
 
 // ============================================
-// GLASSMORPHISM LEVELS
+// GLASSMORPHISM LEVELS (PARTIAL WEB-ONLY: blur property uses CSS syntax)
 // ============================================
+// NOTE: The 'blur' property uses CSS `blur(Npx)` syntax and is Web-only.
+// The 'bg' and 'border' opacity values are portable to mobile (RGBA strings).
+// Mobile platforms should:
+// 1. Use bg and border opacity values directly for glassmorphic background colors
+// 2. Implement blur/frosted glass effects using platform-native APIs
+//    (e.g., react-native-blur or custom shaders)
+// 3. Or omit blur effects on mobile if not critical to UX
 const glassmorphism = {
   light: {
     bg: 'rgba(255, 255, 255, 0.03)',
     border: 'rgba(255, 255, 255, 0.05)',
-    blur: 'blur(8px)',
+    blur: 'blur(8px)',  // Web-only: CSS backdrop-filter compatible
   },
   default: {
     bg: 'rgba(255, 255, 255, 0.05)',
     border: 'rgba(255, 255, 255, 0.1)',
-    blur: 'blur(12px)',
+    blur: 'blur(12px)',  // Web-only: CSS backdrop-filter compatible
   },
   heavy: {
     bg: 'rgba(255, 255, 255, 0.08)',
     border: 'rgba(255, 255, 255, 0.15)',
-    blur: 'blur(16px)',
+    blur: 'blur(16px)',  // Web-only: CSS backdrop-filter compatible
   },
   hero: {
     bg: 'rgba(255, 255, 255, 0.1)',
     border: 'rgba(255, 255, 255, 0.2)',
-    blur: 'blur(20px)',
+    blur: 'blur(20px)',  // Web-only: CSS backdrop-filter compatible
   },
 }
 
 // ============================================
-// GRADIENT BACKGROUNDS
+// GRADIENT BACKGROUNDS (WEB-ONLY: linear-gradient CSS syntax)
 // ============================================
+// NOTE: These tokens use CSS linear-gradient syntax for background layers.
+// They are Web-only and cannot be consumed directly by React Native.
+// Mobile platforms should either:
+// 1. Use gradient libraries like react-native-linear-gradient
+// 2. Extract the color array and coordinates separately
+// 3. Implement alternative visual treatments
+// Each gradient specifies: direction (135deg), start color + opacity, end color + opacity.
 const gradients = {
   insight:
     'linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(176, 0, 255, 0.1) 100%)',
