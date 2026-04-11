@@ -10,7 +10,12 @@
  * @module cachedServices
  */
 
-import { cachedQuery, invalidateCache, generateCacheKey } from '@shared/utils/queryCache'
+import {
+  invalidateCache,
+  generateCacheKey,
+} from '@shared/hooks/useCachedQuery'
+import { webQueryCache } from '@shared/platform/query-cache/webQueryCache'
+const cachedQuery = (key, fetcher, opts) => webQueryCache.cachedQuery(key, fetcher, opts)
 import { medicineService } from '@medications/services/medicineService'
 import { protocolService } from '@protocols/services/protocolService'
 import { stockService } from '@stock/services/stockService'

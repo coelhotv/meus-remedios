@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo, useEffect } from 'react'
 import { useCachedQueries } from '@shared/hooks/useCachedQuery'
-import { invalidateCache } from '@shared/utils/queryCache'
+import { invalidateCache } from '@shared/hooks/useCachedQuery'
 import { onAuthStateChange } from '@shared/utils/supabase'
 import {
   calculateAdherenceStats,
