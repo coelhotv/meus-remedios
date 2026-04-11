@@ -58,11 +58,11 @@ function getDailyDoseRate(frequency, timesPerDay) {
 function getEffectiveDays(protocol, periodStart, periodEnd) {
   // Sem start_date: assume ativo desde o início do período
   const protocolStartDate = protocol.start_date
-    ? new Date(protocol.start_date + 'T00:00:00')
+    ? parseLocalDate(protocol.start_date)
     : periodStart
 
   // Sem end_date: assume protocolo ainda ativo
-  const protocolEndDate = protocol.end_date ? new Date(protocol.end_date + 'T23:59:59') : periodEnd
+  const protocolEndDate = protocol.end_date ? parseLocalDate(protocol.end_date) : periodEnd
 
   // Interseção entre período do protocolo e período de análise
   const effectiveStart = new Date(Math.max(protocolStartDate, periodStart))
@@ -358,7 +358,7 @@ export function calculateDaysRemaining(totalQuantity, dailyIntake) {
  * @param {Array} protocols - Protocolos ativos
  * @returns {Object} { takenDoses: [], missedDoses: [], scheduledDoses: [] }
  */
-export function calculateDosesByDate(date, logs, protocols) {
+export function calculateDosesByDate(date, logs, protocols, now = new Date()) {
   if (!date || !protocols || protocols.length === 0) {
     return { takenDoses: [], missedDoses: [], scheduledDoses: [] }
   }
@@ -510,39 +510,12 @@ export function calculateDosesByDate(date, logs, protocols) {
       // Dose não tomada - verificar se é perdida (passado) ou agendada (futuro)
       const [scheduledHour, scheduledMinute] = expectedDose.scheduledTime.split(':').map(Number)
 
-      // Obter data/hora atual em Brazil (UTC-3)
-      const now = new Date()
-      const brazilTimeString = now.toLocaleString('en-US', {
-        timeZone: 'America/Sao_Paulo',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
+      // Construir data/hora agendada com parseLocalDate para timezone consistency
+      const scheduledDateTime = parseLocalDate(date)
+      scheduledDateTime.setHours(scheduledHour, scheduledMinute, 0, 0)
 
-      // Parse Brazil time string (format: MM/DD/YYYY, HH:mm)
-      const [datePart, timePart] = brazilTimeString.split(', ')
-      const [month, day, year] = datePart.split('/')
-      const [currentHour, currentMinute] = timePart.split(':').map(Number)
-
-      // Comparar datas primeiro (YYYY-MM-DD format)
-      const currentDateStr = `${year}-${month}-${day}`
-      let isPast
-
-      if (date < currentDateStr) {
-        // Data da dose é anterior ao dia atual no Brazil = perdida
-        isPast = true
-      } else if (date > currentDateStr) {
-        // Data da dose é futura no Brazil = agendada
-        isPast = false
-      } else {
-        // Mesma data no Brazil - comparar horários
-        const scheduledTimeMinutes = scheduledHour * 60 + scheduledMinute
-        const currentTimeMinutes = currentHour * 60 + currentMinute
-        isPast = scheduledTimeMinutes < currentTimeMinutes
-      }
+      // Comparar com horário atual
+      const isPast = scheduledDateTime < now
 
       const baseDose = {
         id: `${isPast ? 'missed' : 'scheduled'}-${expectedDose.protocolId}-${expectedDose.scheduledTime}`,
