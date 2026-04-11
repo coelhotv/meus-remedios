@@ -5,7 +5,7 @@
  * @module adherenceLogic
  */
 
-import { isProtocolActiveOnDate } from './dateUtils.js'
+import { isProtocolActiveOnDate, parseLocalDate } from './dateUtils.js'
 
 // Re-export para manter compatibilidade com imports existentes
 export { isProtocolActiveOnDate }
