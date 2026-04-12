@@ -1,7 +1,7 @@
 # AP-H04 — Monorepo workspace: peer dependency mismatch on new subpackage
 
 **Trigger count:** 1 (2026-04-12)  
-**Related Rule:** R-145 (monorepo workspace dependency alignment)  
+**Related Rule:** R-158 (monorepo workspace dependency ranges)  
 **Wave:** H4 (Mobile Scaffold, Phase 4)  
 **Pack:** infra-api  
 
@@ -140,7 +140,7 @@ npm view jest-expo@53.0.0 peerDependencies
 
 ## Related Rules
 
-- **R-145** (monorepo dependency alignment): always use compatible ranges in workspace packages
+- **R-158** (monorepo dependency ranges): always use compatible ranges in workspace packages
 - **R-090** (Vercel function budget): check function count before/after new packages
 - **R-091** (serverless file structure): use `_` prefixes for utilities, not function endpoints
 
