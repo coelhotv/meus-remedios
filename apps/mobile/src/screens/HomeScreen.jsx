@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { supabase } from '../platform/supabase/nativeSupabaseClient'
+import { signOut } from '../platform/auth/authService'
 import { ROUTES } from '../app/routes'
 
 export default function HomeScreen({ navigation }) {
@@ -13,15 +14,21 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user: u } }) => {
-      setUser(u)
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setUser(data.user)
+      } else {
+        setUser(null)
+      }
       setLoading(false)
     })
   }, [])
 
   async function handleLogout() {
-    await supabase.auth.signOut()
-    navigation.replace(ROUTES.LOGIN)
+    const { success } = await signOut()
+    if (success) {
+      navigation.replace(ROUTES.LOGIN)
+    }
   }
 
   if (loading) {

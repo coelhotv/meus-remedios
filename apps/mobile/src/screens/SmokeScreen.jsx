@@ -18,7 +18,7 @@ export default function SmokeScreen({ navigation }) {
       name: 'Losartana',
       dosage_per_pill: 50,
       dosage_unit: 'mg',
-      type: 'comprimido',
+      type: 'medicamento',
     })
 
     if (parsed.success) {

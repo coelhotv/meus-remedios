@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { supabase } from '../platform/supabase/nativeSupabaseClient'
+import { signInWithEmail, signOut } from '../platform/auth/authService'
 import { ROUTES } from '../app/routes'
 
 export default function LoginScreen({ navigation }) {
@@ -25,23 +25,16 @@ export default function LoginScreen({ navigation }) {
   const [error, setError] = useState(null)
 
   async function handleLogin() {
-    if (!email.trim() || !password.trim()) {
-      setError('Preencha email e senha.')
-      return
-    }
-
     setLoading(true)
     setError(null)
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    })
+    // Validação delegada ao authService com Zod
+    const { success, error: loginError } = await signInWithEmail(email, password)
 
     setLoading(false)
 
-    if (authError) {
-      setError(authError.message)
+    if (!success) {
+      setError(loginError)
       return
     }
 
@@ -76,6 +69,7 @@ export default function LoginScreen({ navigation }) {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoCapitalize="none"
           editable={!loading}
         />
 
