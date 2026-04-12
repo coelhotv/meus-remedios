@@ -2144,16 +2144,14 @@
       "npm",
       "build"
     ],
-    "priority": "high",
-    "trigger_count": 0,
-    "last_triggered": null,
     "review_due": "2027-04-12",
-    "lifecycle_status": "active",
     "layer": "warm",
     "bootstrap_default": false,
     "pack": "infra-api",
-    "incidents_prevented": 1,
     "related_ap": "AP-H04",
-    "introduced_wave": "H4"
+    "incident_count": 1,
+    "last_referenced": "2026-04-12",
+    "status": "active",
+    "has_detail": true
   }
 ]
