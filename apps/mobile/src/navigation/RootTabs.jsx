@@ -11,6 +11,7 @@ import TodayScreen from '../features/dashboard/screens/TodayScreen'
 import TreatmentsStack from './TreatmentsStack'
 import StockScreen from '../features/stock/screens/StockScreen'
 import ProfileStack from './ProfileStack'
+import { colors } from '../shared/styles/tokens'
 
 const Tab = createBottomTabNavigator()
 
@@ -35,11 +36,11 @@ export default function RootTabs() {
             fontSize: 12,
             fontWeight: '600', // ADR-023: mínimo 400
           },
-          tabBarActiveTintColor: '#2563eb',
-          tabBarInactiveTintColor: '#94a3b8',
+          tabBarActiveTintColor: colors.tab.activeTint,
+          tabBarInactiveTintColor: colors.tab.inactiveTint,
           tabBarStyle: {
-            backgroundColor: '#ffffff',
-            borderTopColor: '#e2e8f0',
+            backgroundColor: colors.tab.bgDefault,
+            borderTopColor: colors.border.default,
             borderTopWidth: 1,
             paddingBottom: 4,
             paddingTop: 4,
