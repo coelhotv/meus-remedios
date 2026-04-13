@@ -149,91 +149,113 @@ global.SharedArrayBuffer = global.SharedArrayBuffer || global.ArrayBuffer
   })
 })()
 
-// URLSearchParams patch para Hermes — .set/.append/.delete lançam "not implemented"
-// Supabase usa URLSearchParams.set() para construir query strings internas
+// URLSearchParams patch para Hermes — substituição incondicional + debug logs
+// O detection probe anterior falhou: Hermes não lança em teste sintético mas
+// lança em uso real pelo Supabase. Solução: substituir sempre por implementação
+// pura ES5 (sem class, sem Symbol.iterator — máxima compatibilidade Hermes).
 ;(function patchURLSearchParams() {
-  if (typeof URLSearchParams === 'undefined') return
+  console.log('[polyfill] URLSearchParams nativo:', typeof URLSearchParams,
+    typeof URLSearchParams !== 'undefined' ? typeof URLSearchParams.prototype.set : 'N/A')
 
-  function isNotImplemented(methodName) {
-    try {
-      const p = new URLSearchParams()
-      p[methodName]('_test', '_val')
-      return false
-    } catch (e) {
-      return typeof e.message === 'string' && e.message.includes('not implemented')
+  function HermesURLSearchParams(init) {
+    this._pairs = []
+    if (!init) return
+    if (typeof init === 'string') {
+      var qs = init.charAt(0) === '?' ? init.slice(1) : init
+      var parts = qs.split('&')
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i]
+        if (!part) continue
+        var eq = part.indexOf('=')
+        if (eq < 0) {
+          this._pairs.push([decodeURIComponent(part), ''])
+        } else {
+          this._pairs.push([
+            decodeURIComponent(part.slice(0, eq)),
+            decodeURIComponent(part.slice(eq + 1)),
+          ])
+        }
+      }
+    } else if (Array.isArray(init)) {
+      for (var j = 0; j < init.length; j++) {
+        this._pairs.push([String(init[j][0]), String(init[j][1])])
+      }
+    } else if (init && typeof init === 'object') {
+      var keys = Object.keys(init)
+      for (var k = 0; k < keys.length; k++) {
+        this._pairs.push([String(keys[k]), String(init[keys[k]])])
+      }
     }
   }
 
-  // Se .set funciona, os outros métodos também funcionam — nada a fazer
-  if (!isNotImplemented('set')) return
+  HermesURLSearchParams.prototype.append = function (name, value) {
+    this._pairs.push([String(name), String(value)])
+  }
 
-  // Substituir URLSearchParams por implementação pura que funciona no Hermes
-  // A classe nativa existe mas os métodos de mutação não estão implementados.
-  class WorkingURLSearchParams {
-    constructor(init) {
-      this._map = []
-      if (!init) return
-      if (typeof init === 'string') {
-        const qs = init.startsWith('?') ? init.slice(1) : init
-        qs.split('&').forEach(pair => {
-          if (!pair) return
-          const idx = pair.indexOf('=')
-          if (idx < 0) {
-            this._map.push([decodeURIComponent(pair), ''])
-          } else {
-            this._map.push([
-              decodeURIComponent(pair.slice(0, idx)),
-              decodeURIComponent(pair.slice(idx + 1)),
-            ])
-          }
-        })
-      } else if (Array.isArray(init)) {
-        init.forEach(([k, v]) => this._map.push([String(k), String(v)]))
-      } else if (typeof init === 'object') {
-        Object.entries(init).forEach(([k, v]) => this._map.push([String(k), String(v)]))
-      }
-    }
-
-    append(name, value) { this._map.push([String(name), String(value)]) }
-
-    set(name, value) {
-      const k = String(name)
-      const v = String(value)
-      const idx = this._map.findIndex(([key]) => key === k)
-      if (idx >= 0) {
-        this._map[idx] = [k, v]
-        this._map = this._map.filter(([key], i) => key !== k || i === idx)
+  HermesURLSearchParams.prototype.set = function (name, value) {
+    var k = String(name)
+    var v = String(value)
+    var found = false
+    var result = []
+    for (var i = 0; i < this._pairs.length; i++) {
+      if (this._pairs[i][0] === k) {
+        if (!found) { result.push([k, v]); found = true }
       } else {
-        this._map.push([k, v])
+        result.push(this._pairs[i])
       }
     }
-
-    get(name) {
-      const entry = this._map.find(([k]) => k === String(name))
-      return entry ? entry[1] : null
-    }
-
-    getAll(name) {
-      return this._map.filter(([k]) => k === String(name)).map(([, v]) => v)
-    }
-
-    has(name) { return this._map.some(([k]) => k === String(name)) }
-
-    delete(name) { this._map = this._map.filter(([k]) => k !== String(name)) }
-
-    toString() {
-      return this._map
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-        .join('&')
-    }
-
-    forEach(cb) { this._map.forEach(([k, v]) => cb(v, k, this)) }
-
-    keys() { return this._map.map(([k]) => k)[Symbol.iterator]() }
-    values() { return this._map.map(([, v]) => v)[Symbol.iterator]() }
-    entries() { return this._map[Symbol.iterator]() }
-    [Symbol.iterator]() { return this.entries() }
+    if (!found) result.push([k, v])
+    this._pairs = result
   }
 
-  global.URLSearchParams = WorkingURLSearchParams
+  HermesURLSearchParams.prototype.get = function (name) {
+    var k = String(name)
+    for (var i = 0; i < this._pairs.length; i++) {
+      if (this._pairs[i][0] === k) return this._pairs[i][1]
+    }
+    return null
+  }
+
+  HermesURLSearchParams.prototype.getAll = function (name) {
+    var k = String(name)
+    var out = []
+    for (var i = 0; i < this._pairs.length; i++) {
+      if (this._pairs[i][0] === k) out.push(this._pairs[i][1])
+    }
+    return out
+  }
+
+  HermesURLSearchParams.prototype.has = function (name) {
+    var k = String(name)
+    for (var i = 0; i < this._pairs.length; i++) {
+      if (this._pairs[i][0] === k) return true
+    }
+    return false
+  }
+
+  HermesURLSearchParams.prototype.delete = function (name) {
+    var k = String(name)
+    var result = []
+    for (var i = 0; i < this._pairs.length; i++) {
+      if (this._pairs[i][0] !== k) result.push(this._pairs[i])
+    }
+    this._pairs = result
+  }
+
+  HermesURLSearchParams.prototype.toString = function () {
+    var out = []
+    for (var i = 0; i < this._pairs.length; i++) {
+      out.push(encodeURIComponent(this._pairs[i][0]) + '=' + encodeURIComponent(this._pairs[i][1]))
+    }
+    return out.join('&')
+  }
+
+  HermesURLSearchParams.prototype.forEach = function (cb) {
+    for (var i = 0; i < this._pairs.length; i++) {
+      cb(this._pairs[i][1], this._pairs[i][0], this)
+    }
+  }
+
+  global.URLSearchParams = HermesURLSearchParams
+  console.log('[polyfill] URLSearchParams substituído — set:', typeof HermesURLSearchParams.prototype.set)
 })()
