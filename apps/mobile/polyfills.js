@@ -3,22 +3,6 @@
 // SharedArrayBuffer não existe em Hermes/JSC no ambiente React Native
 global.SharedArrayBuffer = global.SharedArrayBuffer || global.ArrayBuffer
 
-// ─── DIAGNÓSTICO P1: confirmar se url.href setter persiste no Hermes ───────
-// Auditoria Passo 1 — resultado esperado nos logs:
-//   "after" == "example.com/path" → setter href IGNORADO → confirma hipótese A → implementar Estratégia A
-//   "after" == "changed.com/newpath" → setter funciona → bug está noutro lado → investigar Passo 2b
-;(function diagHrefSetter() {
-  if (typeof URL === 'undefined') { console.log('[diag-href] URL undefined — skip'); return }
-  var u = new URL('https://example.com/path')
-  console.log('[diag-href] before:', u.href)
-  u.href = 'https://changed.com/newpath'
-  console.log('[diag-href] after:', u.href)
-  // Teste adicional: setter search
-  var u2 = new URL('https://example.com/path')
-  u2.search = '?foo=bar'
-  console.log('[diag-search] after search setter:', u2.href)
-})()
-// ────────────────────────────────────────────────────────────────────────────
 
 // URL patch para Hermes RN/Expo Go: new URL() existe mas getters como
 // .protocol, .hostname, etc. lançam "not implemented" (Hermes parcial).
@@ -152,140 +136,126 @@ global.SharedArrayBuffer = global.SharedArrayBuffer || global.ArrayBuffer
   define('username', function () { return '' })
   define('password', function () { return '' })
 
-  // searchParams — getter NÃO aplicado aqui; será substituído por LiveURLSearchParams abaixo
-  // (o getter simples criava um objeto desvinculado — mutações via .set/.append eram perdidas)
+  // searchParams — getter NÃO aplicado aqui; patchSearchParamsViaToString abaixo assume controlo
 })()
 
-// LiveURLSearchParams — vincula mutações de volta a url.href
-// Problema: postgrest-js usa url.searchParams.set/append para construir select, filtros e order.
-// O getter anterior criava um HermesURLSearchParams desvinculado: todas as mutações eram
-// descartadas e a URL chegava ao PostgREST sem parâmetros (→ PGRST125).
-// Solução: cada mutação chama _sync() que reconstrói url.href com os novos parâmetros.
-;(function patchLiveURLSearchParams() {
+// Estratégia A — patchSearchParamsViaToString
+//
+// DIAGNÓSTICO P1 confirmou: url.href setter e url.search setter são no-ops silenciosos no Hermes.
+// LiveURLSearchParams (tentativa anterior) falhava porque _sync() escrevia url.href = newHref
+// e o Hermes ignorava silenciosamente → cada novo acesso ao getter recomeçava com _pairs vazio.
+//
+// Solução: guardar os params directamente na instância URL como url._searchPairs (array JS puro).
+// Sobreescrever URL.prototype.toString() para construir a query string a partir de _searchPairs.
+// O postgrest-js lê a URL via url.toString() (PostgrestBuilder.ts:122) — único ponto de leitura.
+// Nenhum setter de href/search é chamado. Os pares acumulam-se na instância e persistem.
+;(function patchSearchParamsViaToString() {
   if (typeof URL === 'undefined') return
 
-  // Parse apenas a parte de search + hash do href (sem depender de getters patchados)
-  function splitHref(href) {
-    var qIdx = href.indexOf('?')
-    var hIdx = href.indexOf('#')
-    if (qIdx === -1 && hIdx === -1) return { base: href, search: '', hash: '' }
-    if (qIdx === -1) return { base: href.slice(0, hIdx), search: '', hash: href.slice(hIdx) }
-    if (hIdx === -1) return { base: href.slice(0, qIdx), search: href.slice(qIdx), hash: '' }
-    if (qIdx < hIdx) return { base: href.slice(0, qIdx), search: href.slice(qIdx, hIdx), hash: href.slice(hIdx) }
-    return { base: href.slice(0, hIdx), search: '', hash: href.slice(hIdx) }
-  }
-
-  function parsePairs(qs) {
-    var pairs = []
-    if (!qs) return pairs
-    var parts = qs.split('&')
-    for (var i = 0; i < parts.length; i++) {
-      if (!parts[i]) continue
-      var eq = parts[i].indexOf('=')
-      try {
-        if (eq < 0) {
-          pairs.push([decodeURIComponent(parts[i]), ''])
-        } else {
-          pairs.push([decodeURIComponent(parts[i].slice(0, eq)), decodeURIComponent(parts[i].slice(eq + 1))])
-        }
-      } catch (e) {
-        pairs.push([parts[i].slice(0, eq < 0 ? undefined : eq), eq < 0 ? '' : parts[i].slice(eq + 1)])
-      }
+  // toString() sobreescrito: constrói URL com _searchPairs se existirem
+  // Extrai base do href directamente (indexOf, sem depender de getters)
+  URL.prototype.toString = function () {
+    if (!this._searchPairs || !this._searchPairs.length) return this.href
+    var pairs = this._searchPairs
+    var qs = ''
+    for (var i = 0; i < pairs.length; i++) {
+      if (i) qs += '&'
+      qs += encodeURIComponent(pairs[i][0]) + '=' + encodeURIComponent(pairs[i][1])
     }
-    return pairs
+    var href = this.href
+    var q = href.indexOf('?')
+    var h = href.indexOf('#')
+    var base = q >= 0 ? href.slice(0, q) : (h >= 0 ? href.slice(0, h) : href)
+    var hash = h >= 0 ? href.slice(h) : ''
+    var result = base + '?' + qs + hash
+    console.log('[sp-tostring] toString:', result)
+    return result
   }
 
-  function LiveURLSearchParams(urlObj) {
+  // DirectSearchParams — muta url._searchPairs directamente, sem tocar em href
+  function DirectSearchParams(urlObj) {
     this._url = urlObj
-    var split = splitHref(urlObj.href)
-    this._pairs = parsePairs(split.search.slice(1)) // remove leading '?'
+    if (!urlObj._searchPairs) urlObj._searchPairs = []
+    // NÃO inicializar de href — postgrest-js começa com URL limpa e adiciona params sequencialmente
   }
 
-  LiveURLSearchParams.prototype._sync = function () {
-    var out = []
-    for (var i = 0; i < this._pairs.length; i++) {
-      out.push(encodeURIComponent(this._pairs[i][0]) + '=' + encodeURIComponent(this._pairs[i][1]))
-    }
-    var newSearch = out.length ? '?' + out.join('&') : ''
-    var split = splitHref(this._url.href)
-    var newHref = split.base + newSearch + split.hash
-    console.log('[live-sp] sync href:', newHref)
-    this._url.href = newHref
-  }
-
-  LiveURLSearchParams.prototype.set = function (name, value) {
+  DirectSearchParams.prototype.set = function (name, value) {
     var k = String(name), v = String(value), found = false, result = []
-    for (var i = 0; i < this._pairs.length; i++) {
-      if (this._pairs[i][0] === k) { if (!found) { result.push([k, v]); found = true } }
-      else { result.push(this._pairs[i]) }
+    var pairs = this._url._searchPairs
+    for (var i = 0; i < pairs.length; i++) {
+      if (pairs[i][0] === k) { if (!found) { result.push([k, v]); found = true } }
+      else { result.push(pairs[i]) }
     }
     if (!found) result.push([k, v])
-    this._pairs = result
-    this._sync()
+    this._url._searchPairs = result
+    console.log('[sp] set', k, '=', v, '→', result.length, 'pairs total')
   }
 
-  LiveURLSearchParams.prototype.append = function (name, value) {
-    this._pairs.push([String(name), String(value)])
-    this._sync()
+  DirectSearchParams.prototype.append = function (name, value) {
+    var k = String(name), v = String(value)
+    this._url._searchPairs.push([k, v])
+    console.log('[sp] append', k, '=', v, '→', this._url._searchPairs.length, 'pairs total')
   }
 
-  LiveURLSearchParams.prototype.delete = function (name) {
+  DirectSearchParams.prototype.delete = function (name) {
     var k = String(name), result = []
-    for (var i = 0; i < this._pairs.length; i++) {
-      if (this._pairs[i][0] !== k) result.push(this._pairs[i])
+    var pairs = this._url._searchPairs
+    for (var i = 0; i < pairs.length; i++) {
+      if (pairs[i][0] !== k) result.push(pairs[i])
     }
-    this._pairs = result
-    this._sync()
+    this._url._searchPairs = result
   }
 
-  LiveURLSearchParams.prototype.get = function (name) {
-    var k = String(name)
-    for (var i = 0; i < this._pairs.length; i++) {
-      if (this._pairs[i][0] === k) return this._pairs[i][1]
+  DirectSearchParams.prototype.get = function (name) {
+    var k = String(name), pairs = this._url._searchPairs
+    for (var i = 0; i < pairs.length; i++) {
+      if (pairs[i][0] === k) return pairs[i][1]
     }
     return null
   }
 
-  LiveURLSearchParams.prototype.getAll = function (name) {
-    var k = String(name), out = []
-    for (var i = 0; i < this._pairs.length; i++) {
-      if (this._pairs[i][0] === k) out.push(this._pairs[i][1])
+  DirectSearchParams.prototype.getAll = function (name) {
+    var k = String(name), out = [], pairs = this._url._searchPairs
+    for (var i = 0; i < pairs.length; i++) {
+      if (pairs[i][0] === k) out.push(pairs[i][1])
     }
     return out
   }
 
-  LiveURLSearchParams.prototype.has = function (name) {
-    var k = String(name)
-    for (var i = 0; i < this._pairs.length; i++) {
-      if (this._pairs[i][0] === k) return true
+  DirectSearchParams.prototype.has = function (name) {
+    var k = String(name), pairs = this._url._searchPairs
+    for (var i = 0; i < pairs.length; i++) {
+      if (pairs[i][0] === k) return true
     }
     return false
   }
 
-  LiveURLSearchParams.prototype.toString = function () {
-    var out = []
-    for (var i = 0; i < this._pairs.length; i++) {
-      out.push(encodeURIComponent(this._pairs[i][0]) + '=' + encodeURIComponent(this._pairs[i][1]))
+  DirectSearchParams.prototype.toString = function () {
+    var out = [], pairs = this._url._searchPairs
+    for (var i = 0; i < pairs.length; i++) {
+      out.push(encodeURIComponent(pairs[i][0]) + '=' + encodeURIComponent(pairs[i][1]))
     }
     return out.join('&')
   }
 
-  LiveURLSearchParams.prototype.forEach = function (cb) {
-    for (var i = 0; i < this._pairs.length; i++) {
-      cb(this._pairs[i][1], this._pairs[i][0], this)
+  DirectSearchParams.prototype.forEach = function (cb) {
+    var pairs = this._url._searchPairs
+    for (var i = 0; i < pairs.length; i++) {
+      cb(pairs[i][1], pairs[i][0], this)
     }
   }
 
-  // Substitui o getter searchParams em URL.prototype
-  // Cada acesso cria um LiveURLSearchParams inicializado com o search actual
-  // Cada mutação (set/append/delete) propaga-se de volta a url.href via _sync()
+  // Getter searchParams: inicializa _searchPairs na instância e devolve DirectSearchParams
   Object.defineProperty(URL.prototype, 'searchParams', {
-    get: function () { return new LiveURLSearchParams(this) },
+    get: function () {
+      if (!this._searchPairs) this._searchPairs = []
+      return new DirectSearchParams(this)
+    },
     configurable: true,
     enumerable: false,
   })
 
-  console.log('[polyfill] URL.prototype.searchParams → LiveURLSearchParams (syncs href)')
+  console.log('[polyfill] URL: Estratégia A — toString()+_searchPairs (bypass href/search setters)')
 })()
 
 // URLSearchParams patch para Hermes — substituição incondicional + debug logs
