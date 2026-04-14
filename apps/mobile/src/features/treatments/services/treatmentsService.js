@@ -2,6 +2,7 @@
 // R-168: compatibilidade com Hermes URL polyfill
 // ADR-029: chama Supabase directamente usando nativeSupabaseClient
 
+import { z } from 'zod'
 import { supabase as nativeSupabaseClient } from '../../../platform/supabase/nativeSupabaseClient'
 
 /**
@@ -11,6 +12,9 @@ import { supabase as nativeSupabaseClient } from '../../../platform/supabase/nat
  */
 export async function getActiveTreatments(userId) {
   try {
+    // Validação de entrada conforme regra do projeto (R-125)
+    z.string().uuid().parse(userId)
+
     if (__DEV__) console.log('[treatmentsService] Buscando tratamentos ativos para:', userId)
 
     const { data, error } = await nativeSupabaseClient

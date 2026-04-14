@@ -21,7 +21,8 @@ export function useTreatments() {
     setError(null)
 
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const { data, error: authError } = await supabase.auth.getUser()
+      const user = data?.user
       if (authError || !user) throw new Error('Sessão expirada.')
 
       const result = await getActiveTreatments(user.id)

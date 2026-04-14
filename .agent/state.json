@@ -23,7 +23,7 @@
     "goal": "PR 3 - H5.4: Tratamentos",
     "goal_type": "feature",
     "acceptance_criteria": [
-      "PR #3 (H5.4) criado na branch feature/hybrid-h5/treatments",
+      "PR #467 (H5.4) criado: https://github.com/coelhotv/meus-remedios/pull/467",
       "Lista de tratamentos/protocolos ativos exibida no mobile",
       "P-011 Paridade UX: manter termos da web (Tomar/Tomados)",
       "Aprovação manual do usuário recebida (Bloqueante R-060)",

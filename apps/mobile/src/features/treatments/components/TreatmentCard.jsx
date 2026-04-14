@@ -67,7 +67,7 @@ export default function TreatmentCard({ treatment }) {
 
         <View style={styles.row}>
           <Text style={styles.label}>Dose por tomada:</Text>
-          <Text style={styles.value}>{dosage_per_intake} unidades</Text>
+          <Text style={styles.value}>{dosage_per_intake} unidade{dosage_per_intake !== 1 ? 's' : ''}</Text>
         </View>
 
         {time_schedule && time_schedule.length > 0 && (
