@@ -1,8 +1,8 @@
 # Auditoria: Polyfills Hermes × Supabase JS v2 — Sessão H5.2 (2026-04-13/14)
 
-> **Status:** 🟡 Polyfills resolvidos — loop infinito de refresh fixado (`7caa082`), a aguardar resultado de teste  
+> **Status:** 🟡 Polyfills + loop resolvidos — boundaries UTC correctas em getTodayLogs (`3bdc982`), a aguardar resultado de teste  
 > **Branch:** `feature/hybrid-h5/today-dose`  
-> **Último commit:** `7caa082` (useRef para snapshot stale — quebrar loop useCallback+useEffect)  
+> **Último commit:** `aa68528` (taken_at em hora local sem UTC offset — filter do dia apanha a dose)  
 > **Próximo agente:** leia este documento inteiro antes de tocar em `polyfills.js`
 
 ---
@@ -635,7 +635,9 @@ Portanto o PGRST125 **não é** causado por nome de coluna inválido — é caus
 | `3fd9af6` | **Estratégia A**: toString()+_searchPairs | ❌ falhou — stack overflow (href→toString recursão) |
 | `3e46e41` | fix stack overflow: capturar _nativeToString antes | ❌ falhou — PGRST125 persiste, trailing slash |
 | `22cfbae` | **fix trailing slash**: remover '/' final do base | ✅ PGRST125 resolvido — queries OK |
-| `7caa082` | **fix loop**: useRef para snapshot, deps=[] no useCallback | 🟡 aguardar resultado de teste |
+| `7caa082` | **fix loop**: useRef para snapshot, deps=[] no useCallback | ✅ loop infinito resolvido |
+| `aa68528` | fix errado: taken_at sem Z (violava padrão UTC do projecto) | ❌ revertido em 3bdc982 |
+| `3bdc982` | **fix correcto**: boundaries UTC via parseLocalDate em getTodayLogs | 🟡 aguardar resultado de teste |
 
 **Branch:** `feature/hybrid-h5/today-dose`
 
