@@ -9,7 +9,7 @@ import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
 import {
   getActiveProtocols,
   getTodayLogs,
-  getMedicineNames,
+  getMedicinesData,
 } from '../services/dashboardService'
 
 /**
