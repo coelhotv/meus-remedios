@@ -256,9 +256,9 @@ apps/mobile/src/
 
 ---
 
-### PR 3 — H5.4: Tratamentos
+### PR 3 — H5.4: Tratamentos ✅
 
-**Branch:** `feature/hybrid-h5/treatments`
+**Branch:** `feature/hybrid-h5/treatments` (Merged: PR #467)
 
 **Ficheiros a criar:**
 - `features/treatments/services/treatmentsService.js`
@@ -491,7 +491,7 @@ export default function TodayScreen() {
 - [ ] Shell + tabs funcionando (Hoje/Tratamentos/Estoque/Perfil)
 - [ ] Tela Hoje funcional (resumo do dia + CTA de dose)
 - [ ] Fluxo de registo de dose funcional
-- [ ] Tela Tratamentos funcional (lista de protocolos)
+- [x] Tela Tratamentos funcional (lista de protocolos)
 - [ ] Tela Estoque funcional (4 níveis de risco)
 - [ ] Tela Perfil funcional (email, logout, estado Telegram)
 - [ ] Vinculo Telegram (se decisão tomada) ou adiado explicitamente
