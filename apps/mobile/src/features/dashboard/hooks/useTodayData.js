@@ -3,7 +3,7 @@
 // R-010: ordem de declaração — states → effects → handlers
 // stale=true quando há snapshot em cache mas a última refresh falhou (R5-008)
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { getTodayLocal } from '@meus-remedios/core'
 import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
 import {
@@ -22,6 +22,8 @@ export function useTodayData() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [stale, setStale] = useState(false)
+  // Ref para snapshot check sem entrar nos deps do useCallback (evita loop infinito)
+  const dataRef = useRef(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -59,18 +61,20 @@ export function useTodayData() {
       const medicineNames = await getMedicineNames(medicineIds)
       console.log('[useTodayData] medicineNames OK:', Object.keys(medicineNames).length)
 
-      setData({ protocols, logs, medicineNames })
+      const newData = { protocols, logs, medicineNames }
+      dataRef.current = newData
+      setData(newData)
       setStale(false)
     } catch (err) {
       console.error('[useTodayData] ERRO FINAL:', err?.message, err?.code, err?.details, err?.hint)
-      console.warn('[useTodayData] stale check — data snapshot presente:', data !== null)
+      console.warn('[useTodayData] stale check — data snapshot presente:', dataRef.current !== null)
       setError(err.message ?? 'Erro ao carregar dados do dia.')
       // Se há snapshot, marcar como stale em vez de apagar (R5-008)
-      if (data !== null) setStale(true)
+      if (dataRef.current !== null) setStale(true)
     } finally {
       setLoading(false)
     }
-  }, [data]) // data na dep array para evitar stale closure ao verificar snapshot (R5-008)
+  }, []) // deps vazio — dataRef.current não é estado, não causa re-render nem recria o callback
 
   useEffect(() => {
     load()
