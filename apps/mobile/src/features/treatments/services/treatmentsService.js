@@ -2,7 +2,7 @@
 // R-168: compatibilidade com Hermes URL polyfill
 // ADR-029: chama Supabase directamente usando nativeSupabaseClient
 
-import { nativeSupabaseClient } from '../../../platform/supabase/nativeSupabaseClient'
+import { supabase as nativeSupabaseClient } from '../../../platform/supabase/nativeSupabaseClient'
 
 /**
  * Busca todos os protocolos ativos do usuário com dados de medicamento
