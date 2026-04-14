@@ -225,6 +225,16 @@ Use quando:
 - quiser entregar APK/AAB interno para testers
 - estiver validando antes de subir algo na Play Console
 
+### O que esperar no emulador
+
+Ao final do build, a CLI pode oferecer instalar e abrir o app no emulador. Se você responder que sim, o `Meus Remedios Preview` abre como um app Android normal.
+
+Importante:
+
+- isso não transforma o app em `development build`
+- isso não garante que `npx expo start` vai reencontrá-lo depois
+- o `preview build` deve ser tratado como build de QA e validação, não como cliente de desenvolvimento
+
 ## 6.3. Build de produção
 
 Use para Google Play.
@@ -265,7 +275,47 @@ Se eu estivesse configurando do zero hoje, seguiria exatamente esta ordem:
 
 ---
 
-## 8. Checklist de validação antes do primeiro build de produção
+## 8. Como reabrir o app depois que o emulador foi fechado
+
+Se você gerou um `preview build`, abriu no emulador, fechou tudo e depois quis voltar ao app, use esta lógica:
+
+### Cenário 1 - o app ainda está instalado
+
+1. abra o Android Emulator
+2. espere o Android iniciar
+3. procure o app `Meus Remedios Preview`
+4. toque no ícone para abrir
+
+Nesse caso, você não precisa rodar novo build.
+
+### Cenário 2 - você quer abrir o emulador via terminal
+
+Se o Android SDK estiver configurado:
+
+```bash
+emulator -list-avds
+emulator -avd NOME_DO_SEU_AVD
+```
+
+Depois disso, abra o app manualmente no launcher do Android.
+
+### Cenário 3 - o app sumiu ou não está instalado
+
+Se o emulador foi recriado ou o app foi removido:
+
+- reinstale o build preview
+- ou gere um novo build preview
+
+### Regra prática
+
+Pense assim:
+
+- `preview build` = app empacotado para QA
+- `development build` = app cliente para trabalhar com bundler
+
+---
+
+## 9. Checklist de validação antes do primeiro build de produção
 
 - `app.config.js` com `android.package = com.coelhotv.meusremedios`
 - `version = 1.0.0` coerente com o MVP inicial
@@ -281,7 +331,7 @@ Se eu estivesse configurando do zero hoje, seguiria exatamente esta ordem:
 
 ---
 
-## 9. Como decidir quando usar Expo Go, dev build e build de loja
+## 10. Como decidir quando usar Expo Go, dev build e build de loja
 
 ### Expo Go
 
@@ -291,9 +341,23 @@ Use só para exploração rápida, se o fluxo atual do app permitir.
 
 Use para desenvolvimento real do app.
 
+Esse é o modo certo quando você quer:
+
+- abrir o app e conectar no bundler
+- usar `npx expo start`
+- iterar localmente com fluxo de desenvolvimento
+
+Comando mais comum:
+
+```bash
+npx eas-cli@latest build --platform android --profile development
+```
+
 ### Preview build
 
 Use para QA, stakeholders e teste funcional em aparelho.
+
+Esse não é o caminho ideal quando você quer hot reload ou reconexão automática pelo `expo start`.
 
 ### Production build
 
@@ -304,9 +368,46 @@ Use somente quando:
 
 ---
 
-## 10. Problemas comuns no primeiro setup
+## 11. Por que o `expo start` não reencontra um preview build
 
-## 10.1. Projeto não aparece corretamente no Expo
+Se você rodou:
+
+```bash
+npx eas-cli@latest build --platform android --profile preview
+```
+
+e depois tentou usar:
+
+```bash
+npx expo start
+```
+
+é esperado que a conexão com “development build” não funcione automaticamente.
+
+### Motivo
+
+O `preview build` é pensado para:
+
+- QA
+- distribuição interna
+- validação próxima de release
+
+Já o `development build` é pensado para:
+
+- fluxo de desenvolvimento
+- conexão com bundler
+- iteração contínua
+
+### Resumo simples
+
+- quer QA: `preview`
+- quer desenvolver com bundler: `development`
+
+---
+
+## 12. Problemas comuns no primeiro setup
+
+## 12.1. Projeto não aparece corretamente no Expo
 
 Causa provável:
 
@@ -319,7 +420,38 @@ Correção:
 - rode `npx eas-cli@latest init`
 - confirme com `project:info`
 
-## 10.2. Build sobe com identidade errada
+## 12.2. `eas init` falha porque o projeto usa `app.config.js` dinâmico
+
+Causa provável:
+
+- a EAS criou o projeto remoto
+- mas não conseguiu escrever automaticamente no `app.config.js`
+
+Correção:
+
+- adicionar manualmente `expo.extra.eas.projectId`
+- adicionar manualmente `expo.owner`
+
+Formato esperado neste projeto:
+
+```js
+expo: {
+  owner: 'coelhotv',
+  extra: {
+    eas: {
+      projectId: 'SEU_PROJECT_ID',
+    },
+  },
+}
+```
+
+Depois validar com:
+
+```bash
+npx eas-cli@latest project:info
+```
+
+## 12.3. Build sobe com identidade errada
 
 Causa provável:
 
@@ -331,7 +463,7 @@ Correção:
 - sempre explicitar `--profile`
 - conferir nome/slug/package antes da build
 
-## 10.3. Build conecta no backend errado
+## 12.4. Build conecta no backend errado
 
 Causa provável:
 
@@ -342,7 +474,51 @@ Correção:
 - revisar env vars no Expo
 - confirmar `EXPO_PUBLIC_APP_ENV`
 
-## 10.4. Tentação de configurar push agora
+## 12.5. `expo start` não encontra o app depois de um build preview
+
+Causa provável:
+
+- o app instalado é `preview`, não `development build`
+
+Correção:
+
+- reabrir o app manualmente no emulador
+- ou gerar um build `development` se a intenção for trabalhar com bundler
+
+Comando recomendado para desenvolvimento:
+
+```bash
+npx eas-cli@latest build --platform android --profile development
+```
+
+## 12.6. Não sei mais como abrir o app no emulador depois que fechei tudo
+
+Correção:
+
+1. abrir o emulador novamente
+2. procurar `Meus Remedios Preview` ou `Meus Remedios Dev`
+3. abrir manualmente pelo launcher
+
+Se quiser abrir o emulador por terminal:
+
+```bash
+emulator -list-avds
+emulator -avd NOME_DO_SEU_AVD
+```
+
+## 12.7. Watchman ou fluxo local ficam instáveis porque o repositório está no iCloud Drive
+
+Causa provável:
+
+- o projeto está em `~/Library/Mobile Documents/...`
+- esse caminho costuma gerar problemas com Watchman e tooling React Native/Expo
+
+Correção:
+
+- preferir EAS Build quando possível
+- se o fluxo local ficar instável, considerar uma cópia de trabalho fora do iCloud para desenvolvimento mobile
+
+## 12.8. Tentação de configurar push agora
 
 Não faça isso nesta fase.
 
@@ -356,7 +532,35 @@ Isso entra na Fase 6.
 
 ---
 
-## 11. Definição prática de pronto para avançar
+## 13. FAQ rápido
+
+### Posso usar `preview build` como se fosse `development build`?
+
+Não. O `preview` serve para QA e validação de release. Para `expo start`, prefira `development`.
+
+### Preciso rodar `eas init` de novo toda vez?
+
+Não. Depois que `owner` e `projectId` estão corretos e `project:info` funciona, essa etapa já acabou.
+
+### Se o app já foi instalado no emulador, preciso gerar novo build para abrir de novo?
+
+Não. Basta reabrir o emulador e tocar no app, desde que ele ainda esteja instalado.
+
+### Qual build eu uso para testar antes da Play Console?
+
+`preview`
+
+### Qual build eu uso para publicar?
+
+`production`
+
+### Qual build eu uso para trabalhar com bundler e desenvolvimento contínuo?
+
+`development`
+
+---
+
+## 14. Definição prática de pronto para avançar
 
 Considere o setup Expo/EAS pronto quando estes 6 critérios estiverem verdes:
 
@@ -369,7 +573,7 @@ Considere o setup Expo/EAS pronto quando estes 6 critérios estiverem verdes:
 
 ---
 
-## 12. Próximo passo depois deste guia
+## 15. Próximo passo depois deste guia
 
 Depois de concluir este guia, siga imediatamente para:
 
