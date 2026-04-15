@@ -36,13 +36,13 @@
       "spec": "plans/backlog-native_app/EXEC_SPEC_HIBRIDO_FASE5_MVP_PRODUTO.md",
       "sprint_plan": "plans/backlog-native_app/EXEC_SPEC_HIBRIDO_H5_SPRINT_PLAN.md",
       "sprint": "H5.6/H5.7",
-      "status": "in-progress",
+      "status": "review",
       "planned_at": "2026-04-15T09:45:00Z",
       "previous_wave": "H5.5",
       "prs_planned": 1,
       "blocking_decision": "Nenhuma (Op\u00e7\u00e3o A confirmada)",
       "adrs_proposed": [],
-      "notes": "Iniciando Coding mode para H5.6/H5.7."
+      "notes": "PR #469 criado para revisão. Inclui Perfil, Telegram e correção de estoque."
     }
   },
   "memory": {
@@ -52,7 +52,7 @@
     "contracts_count": 16,
     "knowledge_count": 76,
     "last_distillation": "2026-04-14T16:45:00Z",
-    "journal_entries_since_distillation": 1,
+    "journal_entries_since_distillation": 2,
     "recent_additions": {
       "rules": [
         "R-166",
