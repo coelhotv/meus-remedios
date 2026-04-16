@@ -10,10 +10,20 @@ jest.mock('@dashboard/hooks/useTodayData');
 jest.mock('@shared/components/ui/ScreenContainer', () => ({ children }) => <>{children}</>);
 jest.mock('@features/dose/components/DoseRegisterModal', () => 'DoseRegisterModal');
 jest.mock('@dashboard/components/AdherenceRing', () => 'AdherenceRing');
-jest.mock('@dashboard/components/TodaySummaryCard', () => 'TodaySummaryCard');
+jest.mock('@dashboard/components/TodaySummaryCard', () => (props) => {
+  const { View } = require('react-native');
+  return <View testID="today-summary-card" />;
+});
 jest.mock('@dashboard/components/StockAlertInline', () => 'StockAlertInline');
 jest.mock('@dashboard/components/PriorityActionCard', () => 'PriorityActionCard');
 jest.mock('@dashboard/components/UpcomingDosesList', () => 'UpcomingDosesList');
+jest.mock('@shared/components/feedback/StaleBanner', () => ({ isDaySegregated }) => {
+  const { Text } = require('react-native');
+  const msg = isDaySegregated
+    ? 'Sem conexão. Mostrando agenda (logs de hoje não disponíveis).'
+    : 'Sem conexão. Mostrando última sincronização disponível.';
+  return <Text>{msg}</Text>;
+});
 
 describe('TodayScreen', () => {
   const mockRefresh = jest.fn();
@@ -72,10 +82,14 @@ describe('TodayScreen', () => {
       refresh: mockRefresh,
     });
 
-    const { getByText } = render(<TodayScreen />);
+    const { getByTestId, queryByText } = render(<TodayScreen />);
     
-    // Como os componentes estão mocked, verificamos se o dashboard rendidou (não-carregamento)
-    // E se não estamos em estado de erro.
+    // Verificar que NÃO estamos em estado de loading nem erro
+    expect(queryByText('A carregar o seu dia...')).toBeNull();
+    expect(queryByText('Erro de conexão')).toBeNull();
+    // TodaySummaryCard deve estar presente (verificado via testID do mock)
+    expect(getByTestId('today-summary-card')).toBeTruthy();
+    // refresh não deve ter sido invocado automaticamente
     expect(mockRefresh).not.toHaveBeenCalled();
   });
 
