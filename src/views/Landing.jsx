@@ -29,6 +29,7 @@ function LogoMark({ className = '', size = 24 }) {
       height={size}
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      aria-hidden="true"
     >
       {/* Pílula (cápsula) */}
       <rect
