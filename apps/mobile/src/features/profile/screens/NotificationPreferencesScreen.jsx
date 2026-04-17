@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Linking } from 'react-native'
 import { Send, MessageSquareDot, TrendingUpDown, MessageSquareOff, ArrowLeft } from 'lucide-react-native'
 import { useAuth } from '../../../platform/auth/hooks/useAuth'
+import { useProfile } from '../hooks/useProfile'
 import { requestPushPermission } from '../../../platform/notifications/requestPushPermission'
 import { getExpoPushToken } from '../../../platform/notifications/getExpoPushToken'
 import { syncNotificationDevice } from '../../../platform/notifications/syncNotificationDevice'
@@ -18,10 +19,18 @@ const PREFERENCE_LABELS = {
 
 export default function NotificationPreferencesScreen({ navigation }) {
   const { supabase, user } = useAuth()
-  const [preference, setPreference] = useState('telegram') // default
+  const { settings, loading: settingsLoading } = useProfile()
+  const [preference, setPreference] = useState(null)
   const [hasPermission, setHasPermission] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  // Sincronizar preferência com servidor ao carregar
+  useEffect(() => {
+    if (settings?.notification_preference) {
+      setPreference(settings.notification_preference)
+    }
+  }, [settings])
 
   useEffect(() => {
     checkPermissionStatus()
