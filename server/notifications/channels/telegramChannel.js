@@ -3,13 +3,8 @@
 // Recebe payload canônico e converte para texto MarkdownV2
 // bot é injetado para facilitar testes sem chamadas HTTP reais
 
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../../services/supabase.js'
 import { escapeMarkdownV2 } from '../../utils/formatters.js'
-
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
 
 // Retorna telegram_chat_id do usuário ou null se não configurado
 async function getTelegramChatId(userId) {

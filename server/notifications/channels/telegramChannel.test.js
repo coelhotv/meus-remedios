@@ -18,17 +18,17 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-// Mock do supabase para controlar telegram_chat_id
+// Mock do supabase centralizado (server/services/supabase.js)
 const mockSingle = vi.fn()
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => ({
+vi.mock('../../services/supabase.js', () => ({
+  supabase: {
     from: () => ({
       select: () => ({
         eq: () => ({ single: mockSingle }),
       }),
     }),
-  }),
+  },
 }))
 
 describe('telegramChannel', () => {
