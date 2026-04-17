@@ -19,7 +19,7 @@ const PREFERENCE_LABELS = {
 
 export default function NotificationPreferencesScreen({ navigation }) {
   const { supabase, user } = useAuth()
-  const { settings, loading: settingsLoading } = useProfile()
+  const { settings, loading: settingsLoading, refresh } = useProfile()
   const [preference, setPreference] = useState(null)
   const [hasPermission, setHasPermission] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -27,7 +27,9 @@ export default function NotificationPreferencesScreen({ navigation }) {
 
   // Sincronizar preferência com servidor ao carregar
   useEffect(() => {
+    if (__DEV__) console.log('[NotificationPreferencesScreen] settings atualizado:', settings)
     if (settings?.notification_preference) {
+      if (__DEV__) console.log('[NotificationPreferencesScreen] Sincronizando preferência do servidor:', settings.notification_preference)
       setPreference(settings.notification_preference)
     }
   }, [settings])
@@ -109,12 +111,16 @@ export default function NotificationPreferencesScreen({ navigation }) {
     setLoading(true)
     setError(null)
     try {
+      if (__DEV__) console.log('[NotificationPreferencesScreen] Salvando preferência:', newPreference, 'para user:', user.id)
+
       const { error: updateError } = await supabase
         .from('user_settings')
         .update({ notification_preference: newPreference })
         .eq('user_id', user.id)
 
       if (updateError) throw updateError
+
+      if (__DEV__) console.log('[NotificationPreferencesScreen] Preferência salva no banco com sucesso')
 
       setPreference(newPreference)
 
@@ -130,7 +136,12 @@ export default function NotificationPreferencesScreen({ navigation }) {
       }
 
       Alert.alert('Preferência Atualizada', `Notificações: ${PREFERENCE_LABELS[newPreference]}`)
+
+      // Recarregar dados do servidor para confirmar persistência
+      if (__DEV__) console.log('[NotificationPreferencesScreen] Refetchando dados do servidor...')
+      await refresh()
     } catch (err) {
+      if (__DEV__) console.error('[NotificationPreferencesScreen] Erro ao salvar preferência:', err)
       setError(err.message)
       Alert.alert('Erro', 'Não foi possível salvar a preferência: ' + err.message)
     } finally {
