@@ -2,6 +2,9 @@
 // Lê de user_settings.notification_preference e verifica telegram_chat_id
 
 import { createClient } from '@supabase/supabase-js'
+import { z } from 'zod'
+
+const notificationPreferenceSchema = z.enum(['telegram', 'mobile_push', 'both', 'none'])
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
@@ -52,10 +55,10 @@ export const notificationPreferenceRepository = {
 
   // Atualiza preferência de notificação do usuário
   async setPreference(userId, preference) {
-    const validPreferences = ['telegram', 'mobile_push', 'both', 'none']
-    if (!validPreferences.includes(preference)) {
+    const parsed = notificationPreferenceSchema.safeParse(preference)
+    if (!parsed.success) {
       throw new Error(
-        `[notificationPreferenceRepository.setPreference] Invalid preference: ${preference}`
+        `[notificationPreferenceRepository.setPreference] Invalid preference: ${preference}. Must be one of: telegram, mobile_push, both, none`
       )
     }
 
