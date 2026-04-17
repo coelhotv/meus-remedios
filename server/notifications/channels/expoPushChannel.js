@@ -4,7 +4,6 @@
 // Desativa tokens com erros permanentes via shouldDeactivateDevice (R-042)
 
 import { shouldDeactivateDevice } from '../utils/shouldDeactivateDevice.js'
-import { normalizeChannelResults } from '../utils/normalizeChannelResults.js'
 
 export async function sendExpoPushNotification({ userId, payload, context, repositories, expoClient }) {
   const correlationId = context?.correlationId || 'unknown'
