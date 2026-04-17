@@ -1,9 +1,18 @@
 // Constrói payload canônico de notificação a partir de evento de domínio
 // Todos os canais (Telegram, Expo) consomem este shape normalizado
 
-const SUPPORTED_KINDS = ['dose_reminder', 'stock_alert', 'daily_digest']
+import { z } from 'zod'
+
+const kindSchema = z.enum(['dose_reminder', 'stock_alert', 'daily_digest'])
 
 export function buildNotificationPayload({ kind, data }) {
+  const parsed = kindSchema.safeParse(kind)
+  if (!parsed.success) {
+    throw new Error(
+      `[buildNotificationPayload] Unsupported notification kind: "${kind}". Supported: ${kindSchema.options.join(', ')}`
+    )
+  }
+
   switch (kind) {
     case 'dose_reminder':
       return {
@@ -28,10 +37,5 @@ export function buildNotificationPayload({ kind, data }) {
         deeplink: `meusremedios://today`,
         metadata: {},
       }
-
-    default:
-      throw new Error(
-        `[buildNotificationPayload] Unsupported notification kind: "${kind}". Supported: ${SUPPORTED_KINDS.join(', ')}`
-      )
   }
 }
