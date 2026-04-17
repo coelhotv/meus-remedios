@@ -131,7 +131,11 @@ export default function NotificationPreferencesScreen({ navigation }) {
 
   const getIcon = (value) => {
     const iconProps = { size: 20, strokeWidth: 2, style: { marginRight: spacing[2] } }
-    const iconColor = preference === value ? colors.text.inverse : colors.primary[600]
+    let iconColor = colors.primary[600]
+
+    if (preference === value) {
+      iconColor = value === 'none' ? colors.status.error : colors.text.inverse
+    }
 
     switch (value) {
       case 'telegram':
@@ -147,25 +151,34 @@ export default function NotificationPreferencesScreen({ navigation }) {
     }
   }
 
-  const PreferenceButton = ({ value, isDangerous }) => (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        preference === value && styles.buttonActive,
-        isDangerous && preference === value && styles.buttonDangerous,
-      ]}
-      onPress={() => handlePreferenceChange(value)}
-      disabled={loading}
-      activeOpacity={0.7}
-    >
-      <View style={styles.buttonContent}>
-        {getIcon(value)}
-        <Text style={[styles.buttonText, preference === value && styles.buttonTextActive]}>
-          {PREFERENCE_LABELS[value]}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  )
+  const PreferenceButton = ({ value, isDangerous }) => {
+    const isActive = preference === value
+    const isDeactivateButton = isDangerous && isActive
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.button,
+          isActive && styles.buttonActive,
+          isDeactivateButton && styles.buttonDeactivate,
+        ]}
+        onPress={() => handlePreferenceChange(value)}
+        disabled={loading}
+        activeOpacity={0.7}
+      >
+        <View style={styles.buttonContent}>
+          {getIcon(value)}
+          <Text style={[
+            styles.buttonText,
+            isActive && !isDeactivateButton && styles.buttonTextActive,
+            isDeactivateButton && styles.buttonDeactivateText,
+          ]}>
+            {PREFERENCE_LABELS[value]}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    )
+  }
 
   return (
     <ScreenContainer>
@@ -323,9 +336,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[600],
     borderColor: colors.primary[600],
   },
-  buttonDangerous: {
-    backgroundColor: colors.status.error,
-    borderColor: colors.status.error,
+  buttonDeactivate: {
+    backgroundColor: colors.bg.card,
+    borderColor: colors.status.error + '50',
   },
   buttonContent: {
     flexDirection: 'row',
@@ -339,6 +352,11 @@ const styles = StyleSheet.create({
   },
   buttonTextActive: {
     color: colors.text.inverse,
+  },
+  buttonDeactivateText: {
+    color: colors.status.error,
+    fontWeight: '700',
+    fontSize: 16,
   },
   settingsButton: {
     paddingVertical: spacing[4],
