@@ -30,7 +30,4 @@ export const EVENTS = {
   // Estoque
   STOCK_ADDED: 'stock_added',
   STOCK_LOW_VIEWED: 'stock_low_viewed',
-
-  // Navegação (automático via useScreenTracking)
-  SCREEN_VIEW: 'screen_view',                  // Firebase reserved — screen_name, screen_class
 }
