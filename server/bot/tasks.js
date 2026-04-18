@@ -337,26 +337,22 @@ async function checkRemindersViaDispatcher(dispatcher, correlationId) {
       try {
         const { data: protocols } = await supabase
           .from('protocols')
-          .select('id, name, time_schedule, medicine_id')
+          .select('id, name, time_schedule, medicine_id, medicine:medicines(name)')
           .eq('user_id', userId)
           .eq('is_active', true);
 
         if (!protocols || protocols.length === 0) continue;
 
+        // Usar horário de São Paulo para comparação com time_schedule (bug: new Date() retorna UTC)
+        const spNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+        const currentTime = `${String(spNow.getHours()).padStart(2, '0')}:${String(spNow.getMinutes()).padStart(2, '0')}`;
+
         for (const protocol of protocols) {
           const timeSchedule = protocol.time_schedule || [];
-          const now = new Date();
-          const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
           for (const scheduledTime of timeSchedule) {
             if (scheduledTime === currentTime) {
-              const { data: medicine } = await supabase
-                .from('medicines')
-                .select('name')
-                .eq('id', protocol.medicine_id)
-                .single();
-
-              const medicineName = medicine?.name || 'Medicamento';
+              const medicineName = protocol.medicine?.name || 'Medicamento';
 
               // Usar dispatcher via nova arquitetura
               await dispatcher.dispatch({
@@ -918,15 +914,25 @@ async function checkStockAlertsViaDispatcher(dispatcher, correlationId) {
 
     logger.info(`Checking stock alerts via dispatcher for ${users.length} users`, { correlationId });
 
+    // Buscar estoques de todos os usuários em uma única query (evita N+1)
+    const userIds = users.map(u => u.id);
+    const { data: allStocks } = await supabase
+      .from('stocks')
+      .select('*, medicine:medicines(name)')
+      .in('user_id', userIds);
+
+    const stocksByUser = {};
+    for (const stock of allStocks || []) {
+      if (!stocksByUser[stock.user_id]) stocksByUser[stock.user_id] = [];
+      stocksByUser[stock.user_id].push(stock);
+    }
+
     for (const user of users) {
       const userId = user.id;
       try {
-        const { data: stocks } = await supabase
-          .from('stocks')
-          .select('*, medicine:medicines(name)')
-          .eq('user_id', userId);
+        const stocks = stocksByUser[userId] || [];
 
-        if (!stocks) continue;
+        if (!stocks.length) continue;
 
         for (const stock of stocks) {
           const medicineName = stock.medicine?.name || 'Medicamento';

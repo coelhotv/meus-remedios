@@ -17,6 +17,61 @@ import { Expo } from 'expo-server-sdk';
 
 const logger = createLogger('CronNotify');
 
+// Singleton clients — instanciados no module scope para reuso em warm invocations (R-089)
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+const expoClient = new Expo({ accessToken: process.env.EXPO_ACCESS_TOKEN });
+
+// Repository factories — thin wrappers em torno do supabase singleton
+const preferencesRepo = {
+  async getByUserId(userId) {
+    const { data } = await supabase.from('user_settings').select('notification_preference').eq('user_id', userId).single();
+    return data?.notification_preference || 'telegram';
+  },
+  async hasTelegramChat(userId) {
+    const { data } = await supabase.from('user_settings').select('telegram_chat_id').eq('user_id', userId).single();
+    return !!data?.telegram_chat_id;
+  }
+};
+
+const devicesRepo = {
+  async listActiveByUser(userId, provider) {
+    const { data } = await supabase.from('notification_devices').select('*').eq('user_id', userId).eq('provider', provider).eq('is_active', true);
+    return data || [];
+  }
+};
+
+// Normaliza evento de domínio em payload de notificação
+function buildNotificationPayload({ kind, data }) {
+  switch (kind) {
+    case 'dose_reminder':
+      return {
+        title: 'Hora do seu remédio',
+        body: `Tome ${data.medicineName} agora`,
+        deeplink: `meusremedios://today?protocolId=${data.protocolId}`,
+        metadata: { protocolId: data.protocolId, medicineId: data.medicineId }
+      };
+    case 'stock_alert':
+      return {
+        title: 'Estoque baixo',
+        body: `${data.medicineName} está acabando`,
+        deeplink: `meusremedios://stock`,
+        metadata: { medicineId: data.medicineId }
+      };
+    case 'daily_digest':
+      return {
+        title: 'Resumo do dia',
+        body: data.summary || 'Veja seu resumo diário',
+        deeplink: `meusremedios://today`,
+        metadata: {}
+      };
+    default:
+      throw new Error(`Unsupported notification kind: ${kind}`);
+  }
+}
+
 // --- Bot Adapter (Minimal for Notifications) ---
 function createNotifyBotAdapter(token) {
   const telegramFetch = async (method, body) => {
@@ -180,14 +235,11 @@ export default async function handler(req, res) {
   const bot = createNotifyBotAdapter(token);
 
   // --- Notification Dispatcher Setup (Sprint 6.4) ---
-  const supabase = createClient(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-  const expoClient = new Expo({ accessToken: process.env.EXPO_ACCESS_TOKEN });
-
   const notificationDispatcher = {
     async dispatch({ userId, kind, data, context }) {
       try {
         const payload = buildNotificationPayload({ kind, data });
-        const channels = await resolveChannelsForUser({ userId, repositories: { preferences: supabasePreferencesRepo(supabase), devices: supabaseDevicesRepo(supabase) } });
+        const channels = await resolveChannelsForUser({ userId, repositories: { preferences: preferencesRepo, devices: devicesRepo } });
 
         return await dispatchNotification({
           userId,
@@ -195,7 +247,7 @@ export default async function handler(req, res) {
           payload,
           channels,
           context,
-          repositories: { preferences: supabasePreferencesRepo(supabase), devices: supabaseDevicesRepo(supabase) },
+          repositories: { preferences: preferencesRepo, devices: devicesRepo },
           bot,
           expoClient
         });
@@ -205,58 +257,6 @@ export default async function handler(req, res) {
       }
     }
   };
-
-  // Helper to build normalized payload from domain event
-  function buildNotificationPayload({ kind, data }) {
-    switch (kind) {
-      case 'dose_reminder':
-        return {
-          title: 'Hora do seu remédio',
-          body: `Tome ${data.medicineName} agora`,
-          deeplink: `meusremedios://today?protocolId=${data.protocolId}`,
-          metadata: { protocolId: data.protocolId, medicineId: data.medicineId }
-        };
-      case 'stock_alert':
-        return {
-          title: 'Estoque baixo',
-          body: `${data.medicineName} está acabando`,
-          deeplink: `meusremedios://stock`,
-          metadata: { medicineId: data.medicineId }
-        };
-      case 'daily_digest':
-        return {
-          title: 'Resumo do dia',
-          body: data.summary || 'Veja seu resumo diário',
-          deeplink: `meusremedios://today`,
-          metadata: {}
-        };
-      default:
-        throw new Error(`Unsupported notification kind: ${kind}`);
-    }
-  }
-
-  // Lightweight repositories for Supabase
-  function supabasePreferencesRepo(supabase) {
-    return {
-      async getByUserId(userId) {
-        const { data } = await supabase.from('user_settings').select('notification_preference').eq('user_id', userId).single();
-        return data?.notification_preference || 'telegram';
-      },
-      async hasTelegramChat(userId) {
-        const { data } = await supabase.from('user_settings').select('telegram_chat_id').eq('user_id', userId).single();
-        return !!data?.telegram_chat_id;
-      }
-    };
-  }
-
-  function supabaseDevicesRepo(supabase) {
-    return {
-      async listActiveByUser(userId, provider) {
-        const { data } = await supabase.from('notification_devices').select('*').eq('user_id', userId).eq('provider', provider).eq('is_active', true);
-        return data || [];
-      }
-    };
-  }
 
   // Get current time in Sao Paulo
   const now = new Date();
