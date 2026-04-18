@@ -553,13 +553,91 @@ Correção:
 
 ---
 
-## 13. Build Local (Fugindo da Fila) ⚡️
+## 13. Credenciais Firebase e EAS Build Local ⚠️
+
+**CRÍTICO:** O EAS comprime o projeto via `git archive`, que exclui arquivos do `.gitignore`. Como `google-services-*.json` está no `.gitignore` (por segurança), os builds locais falham a menos que você use uma estratégia de **environment variables com path absoluto**.
+
+### 13.1. Problema & Solução
+
+**Sintoma:** Build falha com `ENOENT: Cannot copy google-services.json from ./apps/mobile/google-services-preview.json`
+
+**Causa:** O arquivo não existe no diretório temporário de build porque foi excluído do tar.gz via git archive.
+
+**Solução:** Modificar `app.config.js` para usar `GOOGLE_SERVICES_JSON_PATH` com path absoluto:
+
+```javascript
+// app.config.js
+android: {
+  package: current.androidPackage,
+  googleServicesFile: process.env.GOOGLE_SERVICES_JSON_PATH || `./google-services-${BUILD_PROFILE}.json`,
+}
+```
+
+### 13.2. Script Wrapper: `build-android.sh`
+
+Crie `apps/mobile/build-android.sh`:
+
+```bash
+#!/bin/bash
+# Prepara credenciais Firebase e roda eas build local
+# Uso: bash build-android.sh [preview|development|production]
+
+PROFILE="${1:-preview}"
+ICLOUD_MOBILE="/Users/coelhotv/git-icloud/meus-remedios/apps/mobile"
+
+# production usa google-services.json (sem sufixo), demais usam google-services-{profile}.json
+if [ "$PROFILE" = "production" ]; then
+  CREDS_FILE="$ICLOUD_MOBILE/google-services.json"
+else
+  CREDS_FILE="$ICLOUD_MOBILE/google-services-${PROFILE}.json"
+fi
+
+if [ ! -f "$CREDS_FILE" ]; then
+  echo "❌ Credencial não encontrada: $CREDS_FILE"
+  echo "   Baixe o google-services.json do Firebase Console e salve nesse path."
+  exit 1
+fi
+
+echo "🔐 Exportando credencial Firebase: $CREDS_FILE"
+export GOOGLE_SERVICES_JSON_PATH="$CREDS_FILE"
+
+echo "🚀 Iniciando build ($PROFILE)..."
+eas build --local --platform android --profile "$PROFILE"
+```
+
+**Tornar executável:**
+```bash
+chmod +x apps/mobile/build-android.sh
+```
+
+### 13.3. Operacionalizar Builds
+
+**Build de Preview (APK para testes):**
+```bash
+cd apps/mobile
+bash build-android.sh preview
+```
+
+**Build de Desenvolvimento (Dev Client):**
+```bash
+bash build-android.sh development
+```
+
+**Build de Produção (AAB para Play Store):**
+```bash
+bash build-android.sh production
+```
+
+---
+
+## 14. Build Local (Fugindo da Fila) ⚡️
 
 Se você não quer esperar os 100+ minutos na fila da Expo (Free Tier) ou ultrapassar o limite de 30 builds por mês, você pode construir o binário usando o seu próprio processador M2.
 
-### 13.1. Pré-requisitos
+### 14.1. Pré-requisitos
 - **Java JDK 17** (Zulu ou OpenJDK).
 - **Android Studio** instalado.
+- **Xcode 26+ (Mac)**: Instale o iOS Simulator Runtime correspondente via Xcode > Settings > Platforms se planeja testar iOS também.
 - **Variáveis de Ambiente**:
   Certifique-se que o seu terminal enxerga as ferramentas do Android. Adicione ao seu `~/.zshrc` ou `~/.bashrc`:
   ```bash
@@ -568,30 +646,24 @@ Se você não quer esperar os 100+ minutos na fila da Expo (Free Tier) ou ultrap
   export PATH=$PATH:$ANDROID_HOME/platform-tools
   ```
 
-### 13.2. Comandos para Build Local
-Para rodar localmente, basta adicionar a flag `--local` ao final de qualquer comando EAS:
+### 14.2. Arquivos de Credencial Obrigatórios
 
-**Build de Produção (.aab):**
-```bash
-npx eas build --platform android --profile production --local
-```
+Antes de rodar qualquer build, garanta que os arquivos Firebase existem em `apps/mobile/`:
 
-**Build de Preview/Testes (.apk):**
-```bash
-npx eas build --platform android --profile preview --local
-```
+- ✅ `google-services-development.json` (para perfil development)
+- ✅ `google-services-preview.json` (para perfil preview)
+- ✅ `google-services.json` (para perfil production — download do Firebase Console do app `com.coelhotv.meusremedios`)
 
-**Build de Desenvolvimento (Dev Client):**
-```bash
-npx eas build --platform android --profile development --local
-```
+**Nunca commitar esses arquivos** — eles estão corretamente no `.gitignore`.
 
-### 13.3. Onde os arquivos aparecem?
-Ao contrário da nuvem, o build local deixará o arquivo final (`.apk` ou `.aab`) na raiz da pasta `apps/mobile` ou em uma subpasta build gerada pelo processo.
+### 14.3. Onde os Arquivos Aparecem?
 
-### 13.5. Status de Validação
-- **Ambiente Validado**: Mac M2 (Sequoia) usando Bash. ✅
-- **Resultado Estável**: Build de produção gerado localmente em ~5-8 min e aceito pela Google Play Console sem erros de assinatura ou package.
+Ao contrário da nuvem, o build local deixará o arquivo final (`.apk` ou `.aab`) em um diretório dentro de `apps/mobile` ou referenciado no console do EAS Build.
+
+### 14.4. Status de Validação
+- **Ambiente Validado**: Mac M2 (Sequoia) com Xcode 26.3 usando Bash. ✅
+- **Resultado Estável**: Build de preview gerado localmente em ~5-10 min com script wrapper `build-android.sh`. ✅
+- **Firebase**: Credenciais passadas via `GOOGLE_SERVICES_JSON_PATH` funcionam corretamente. ✅
 
 ## 12.8. Tentação de configurar push agora
 
@@ -607,7 +679,7 @@ Isso entra na Fase 6.
 
 ---
 
-## 13. FAQ rápido
+## 15. FAQ rápido
 
 ### Posso usar `preview build` como se fosse `development build`?
 
@@ -635,20 +707,20 @@ Não. Basta reabrir o emulador e tocar no app, desde que ele ainda esteja instal
 
 ---
 
-## 14. Definição prática de pronto para avançar
+## 16. Definição prática de pronto para avançar
 
 Considere o setup Expo/EAS pronto quando estes 6 critérios estiverem verdes:
 
 1. projeto visível no `expo.dev`
 2. `projectId` persistido no app
-3. build `preview` concluída
-4. app instalado e testado em Android real
-5. build `production` concluída sem erro
+3. build `preview` concluída via script `build-android.sh preview`
+4. app instalado e testado em Android real (APK funciona)
+5. build `production` concluída via script `build-android.sh production` sem erro
 6. `.aab` pronta para upload na Google Play Console
 
 ---
 
-## 15. Próximo passo depois deste guia
+## 17. Próximo passo depois deste guia
 
 Depois de concluir este guia, siga imediatamente para:
 
