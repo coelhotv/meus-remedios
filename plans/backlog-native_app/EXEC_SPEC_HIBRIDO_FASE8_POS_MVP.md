@@ -81,3 +81,65 @@ O banco de dados já possui as seguintes estruturas (via `docs/architecture/DATA
 - [ ] Um disparo que for englobado pelo canal `both` registra perfeitamente na tabela, seja duplicado (por provedor) ou compilado.
 - [ ] O usuário consegue acessar a nova área, ver os itens cronologicamente do mais novo para o mais antigo, independente de ter deletado seu push panel no celular.
 - [ ] Clicar no log ativa o routing correspondente do App.
+
+---
+
+## Epic 2: Redesign Nativo do Dashboard ("Santuário Terapêutico")
+
+> **DIRETRIZ DE PROTEÇÃO CRÍTICA:** Toda e qualquer refatoração de serviços ou componentes lógicos sob `packages/shared-data` ou `src/features` deve **preservar a experiência Web "as is"**. Apenas o contexto de visualização do Mobile Root (`apps/mobile/`) será impactado por este épico visual. Nenhuma dependência que quebre o build web poderá ser introduzida.
+
+O MVP do Aplicativo (Fase 5) focou na paridade de dados. Neste Epic, elevamos a experiência do Dashboard Nativo (aba "Hoje") para um layout verticalizado orientado não a medicamentos isolados, mas aos **"Momentos do Dia"** do paciente, adotando a linguagem de *Therapeutic Sanctuary* nativa.
+
+### 2.1. Anatomia Funcional e Composição
+
+Esta fase insere um agrupamento de itens baseados em "Turnos" (Manhã, Tarde, Noite). A lógica de negócios atual precisa ser traduzida para os **5 Estados de Interação** das doses:
+
+1.  **Planejada (Futuro > 2h)**: Card de visualização inativo (sem Hero). Outline circle, sem CTA de confirmação.
+2.  **Próxima (Aviso Prévio < 2h)**: Destacada como **Hero Card** no topo da visualização (TOMAR AGORA). Fundo teal `primary` gradient, botão *Confirmar Uso* **habilitado**.
+3.  **Tomada (+/- 2h)**: Registrada no DB `adherence_logs`. Retorna ao repositório temporal (passado). Torna-se em `opacity-50` com traçado (*strikethrough*). Check indicativo à direita.
+4.  **Atrasada (< 2h perdida)**: Encontra-se inadivertidamente esquecida. Mantém-se promovida como **Hero Card** ativável até extinguir sua validade clínica na janela de tolerância. Botão CTA ativo.
+5.  **Perdida (> 2h sem uso)**: Desqualificada silenciosamente da view ativa. Retorna a ser card simples, em formato de outline vazio desativado e `opacity-50`, no fundo da timeline temporal do dia. Não ativável.
+
+---
+
+### 2.2 Inventário de Serviços: Reaproveitamento Misto
+
+**✅ Serviços que JÁ EXISTEM e estão conectados (Usar "As Is"):**
+*   `services/adherenceService.js` (Web/PWA): Já possui extração local baseada em protocolos `cachedAdherenceService.getFilteredLogs`.
+*   `services/treatmentPlanService.js`: Sabe os horários brutos definidos por prescrição médica.
+*   **Design Tokens da Web (`DESIGN-SYSTEM.md`)**: A cor Teal já existe em Tailwind tokens (`--color-primary-*` como `#006a5e`). Devemos portar o exato hex code para o Stylesheet nativo (`StyleSheet.create` no Mobile).
+*   **Componente Lógico Ring Gauge**: Os cálculos algébricos do *"Você está indo muito bem hoje (75%)"* que orientam o anel de completude já servem à versão Web.
+
+**⚠️ Serviços que requerem AJUSTES ESTRUTURAIS para o nativo:**
+*   **Extrator / Filtro Temporizado (`DoseStateEngine`)**: Precisaremos de um utilitário (ex: em `shared/utils/dateUtils.js`) `evaluateDoseTimelineState()` que englobe localTime e `Date()` operations resilientes a timezone (regra R-020) para devolver ENUM: `"PLANEJADA" | "PROXIMA" | "TOMADA" | "ATRASADA" | "PERDIDA"`.
+*   A injeção do componente gráfico SVG do anel de progresso (Ring Gauge), que pode não ser portável nativamente se a web usa `<svg>` plain. Avaliar uso de `react-native-svg` ou equivalentes seguros.
+
+---
+
+### 2.3 Roteiro de Sprints (Prescritivo)
+
+#### Sprint 8.4: Data Binding e Util de Linha do Tempo
+- **Tarefa**: Codificar e testar nativamente a máquina de estados `evaluateDoseTimelineState(dosesArray)`.
+- **Quality Gate**: Escrever Vitest focado que rode simulações (vi.useFakeTimers) no Brasil/GMT-3 e confira que a janela +2h de facto chaveie "ATRASADA" -> "PERDIDA".
+- **Artefato**: Sem código em Views! Somente manipulação em data / helpers.
+
+#### Sprint 8.5: Adherence Card & TimeBlock Container
+- **Tarefa**: Criar no Mobile UI os subcomponentes `<AdherenceDayCard />` e o `<TimeBlockSeparator />` (turnos).
+- **Quality Gate**: O Adherence Metric usa `useDashboardContext` já provido ou equivalente. Teste local renderizando perfeitamente independente da plataforma.
+
+#### Sprint 8.6: Dose Cards, Assemble UI e Acesso ao Botão de Confirmação.
+- **Tarefa**: Desenvolver as implementações de visualização do card `HeroActionableCard` vs `StandardVisualCard` e montar do `DashboardNativeScreen`.
+- **Quality Gate**: Ao clicar "Confirmar Uso", ele chama exatamente as mesmas signatures via payload do que quando apertavamos do botão nativo MVP antigo.
+
+---
+
+### 2.4 Definition of Done e Validação Humana 🔑
+> **Aprovação mandatória antes do PR:** Ao integrar Sprint 8.6, o Code Agent deverá expor log verde do runner de testes local (`npm run validate:agent`) e **parar categoricamente (HALT)**. O analista de produtos (Agente Humano) assumirá a máquina local, executará o emulador (Expo/iOS ou Android) e testará tátil/manualmente os estados antes de autorizar o Merge ou Code Review.
+
+**Requisitos Finais (DoD):**
+- [ ] Timeline visivelmente fatiada em 3 blocos (Manhã, Tarde, Noite).
+- [ ] Ring Gauge percentual exibe total diário fidedigno aos logs do BD.
+- [ ] Componente Desktop/PWA abre em build isolado e não sofreu 1 pixel de quebra por contaminações de escopo cruzado.
+- [ ] CTAs (Confirmar Uso) só reagem dentro da janela de `+/- 2h`.
+- [ ] O app compila livre de `eslint/no-restricted-imports` nativo cruzados (ex: SVGs puros importados no Root Native).
+- [ ] Assinatura Humana presencial em emulador autorizando a funcionalidade 100%.
