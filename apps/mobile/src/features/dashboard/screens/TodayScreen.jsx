@@ -46,9 +46,10 @@ export default function TodayScreen() {
     .slice(0, 3)
 
   // Dados do Cabeçalho (Personalização H8.7)
-  const userName = data?.user?.name || data?.user?.email?.split('@')[0] || 'Usuário'
+  const fullUserName = data?.user?.name || data?.user?.email?.split('@')[0] || 'Usuário'
+  const firstName = fullUserName.trim().split(' ')[0]
   const todayFormatted = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
-  const greeting = `Olá, ${userName}`
+  const greeting = `Olá, ${firstName}`
 
   function handleOpenRegister(protocol, scheduledTime) {
     setModalProtocol(protocol)
