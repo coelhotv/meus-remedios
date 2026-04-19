@@ -20,7 +20,7 @@ export default function HeroDoseCard({ doses = [], onPress }) {
   const displayTitle = isDelayed ? 'AINDA DÁ TEMPO' : 'TOMAR AGORA'
   const alertColor = isDelayed ? '#904d00' : colors.primary[200]
   const buttonBgColor = isDelayed ? '#f9a825' : '#ffffff'
-  const buttonTextColor = isDelayed ? '#ffffff' : colors.primary[600]
+  const buttonTextColor = isDelayed ? '#1a1c1e' : colors.primary[600]
   const textColor = isDelayed ? '#1a1c1e' : '#ffffff'
   const timeColor = isDelayed ? '#44474e' : 'rgba(255, 255, 255, 0.7)'
 
