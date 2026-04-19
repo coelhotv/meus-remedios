@@ -13,7 +13,7 @@
     "test:critical": "vitest run --config vitest.critical.config.js --bail=1",
     "test:unit": "vitest run --config vitest.config.js",
     "test:changed": "vitest run --changed HEAD --bail=1",
-    "test:coverage": "vitest run --config vitest.ci.config.js",
+    "test:coverage": "vitest run --config vitest.ci.config.js --coverage",
     "test:components": "vitest run \"src/features/**/components\" \"src/shared/components\"",
     "test:services": "vitest run \"src/features/**/services\"",
     "test:fast": "vitest run",
