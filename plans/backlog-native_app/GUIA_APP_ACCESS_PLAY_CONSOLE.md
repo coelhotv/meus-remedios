@@ -132,7 +132,7 @@ This app requires login to access its core functionality.
 
 Review account:
 Email: review@coelho.me
-Password: APPreview
+Password: [senha secreta]
 
 Review steps:
 1. Open the app.
