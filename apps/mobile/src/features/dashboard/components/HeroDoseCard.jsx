@@ -18,7 +18,8 @@ export default function HeroDoseCard({ doses = [], onPress }) {
   
   const medicineName = firstDose.medicine?.name || 'Medicamento'
   const displayTitle = isDelayed ? 'AINDA DÁ TEMPO' : 'TOMAR AGORA'
-  const alertColor = isDelayed ? '#ffb4ab' : colors.primary[200] // Red-ish for delay
+  const alertColor = isDelayed ? '#fff9c4' : colors.primary[200] // Yellow-ish for warning
+  const buttonTintColor = isDelayed ? '#904d00' : colors.primary[600]
 
   return (
     <View style={[styles.container, isDelayed && styles.containerDelayed]}>
@@ -49,8 +50,8 @@ export default function HeroDoseCard({ doses = [], onPress }) {
           onPress={() => onPress && onPress(firstDose)}
           activeOpacity={0.8}
         >
-          <Check size={20} color={isDelayed ? '#ba1a1a' : colors.primary[600]} />
-          <Text style={[styles.buttonText, { color: isDelayed ? '#ba1a1a' : colors.primary[600] }]}>
+          <Check size={20} color={buttonTintColor} />
+          <Text style={[styles.buttonText, { color: buttonTintColor }]}>
             Confirmar agora
           </Text>
         </TouchableOpacity>
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   containerDelayed: {
-    backgroundColor: '#ba1a1a', // Alerta crítico
+    backgroundColor: '#f9a825', // Alerta Amber (menos agressivo que vermelho)
   },
   header: {
     flexDirection: 'row',
