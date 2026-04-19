@@ -8,8 +8,8 @@ import ErrorState from '../../../shared/components/states/ErrorState'
 import { getPeriodFromTime } from '@meus-remedios/core'
 import AdherenceDayCard from '../components/AdherenceDayCard'
 import TimeBlockSeparator from '../components/TimeBlockSeparator'
-import DoseListItem from '../components/DoseListItem'
-import PriorityActionCard from '../components/PriorityActionCard'
+import DoseTimelineCard from '../components/DoseTimelineCard'
+import HeroDoseCard from '../components/HeroDoseCard'
 import StockAlertInline from '../components/StockAlertInline'
 import DoseRegisterModal from '../../dose/components/DoseRegisterModal'
 import StaleBanner from '../../../shared/components/feedback/StaleBanner'
@@ -78,7 +78,7 @@ export default function TodayScreen() {
         <StockAlertInline alerts={stockAlerts} />
 
         {priorityDoses.length > 0 && (
-          <PriorityActionCard 
+          <HeroDoseCard 
             doses={priorityDoses} 
             onPress={(d) => handleOpenRegister(d.protocol, d.scheduledTime)} 
           />
@@ -98,10 +98,9 @@ export default function TodayScreen() {
             <View key={shift}>
               <TimeBlockSeparator type={shift} />
               {groupedTimeline[shift].map((dose, idx) => (
-                <DoseListItem 
+                <DoseTimelineCard 
                   key={`${dose.id}-${idx}`} 
                   dose={dose} 
-                  onRegister={handleOpenRegister} 
                 />
               ))}
             </View>
