@@ -18,8 +18,11 @@ export default function HeroDoseCard({ doses = [], onPress }) {
   
   const medicineName = firstDose.medicine?.name || 'Medicamento'
   const displayTitle = isDelayed ? 'AINDA DÁ TEMPO' : 'TOMAR AGORA'
-  const alertColor = isDelayed ? '#fff9c4' : colors.primary[200] // Yellow-ish for warning
-  const buttonTintColor = isDelayed ? '#904d00' : colors.primary[600]
+  const alertColor = isDelayed ? '#904d00' : colors.primary[200]
+  const buttonBgColor = isDelayed ? colors.primary[600] : '#ffffff'
+  const buttonTextColor = isDelayed ? '#ffffff' : colors.primary[600]
+  const textColor = isDelayed ? '#1a1c1e' : '#ffffff'
+  const timeColor = isDelayed ? '#44474e' : 'rgba(255, 255, 255, 0.7)'
 
   return (
     <View style={[styles.container, isDelayed && styles.containerDelayed]}>
@@ -35,10 +38,10 @@ export default function HeroDoseCard({ doses = [], onPress }) {
           </Text> 
         </View>
         
-        <Text style={styles.medicineName} numberOfLines={2}>
+        <Text style={[styles.medicineName, { color: textColor }]} numberOfLines={2}>
           {isMultiple ? `${medicineName} e outros...` : medicineName}
         </Text>
-        <Text style={styles.timeInfo}>
+        <Text style={[styles.timeInfo, { color: timeColor }]}>
           {isMultiple 
             ? `Próxima: ${firstDose.scheduledTime || '--:--'}`
             : `Horário agendado: ${firstDose.scheduledTime || '--:--'}`
@@ -46,12 +49,12 @@ export default function HeroDoseCard({ doses = [], onPress }) {
         </Text>
         
         <TouchableOpacity 
-          style={styles.actionButton} 
+          style={[styles.actionButton, { backgroundColor: buttonBgColor }]} 
           onPress={() => onPress && onPress(firstDose)}
           activeOpacity={0.8}
         >
-          <Check size={20} color={buttonTintColor} />
-          <Text style={[styles.buttonText, { color: buttonTintColor }]}>
+          <Check size={20} color={buttonTextColor} />
+          <Text style={[styles.buttonText, { color: buttonTextColor }]}>
             Confirmar agora
           </Text>
         </TouchableOpacity>
@@ -72,9 +75,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 24,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   containerDelayed: {
-    backgroundColor: '#f9a825', // Alerta Amber (menos agressivo que vermelho)
+    backgroundColor: '#FFF8F0', // Creme ultra-leve (feedback H8.7)
+    borderColor: '#ffeb3b', // Borda sutil amarela para destaque
+    elevation: 2, // Sombra menor para parecer mais "leve"
   },
   header: {
     flexDirection: 'row',
@@ -92,16 +99,13 @@ const styles = StyleSheet.create({
   medicineName: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#ffffff',
     marginBottom: spacing[1],
   },
   timeInfo: {
     fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.7)',
     marginBottom: spacing[6],
   },
   actionButton: {
-    backgroundColor: '#ffffff',
     borderRadius: borderRadius.md,
     flexDirection: 'row',
     alignItems: 'center',
