@@ -22,7 +22,7 @@
     "started_at": "2026-04-19T00:00:00Z",
     "completed_at": null,
     "mode": "coding",
-    "status": "analysis",
+    "status": "completed",
     "goal": "Sprint 7.3 — Move Físico e Reparo de Tooling",
     "goal_type": "chore",
     "acceptance_criteria": [
@@ -53,7 +53,7 @@
     "contracts_count": 17,
     "knowledge_count": 85,
     "last_distillation": "2026-04-19T12:00:00Z",
-    "journal_entries_since_distillation": 0,
+    "journal_entries_since_distillation": 1,
     "recent_additions": {
       "rules": [],
       "anti_patterns": ["AP-H23", "AP-H24", "AP-H25", "AP-H26"],
