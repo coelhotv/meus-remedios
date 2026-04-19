@@ -1117,10 +1117,10 @@ Conteúdo mínimo:
 
 A fase só termina quando TODOS os itens abaixo forem verdadeiros:
 
-- [ ] `user_settings.notification_preference` existe e está sendo usado
-- [ ] `notification_devices` existe com RLS adequada
-- [ ] Mobile registra device real com `provider = 'expo'`
-- [ ] Dispatcher multicanal existe e está em uso
+- [x] `user_settings.notification_preference` existe e está sendo usado
+- [x] `notification_devices` existe com RLS adequada
+- [x] Mobile registra device real com `provider = 'expo'`
+- [x] Dispatcher multicanal existe e está em uso
 - [ ] Telegram continua funcional
 - [ ] Pelo menos `checkReminders` usa o dispatcher
 - [ ] Push funciona em iOS e Android reais
