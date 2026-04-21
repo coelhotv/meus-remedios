@@ -4,6 +4,7 @@
 > **Pré-requisito:** Fase 1 merged e `main` atualizado
 > **Duração estimada:** 30 min
 > **Impacto:** Backend do Telegram, Serverless Functions da Vercel e deep links de notificação
+> **Status:** CONCLUÍDA ✅ — PR #486 merged em `2026-04-21`
 
 ---
 
@@ -197,15 +198,15 @@ git commit -m "refactor(bot,api): atualizar deep links meusremedios:// → dosiq
 
 ## 4. Critérios de Aceitação do PR
 
-- [ ] `server/bot/commands/start.js`: texto "app Meus Remédios" corrigido para "app Dosiq"
-- [ ] `server/bot/commands/ajuda.js`: fallback `meus_remedios_bot` → `dosiq_bot`
-- [ ] `server/notifications/payloads/buildNotificationPayload.js`: zero deep links `meusremedios://`
-- [ ] `api/notify.js`: 3 deep links `meusremedios://` → `dosiq://`
-- [ ] `.github/scripts/__tests__/check-resolutions.e2e.test.js`: URL da API atualizada
-- [ ] Fixtures de testes do `.github/` atualizadas
-- [ ] Zero ocorrências de `meusremedios://` em todo o código
-- [ ] `npm run test:critical` passando
-- [ ] `npm run lint` passando
+- [x] `server/bot/commands/start.js`: texto "app Meus Remédios" corrigido para "app Dosiq"
+- [x] `server/bot/commands/ajuda.js`: fallback `meus_remedios_bot` → `dosiq_bot`
+- [x] `server/notifications/payloads/buildNotificationPayload.js`: zero deep links `meusremedios://`
+- [x] `api/notify.js`: 3 deep links `meusremedios://` → `dosiq://`
+- [x] `.github/scripts/__tests__/check-resolutions.e2e.test.js`: URL da API atualizada
+- [x] Fixtures de testes do `.github/` atualizadas
+- [x] Zero ocorrências de `meusremedios://` em todo o código
+- [x] `npm run test:critical` passando
+- [x] `npm run lint` passando
 
 
 ## 1. Escopo de Arquivos Modificados
