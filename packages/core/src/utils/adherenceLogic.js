@@ -361,10 +361,6 @@ export function calculateDosesByDate(date, logs, protocols, now = new Date()) {
   const missedDoses = []
   const scheduledDoses = []
 
-  // Converter data string para objeto Date (meia-noite local)
-  const targetDate = new Date(date + 'T00:00:00')
-  const dayOfWeek = targetDate.getDay() // 0=Domingo, 1=Segunda, etc.
-
   // Filtrar protocolos aplicáveis para esta data
   const applicableProtocols = protocols.filter((p) => isProtocolActiveOnDate(p, date))
 
