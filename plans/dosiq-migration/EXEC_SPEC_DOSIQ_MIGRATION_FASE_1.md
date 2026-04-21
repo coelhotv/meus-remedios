@@ -174,12 +174,12 @@ git commit -m "refactor(monorepo): renomear scope @meus-remedios → @dosiq em t
 
 ## 4. Critérios de Aceitação do PR
 
-- [ ] Todos os 7 `package.json` de packages internos renomeados
-- [ ] `package.json` raiz renomeado + scripts atualizados
-- [ ] `npm install` executado com sucesso e `package-lock.json` regenerado
-- [ ] Zero imports `@meus-remedios/*` funcionais na codebase
-- [ ] Zero comentários JSDoc `@meus-remedios/*` na codebase
-- [ ] Cache key `meus_remedios_query_cache` → `dosiq_query_cache`
-- [ ] `npm run lint` passando
-- [ ] `npm run validate:agent` passando
+- [x] Todos os 7 `package.json` de packages internos renomeados
+- [x] `package.json` raiz renomeado + scripts atualizados
+- [x] `npm install` executado com sucesso e `package-lock.json` regenerado
+- [x] Zero imports `@meus-remedios/*` funcionais na codebase
+- [x] Zero comentários JSDoc `@meus-remedios/*` na codebase
+- [x] Cache key `meus_remedios_query_cache` → `dosiq_query_cache`
+- [x] `npm run lint` passando
+- [x] `npm run validate:agent` passando
 

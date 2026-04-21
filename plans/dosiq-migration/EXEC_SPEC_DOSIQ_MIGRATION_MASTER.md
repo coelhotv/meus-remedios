@@ -117,7 +117,7 @@ grep -rn "meus.remedios\|meusremedios\|Meus Rem\|@meus-remedios" \
 
 | # | Fase | Spec | Branch | Pré-req |
 |---|---|---|---|---|
-| 1 | Monorepo, NPM Packages & Tooling | `EXEC_SPEC_DOSIQ_MIGRATION_FASE_1.md` | `refactor/dosiq-migration-fase-1` | Nenhum |
+| 1 | Monorepo, NPM Packages & Tooling (Concluída ✅) | `EXEC_SPEC_DOSIQ_MIGRATION_FASE_1.md` | `refactor/dosiq-migration-fase-1` | Nenhum |
 | 2 | App Híbrido Mobile & Expo | `EXEC_SPEC_DOSIQ_MIGRATION_FASE_2.md` | `refactor/dosiq-migration-fase-2` | Fase 1 merged |
 | 3 | Web App, SEO & PWA | `EXEC_SPEC_DOSIQ_MIGRATION_FASE_3.md` | `refactor/dosiq-migration-fase-3` | Fase 1 merged |
 | 4 | Bot, API Serverless & Notificações | `EXEC_SPEC_DOSIQ_MIGRATION_FASE_4.md` | `refactor/dosiq-migration-fase-4` | Fase 1 merged |
