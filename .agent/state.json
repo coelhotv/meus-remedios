@@ -21,23 +21,24 @@
     "id": "session_2026W17_native_ui_tweaks",
     "started_at": "2026-04-22T14:17:00Z",
     "mode": "planning",
-    "status": "planning",
+    "status": "completed",
     "goal": "Native App UI Tweaks (Fase 8 Post-MVP)",
     "goal_type": "feature"
   },
   "memory": {
-    "rules_count": 129,
+    "rules_count": 130,
     "anti_patterns_count": 102,
     "decisions_count": 33,
-    "contracts_count": 19,
+    "contracts_count": 20,
     "knowledge_count": 87,
     "last_distillation": "2026-04-21T18:50:00Z",
-    "journal_entries_since_distillation": 1,
+    "journal_entries_since_distillation": 2,
     "recent_additions": {
-      "rules": [],
+      "rules": ["R-180"],
       "anti_patterns": ["AP-H27"],
       "knowledge": ["K-086"],
-      "decisions": ["ADR-031", "ADR-032", "ADR-033"]
+      "decisions": ["ADR-031", "ADR-032", "ADR-033"],
+      "contracts": ["CON-018"]
     }
   },
   "evolution": {

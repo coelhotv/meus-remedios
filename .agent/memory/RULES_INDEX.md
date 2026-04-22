@@ -143,3 +143,4 @@
 - **[R-169]** Every screen component in apps/mobile/src/features/*/screens/ MUST be wrapped in... -> [`rules/react_and_ui/R-169.md`](./rules/react_and_ui/R-169.md)
 - **[R-175]** Snapshots offline segregados por dia DEVEM incluir localDay via getTodayLocal()... -> [`rules/mobile_and_platform/R-175.md`](./rules/mobile_and_platform/R-175.md)
 - **[R-178]** Ao criar novos diretórios (ex: server/), garantir que testes e lint capturem os novos caminhos... -> [`rules/process_and_testing/R-178.md`](./rules/process_and_testing/R-178.md)
+- **[R-180]** Native Header Standardization (Santuário Pattern): Títulos (28/800), spacing e navegação ← Voltar (Telegram) -> [`rules/react_and_ui/R-180.md`](./rules/react_and_ui/R-180.md)

@@ -143,4 +143,30 @@ Esta fase insere um agrupamento de itens baseados em "Turnos" (Manhã, Tarde, No
 - [x] Componente Desktop/PWA abre em build isolado e não sofreu 1 pixel de quebra por contaminações de escopo cruzado.
 - [x] CTAs (Confirmar Uso) só reagem dentro da janela de `+/- 2h`.
 - [x] O app compila livre de `eslint/no-restricted-imports` nativo cruzados (ex: SVGs puros importados no Root Native).
-- [x] Assinatura Humana presencial em emulador autorizando a funcionalidade 100%.
+---
+
+## Epic 3: Mobile UI Hardening & Refinements
+
+Após a entrega do redesign core (Epic 2), iniciamos uma fase de refinamentos contínuos para garantir a consistência de "Santuário" em todo o aplicativo nativo.
+
+### 3.1. Normalização de Headers (Padrão Santuário)
+O cabeçalho de todas as abas principais deve seguir o peso visual da Dashboard.
+- **Padrão**: `fontSize: 28`, `fontWeight: '800'`, `letterSpacing: -0.5`.
+- **Status**: ✅ Hoje, ✅ Tratamentos, ✅ Estoque, ✅ Perfil.
+
+### 3.2. Navegação Padrão (Modelo Telegram)
+As sub-telas de configuração devem adotar um padrão de navegação com botão "← Voltar" explícito e separação por borda.
+- **Status**: ✅ NotificationPreferencesScreen.
+
+### 3.3. Insights de Adesão (Trend Analysis)
+Evolução do card de adesão para exibir não apenas o estado atual, mas o progresso semanal.
+- **Implementação**: Fetch de 14 dias de logs e comparação delta (Semana Atual vs Semana Anterior).
+- **Visual**: Setas de tendência (`TrendingUp`/`TrendingDown`) e cores semânticas.
+- **Status**: ✅ Concluído.
+
+### 3.4. Localização & Hardening Linguístico
+Garantir que todos os termos legacy (pt-EU ou genéricos) sejam convertidos para pt-BR.
+- **Exemplos**: `activos` -> `ativos`, `Selecciona` -> `Selecione`, `A carregar` -> `Carregando`.
+- **Status**: ✅ Concluído.
+
+---
