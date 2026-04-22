@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Check, Clock, XCircle } from 'lucide-react-native'
-import { colors, spacing, typography } from '../../../shared/styles/tokens'
+import { colors, spacing, typography, shadows } from '../../../shared/styles/tokens'
 
 /**
  * DoseTimelineCard - Item de dose para a Timeline (Epic 2)
