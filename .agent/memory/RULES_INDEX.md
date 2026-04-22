@@ -69,6 +69,8 @@
 - **[R-174]** Force Metro to use a single instance of React and React Native fixed in the mobile workspace... -> [`rules/mobile_and_platform/R-174.md`](./rules/mobile_and_platform/R-174.md)
 - **[R-181]** iOS apps claiming user tracking in App Store Connect privacy labels MUST implemen... -> [`rules/mobile_and_platform/R-181.md`](./rules/mobile_and_platform/R-181.md)
 - **[R-182]** Maintain absolute version consistency between platforms by using a shared formul... -> [`rules/mobile_and_platform/R-182.md`](./rules/mobile_and_platform/R-182.md)
+- **[R-183]** Threshold de Complexidade Adaptativa (Modo Simple vs Complex) -> [`rules/mobile_and_platform/R-183.md`](./rules/mobile_and_platform/R-183.md)
+- **[R-184]** Protocolo de Auto-Refresh de Meia-Noite + AppState Foreground Refresh -> [`rules/mobile_and_platform/R-184.md`](./rules/mobile_and_platform/R-184.md)
 
 
 
@@ -145,3 +147,4 @@
 - **[R-175]** Snapshots offline segregados por dia DEVEM incluir localDay via getTodayLocal()... -> [`rules/mobile_and_platform/R-175.md`](./rules/mobile_and_platform/R-175.md)
 - **[R-178]** Ao criar novos diretórios (ex: server/), garantir que testes e lint capturem os novos caminhos... -> [`rules/process_and_testing/R-178.md`](./rules/process_and_testing/R-178.md)
 - **[R-180]** Native Header Standardization (Santuário Pattern): Títulos (28/800), spacing e navegação ← Voltar (Telegram) -> [`rules/react_and_ui/R-180.md`](./rules/react_and_ui/R-180.md)
+- **[R-185]** Consistência de estados de carregamento nativo e animações sincronizadas. -> [`rules/react_and_ui/R-185.md`](./rules/react_and_ui/R-185.md)

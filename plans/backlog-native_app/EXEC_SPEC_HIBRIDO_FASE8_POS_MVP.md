@@ -169,4 +169,42 @@ Garantir que todos os termos legacy (pt-EU ou genéricos) sejam convertidos para
 - **Exemplos**: `activos` -> `ativos`, `Selecciona` -> `Selecione`, `A carregar` -> `Carregando`.
 - **Status**: ✅ Concluído.
 
+### 3.5. Branding & Identidade Visual (v0.1.3)
+Reforço da marca na primeira interação do usuário com o app nativo.
+- **Login**: Inclusão do logotipo oficial e alinhamento do componente de input com os tokens de design.
+- **Status**: ✅ Concluído.
+
+### 3.6. Dashboard Adaptativo (Dona Maria vs Carlos)
+Implementação de densidade de interface variável baseada no perfil de carga medicamentosa.
+- **Simple Mode**: Lista direta cronológica para usuários com ≤ 3 medicamentos.
+- **Complex Mode**: Agrupamento por turnos (Manhã, Tarde, Noite) com accordions inteligentes para usuários com 4+ medicamentos.
+- **Status**: ✅ Concluído.
+
+### 3.7. Resiliência Temporal (Auto-Refresh)
+Garantir que a agenda "vire" automaticamente à meia-noite sem necessidade de intervenção manual.
+- **Mecanismo**: Timer de meia-noite + AppState listener para detecção de mudança de dia em foreground.
+- **Status**: ✅ Concluído.
+
+---
+
+## Epic 4: UX Evolution & Interações Avançadas (Próxima)
+
+Foco em deleite do usuário, micro-interações e profundidade visual (Wave 11-12).
+
+### 4.1. Haptic Feedback & Som
+- Reforço sensorial ao confirmar doses (Feedback de sucesso).
+- Vibração diferenciada para doses críticas em atraso.
+
+### 4.2. Gráficos de Adesão Evoluídos
+- Visualização de "Heatmap" de adesão mensal (estilo GitHub).
+- Detalhamento de interações medicamentosas (se disponível no core).
+
+### 4.3. Biometria & Lock Screen
+- Proteção da agenda via FaceID/TouchID (Opcional por usuário).
+- Implementação de Deep Links contextuais para Widgets (iOS/Android).
+
+### 4.4. Refinamento de Micro-animações (Framer Motion Native)
+- Transições de estado entre "Planejada" -> "Tomada" com animação de check celebrativo.
+- Skeleton UI aprimorado para carregamento de dados lento.
+
 ---
