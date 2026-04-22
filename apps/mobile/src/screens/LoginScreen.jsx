@@ -59,7 +59,7 @@ export default function LoginScreen({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <Image 
-          source={require('../assets/icon.png')} 
+          source={require('../../assets/icon.png')} 
           style={styles.logo}
           resizeMode="contain"
         />
