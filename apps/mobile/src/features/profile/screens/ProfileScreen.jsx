@@ -7,6 +7,7 @@ import { useProfile } from '../hooks/useProfile'
 import { logoutUser } from '../services/profileService'
 import TelegramLinkCard from '../components/TelegramLinkCard'
 import ScreenContainer from '../../../shared/components/ui/ScreenContainer'
+import LoadingState from '../../../shared/components/states/LoadingState'
 import { colors, spacing, borderRadius, shadows, typography } from '../../../shared/styles/tokens'
 import { ROUTES } from '../../../navigation/routes'
 
@@ -49,6 +50,14 @@ export default function ProfileScreen() {
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <ScreenContainer>
+        <LoadingState message="Carregando perfil..." />
+      </ScreenContainer>
+    )
   }
 
   return (
