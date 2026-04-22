@@ -1,5 +1,14 @@
-import { useState, useMemo } from 'react'
-import { ScrollView, View, Text, RefreshControl, StyleSheet } from 'react-native'
+import { useState, useMemo, useEffect, useCallback } from 'react'
+import { 
+  ScrollView, 
+  View, 
+  Text, 
+  RefreshControl, 
+  StyleSheet, 
+  LayoutAnimation, 
+  Platform, 
+  UIManager 
+} from 'react-native'
 import { Pill } from 'lucide-react-native'
 import { useTodayData } from '../hooks/useTodayData'
 import ScreenContainer from '../../../shared/components/ui/ScreenContainer'
@@ -14,11 +23,17 @@ import HeroDoseCard from '../components/HeroDoseCard'
 import StockAlertInline from '../components/StockAlertInline'
 import DoseRegisterModal from '../../dose/components/DoseRegisterModal'
 import StaleBanner from '../../../shared/components/feedback/StaleBanner'
-import { colors } from '../../../shared/styles/tokens'
+import { colors, spacing, typography } from '../../../shared/styles/tokens'
+
+// Habilitar animações no Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true)
+}
 
 export default function TodayScreen() {
   const [modalProtocol, setModalProtocol] = useState(null)
   const [modalScheduledTime, setModalScheduledTime] = useState(null)
+  const [expandedShifts, setExpandedShifts] = useState({})
 
   const { data, loading, error, stale, isDaySegregated, refresh } = useTodayData()
 
@@ -28,7 +43,10 @@ export default function TodayScreen() {
   const medicines = data?.medicines ?? {}
   const stats = data?.stats ?? { expected: 0, taken: 0, score: 0 }
 
-  // Agrupamento da Timeline por Turnos (Epic 2) - Memoized (Ref Gemini review)
+  // 1. Lógica de Persona:Threshold de complexidade adaptativa (Wave 10A)
+  const isComplex = useMemo(() => Object.keys(medicines).length > 3, [medicines])
+
+  // Agrupamento da Timeline por Turnos (Epic 2) - Memoized
   const { groupedTimeline, shifts } = useMemo(() => {
     const grouped = timeline.reduce((acc, dose) => {
       const shift = getPeriodFromTime(dose.scheduledTime)
@@ -37,10 +55,42 @@ export default function TodayScreen() {
       return acc
     }, {})
     
-    const activeShifts = ['Madrugada', 'Manhã', 'Tarde', 'Noite'].filter(s => grouped[s])
+    // Carlos (isComplex) vê todos os turnos principais. Dona Maria vê apenas onde há doses.
+    const allShifts = ['Manhã', 'Tarde', 'Noite', 'Madrugada']
+    const activeShifts = isComplex 
+      ? allShifts 
+      : allShifts.filter(s => grouped[s] && grouped[s].length > 0)
+    
     return { groupedTimeline: grouped, shifts: activeShifts }
-  }, [timeline])
+  }, [timeline, isComplex])
 
+  // 2. Heurística de Expansão Inicial
+  useEffect(() => {
+    if (shifts.length > 0 && Object.keys(expandedShifts).length === 0) {
+      const initial = {}
+      shifts.forEach(shift => {
+        const doses = groupedTimeline[shift] || []
+        // Expandir se tiver dose atrasada ou próxima
+        const hasUrgent = doses.some(d => d.timelineStatus === 'ATRASADA' || d.timelineStatus === 'PROXIMA')
+        initial[shift] = hasUrgent
+      })
+      
+      // Fallback: se nada for urgente, expandir o primeiro turno disponível
+      if (!Object.values(initial).some(v => v) && shifts.length > 0) {
+        initial[shifts[0]] = true
+      }
+      
+      setExpandedShifts(initial)
+    }
+  }, [shifts, groupedTimeline])
+
+  const toggleShift = useCallback((shift) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+    setExpandedShifts(prev => ({
+      ...prev,
+      [shift]: !prev[shift]
+    }))
+  }, [])
 
   if (loading && !data) return <LoadingState message="Carregando o seu dia..." />
   if (error && !data) return <ErrorState message={error} onRetry={refresh} />
@@ -77,7 +127,7 @@ export default function TodayScreen() {
           <RefreshControl
             refreshing={loading && !!data}
             onRefresh={refresh}
-            tintColor="#006a5e"
+            tintColor={colors.status.success}
           />
         }
       >
@@ -110,22 +160,44 @@ export default function TodayScreen() {
 
         {protocols.length === 0 ? (
           <EmptyState
-            icon={<Pill size={48} color="#006a5e" />}
+            icon={<Pill size={48} color={colors.status.success} />}
             message={'Sem tratamentos ativos.\nAdicione protocolos na versão web.'}
           />
         ) : (
-          shifts.map(shift => (
-            <View key={shift}>
-              <TimeBlockSeparator type={shift} />
-              {groupedTimeline[shift].map((dose) => (
-                <DoseTimelineCard 
-                  key={dose.id} 
-                  dose={dose} 
-                  onRegister={handleOpenRegister}
+          shifts.map(shift => {
+            const doses = groupedTimeline[shift] || []
+            const isExpanded = expandedShifts[shift]
+            const isEmpty = doses.length === 0
+
+            return (
+              <View key={shift} style={styles.shiftContainer}>
+                <TimeBlockSeparator 
+                  type={shift} 
+                  isExpanded={isExpanded}
+                  onToggle={() => toggleShift(shift)}
+                  isDisabled={isEmpty}
                 />
-              ))}
-            </View>
-          ))
+                
+                {isExpanded && (
+                  <View style={styles.dosesList}>
+                    {isEmpty ? (
+                      <View style={styles.emptyShiftContainer}>
+                        <Text style={styles.emptyShiftText}>Nenhum medicamento para este turno</Text>
+                      </View>
+                    ) : (
+                      doses.map((dose) => (
+                        <DoseTimelineCard 
+                          key={dose.id} 
+                          dose={dose} 
+                          onRegister={handleOpenRegister}
+                        />
+                      ))
+                    )}
+                  </View>
+                )}
+              </View>
+            )
+          })
         )}
       </ScrollView>
 
@@ -159,12 +231,14 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.text.primary,
     letterSpacing: -0.5,
+    fontFamily: typography.fontFamily.bold || 'System',
   },
   date: {
     fontSize: 16,
     color: colors.text.secondary,
     textTransform: 'capitalize',
     marginTop: 4,
+    fontFamily: typography.fontFamily.medium || 'System',
   },
   agendaHeader: {
     paddingHorizontal: 16,
@@ -175,18 +249,25 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: colors.text.primary,
+    fontFamily: typography.fontFamily.bold || 'System',
   },
-  staleBanner: {
-    backgroundColor: 'rgba(255, 152, 0, 0.1)',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 152, 0, 0.2)',
+  shiftContainer: {
+    marginBottom: 4,
   },
-  staleText: {
-    fontSize: 12,
-    color: '#904d00',
+  dosesList: {
+    marginTop: 4,
+  },
+  emptyShiftContainer: {
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyShiftText: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    fontStyle: 'italic',
     textAlign: 'center',
-    fontWeight: '600',
-  },
+    opacity: 0.7,
+  }
 })

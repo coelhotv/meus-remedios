@@ -3,6 +3,7 @@
 ## 📦 Data & Schema (`data_and_schema`)
 - **[R-020]** ALWAYS use parseLocalDate() or new Date(str + 'T00:00:00'). NEVER use new Date('... -> [`rules/data_and_schema/R-020.md`](./rules/data_and_schema/R-020.md)
 - **[R-021]** All Zod schema enum values must be in Portuguese. Always export labels for UI di... -> [`rules/data_and_schema/R-021.md`](./rules/data_and_schema/R-021.md)
+- **[R-H27]** Native Adaptive Complexity (Persona Logic) -> [`rules/data_and_schema/R-H27.md`](./rules/data_and_schema/R-H27.md)
 - **[R-022]** quantity_taken must be in pills (Zod limit: 100), never in milligrams. -> [`rules/data_and_schema/R-022.md`](./rules/data_and_schema/R-022.md)
 - **[R-023]** Always follow Validate → Record → Decrement for dose registration. Never decreme... -> [`rules/data_and_schema/R-023.md`](./rules/data_and_schema/R-023.md)
 - **[R-082]** Zod schemas and DB schemas MUST be synchronized. Any CHECK/NOT NULL/enum in DB m... -> [`rules/data_and_schema/R-082.md`](./rules/data_and_schema/R-082.md)
