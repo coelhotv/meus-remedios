@@ -84,7 +84,14 @@ export function useTreatments() {
   const filteredData = useMemo(() => {
     if (!data) return null
     const today = getTodayLocal()
-    return data.filter(p => isProtocolActiveOnDate(p, today))
+    
+    return data
+      .filter(p => isProtocolActiveOnDate(p, today))
+      .sort((a, b) => {
+        const timeA = (a.time_schedule && a.time_schedule[0]) || '99:99'
+        const timeB = (b.time_schedule && b.time_schedule[0]) || '99:99'
+        return timeA.localeCompare(timeB)
+      })
   }, [data])
 
   return { data: filteredData, loading, error, stale, refresh: load }
