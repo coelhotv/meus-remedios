@@ -11,23 +11,25 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUNDLE_ID="com.coelhotv.dosiq"
 PLIST_FILE="$SCRIPT_DIR/GoogleService-Info.plist"
 
-echo "🔍 Verificando Distribution Certificate no keychain..."
+if [ "$PROFILE" = "production" ]; then
+  echo "🔍 Verificando Distribution Certificate no keychain..."
+  CERT=$(security find-identity -v -p codesigning | grep "iPhone Distribution" | grep "$BUNDLE_ID\|Antonio Coelho" | head -1)
 
-CERT=$(security find-identity -v -p codesigning | grep "iPhone Distribution" | grep "$BUNDLE_ID\|Antonio Coelho" | head -1)
-
-if [ -z "$CERT" ]; then
-  echo ""
-  echo "❌ Distribution Certificate não encontrado no keychain."
-  echo ""
-  echo "   Para instalar:"
-  echo "   1. eas credentials --platform ios"
-  echo "   2. Build Credentials → Distribution Certificate → Download"
-  echo "   3. Clique duplo no .p12 baixado para instalar no Keychain Access"
-  echo "   4. Rode este script novamente"
-  exit 1
+  if [ -z "$CERT" ]; then
+    echo ""
+    echo "❌ Distribution Certificate não encontrado no keychain (Necessário para Production)."
+    echo ""
+    echo "   Para instalar:"
+    echo "   1. eas credentials --platform ios"
+    echo "   2. Build Credentials → Distribution Certificate → Download"
+    echo "   3. Clique duplo no .p12 baixado para instalar no Keychain Access"
+    echo "   4. Rode este script novamente"
+    exit 1
+  fi
+  echo "   ✅ Certificado encontrado: $CERT"
+else
+  echo "ℹ️  Simulador detectado (perfil $PROFILE): Pulando verificação de certificado de distribuição."
 fi
-
-echo "   ✅ Certificado encontrado: $CERT"
 
 echo "🔐 Desbloqueando keychain..."
 security unlock-keychain ~/Library/Keychains/login.keychain-db
@@ -80,8 +82,8 @@ eas build --local --platform ios --profile "$PROFILE" --output "$TEMP_OUTPUT" --
   echo "⚠️ Aviso: O comando EAS reportou um problema (provavelmente limpeza de cache no iCloud), verificando integridade do binário..."
 }
 
-if [ ! -f "$TEMP_OUTPUT" ]; then
-  echo "❌ Erro: Build concluído mas arquivo não encontrado em $TEMP_OUTPUT"
+if [ ! -e "$TEMP_OUTPUT" ]; then
+  echo "❌ Erro: Build concluído mas arquivo/diretório não encontrado em $TEMP_OUTPUT"
   exit 1
 fi
 
