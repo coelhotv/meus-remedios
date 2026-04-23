@@ -1,8 +1,9 @@
 // TreatmentsScreen.jsx — tela "Tratamentos" do MVP mobile
 // Exibe a lista de protocolos ativos do usuário
 
-import { FlatList, View, Text, StyleSheet } from 'react-native'
+import { FlatList, View, Text, StyleSheet, RefreshControl } from 'react-native'
 import ScreenContainer from '../../../shared/components/ui/ScreenContainer'
+// ... (restante dos imports)
 import LoadingState from '../../../shared/components/states/LoadingState'
 import ErrorState from '../../../shared/components/states/ErrorState'
 import EmptyState from '../../../shared/components/states/EmptyState'
@@ -38,6 +39,13 @@ export default function TreatmentsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <TreatmentCard treatment={item} />}
         contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading && !!data}
+            onRefresh={refresh}
+            tintColor={colors.status.success}
+          />
+        }
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.title}>Meus Tratamentos</Text>
@@ -47,11 +55,9 @@ export default function TreatmentsScreen() {
         ListEmptyComponent={
           <EmptyState 
             title="Nenhum tratamento ativo"
-            message="Você não possui protocolos de tratamento configurados no momento."
+            message={'Sem tratamentos ativos.\nAdicione protocolos na versão web.'}
           />
         }
-        refreshing={loading}
-        onRefresh={refresh}
       />
     </ScreenContainer>
   )
