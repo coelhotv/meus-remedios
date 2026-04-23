@@ -21,10 +21,14 @@ export default function TreatmentsScreen() {
 
   const toggleGroup = useCallback((groupId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setExpandedGroups(prev => ({
-      ...prev,
-      [groupId]: !prev[groupId]
-    }))
+    setExpandedGroups(prev => {
+      // Se for undefined (estado inicial), tratamos como true (aberto), então o toggle inverte para false.
+      const isCurrentlyExpanded = prev[groupId] !== false
+      return {
+        ...prev,
+        [groupId]: !isCurrentlyExpanded
+      }
+    })
   }, [])
 
   // Heurística de Complexidade Adaptativa (Wave 10A)
