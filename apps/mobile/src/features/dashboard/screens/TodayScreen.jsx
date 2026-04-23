@@ -189,6 +189,10 @@ export default function TodayScreen() {
             const isExpanded = expandedShifts[shift]
             const isEmpty = doses.length === 0
 
+            // Cálculo do progresso do turno (v0.1.5)
+            const totalCount = doses.length
+            const takenCount = doses.filter(d => d.isRegistered).length
+
             return (
               <View key={shift} style={styles.shiftContainer}>
                 <TimeBlockSeparator 
@@ -196,6 +200,7 @@ export default function TodayScreen() {
                   isExpanded={isExpanded}
                   onToggle={() => toggleShift(shift)}
                   isDisabled={isEmpty}
+                  counts={totalCount > 0 ? { taken: takenCount, total: totalCount } : null}
                 />
                 
                 {isExpanded && (
