@@ -15,6 +15,8 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true)
 }
 
+const DEFAULT_COMPLEXITY = { isComplex: false, flatData: [] }
+
 export default function TreatmentsScreen() {
   const { data: groups, loading, error, stale, refresh } = useTreatments()
   const [expandedGroups, setExpandedGroups] = useState({})
@@ -33,7 +35,7 @@ export default function TreatmentsScreen() {
 
   // Heurística de Complexidade Adaptativa (Wave 10A)
   const { isComplex, flatData } = useMemo(() => {
-    if (!groups) return { isComplex: false, flatData: [] }
+    if (!groups) return DEFAULT_COMPLEXITY
     const total = groups.reduce((acc, g) => acc + g.protocols.length, 0)
     const flat = groups.flatMap(g => g.protocols)
     return { isComplex: total > 3, flatData: flat }

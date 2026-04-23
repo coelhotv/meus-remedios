@@ -174,9 +174,11 @@ export function useStock() {
     }
   }, [state.data])
 
-  return {
+  const result = useMemo(() => ({
     ...state,
     data: refinedData,
     refresh: () => loadStock(true)
-  }
+  }), [state, refinedData, loadStock])
+
+  return result
 }

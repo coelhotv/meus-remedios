@@ -139,7 +139,15 @@ export function useTreatments() {
       if (b.id === 'general') return -1
       return a.title.localeCompare(b.title)
     })
-  }, [data])
+  }, [data]) // today é derivado de getTodayLocal() que é determinístico por dia
 
-  return { data: groupedData, loading, error, stale, refresh: load }
+  const result = useMemo(() => ({ 
+    data: groupedData, 
+    loading, 
+    error, 
+    stale, 
+    refresh: load 
+  }), [groupedData, loading, error, stale, load])
+
+  return result
 }

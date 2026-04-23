@@ -284,8 +284,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   emptyShiftContainer: {
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing[6],
+    paddingHorizontal: spacing[4],
     alignItems: 'center',
     justifyContent: 'center',
   },

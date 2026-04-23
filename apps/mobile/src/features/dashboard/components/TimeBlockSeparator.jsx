@@ -60,7 +60,7 @@ export default function TimeBlockSeparator({
             {counts && counts.total > 0 && (
               <Text style={[
                 styles.countsText,
-                isDisabled && { color: colors.text.secondary, opacity: 0.5 }
+                isDisabled && styles.countsTextDisabled
               ]}>
                 ({counts.taken}/{counts.total})
               </Text>
@@ -82,8 +82,8 @@ export default function TimeBlockSeparator({
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: spacing[4],
-    marginTop: spacing.lg,
-    marginBottom: spacing.xs,
+    marginTop: spacing[6],
+    marginBottom: spacing[1],
   },
   timelineRow: {
     flexDirection: 'row',
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   dotContainer: {
     width: 32,
     alignItems: 'center',
-    marginRight: spacing.sm,
+    marginRight: spacing[2],
   },
   text: {
     fontSize: 18,
@@ -116,7 +116,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: colors.text.secondary,
-    marginRight: spacing.xs,
+    marginRight: spacing[1],
     fontFamily: typography.fontFamily.medium || 'System',
+  },
+  countsTextDisabled: {
+    color: colors.text.secondary,
+    opacity: 0.5,
   }
 })

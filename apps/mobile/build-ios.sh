@@ -100,15 +100,19 @@ else
   cd "$SCRIPT_DIR"
 fi
 
+rm -f "$TEMP_OUTPUT"
+
 echo "🚀 Iniciando build iOS ($PROFILE) para v$APP_VERSION..."
-# Usamos || true para ignorar erros de limpeza interna do EAS (comum no iCloud) 
-# O sucesso será validado pela existência do arquivo na linha seguinte.
-eas build --local --platform ios --profile "$PROFILE" --output "$TEMP_OUTPUT" --clear-cache || {
-  echo "⚠️ Aviso: O comando EAS reportou um problema (provavelmente limpeza de cache no iCloud), verificando integridade do binário..."
-}
+# Build local via EAS
+if eas build --local --platform ios --profile "$PROFILE" --output "$TEMP_OUTPUT" --clear-cache ; then
+  echo "✅ EAS build concluído com sucesso."
+else
+  echo "❌ Erro crítico no EAS build. Verifique os logs acima."
+  exit 1
+fi
 
 if [ ! -e "$TEMP_OUTPUT" ]; then
-  echo "❌ Erro: Build concluído mas arquivo/diretório não encontrado em $TEMP_OUTPUT"
+  echo "❌ Erro: Arquivos de saída não encontrados em $TEMP_OUTPUT"
   exit 1
 fi
 
