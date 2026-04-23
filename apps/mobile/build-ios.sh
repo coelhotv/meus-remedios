@@ -91,6 +91,29 @@ fi
 echo "💾 Movendo build para: $FINAL_PATH"
 mv "$TEMP_OUTPUT" "$FINAL_PATH"
 
+# 4.1 Extração automática para Simulador (Wave v0.1.5)
+# Se não for produção e o output for um arquivo comum (tar.gz), descompactamos para uma pasta.
+if [ "$PROFILE" != "production" ] && [ -f "$FINAL_PATH" ]; then
+  echo "📦 Detectado pacote comprimido ($FINAL_PATH). Iniciando extração automática para simulador..."
+  
+  # Renomeamos temporariamente para evitar conflito de nome arquivo vs pasta
+  TAR_TEMP="${FINAL_PATH}.tar.gz"
+  mv "$FINAL_PATH" "$TAR_TEMP"
+  
+  # Criamos a pasta com o nome original do build
+  mkdir -p "$FINAL_PATH"
+  
+  # Extraímos para dentro dessa pasta
+  if tar -xvzf "$TAR_TEMP" -C "$FINAL_PATH" ; then
+    rm "$TAR_TEMP"
+    echo "✅ Extração concluída com sucesso!"
+    echo "📂 Pasta pronta para o simulador: $FINAL_PATH"
+  else
+    echo "❌ Erro ao extrair pacote. Mantendo arquivo original."
+    mv "$TAR_TEMP" "$FINAL_PATH"
+  fi
+fi
+
 # 5. Submissão automática para TestFlight (apenas produção)
 if [ "$PROFILE" = "production" ]; then
   echo "⬆️ Iniciando submissão para TestFlight..."
