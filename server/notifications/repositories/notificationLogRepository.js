@@ -32,11 +32,11 @@ export const notificationLogRepository = {
       .single();
 
     if (error) {
-      console.error('[notificationLogRepository.create] Erro ao inserir log:', {
+      console.error('[notificationLogRepository.create] Erro ao inserir log no Supabase:', {
         userId: parsed.data.user_id,
         error: error.message
       });
-      throw error;
+      throw new Error(`Erro ao persistir log: ${error.message}`);
     }
 
     return insertedData;
@@ -46,7 +46,7 @@ export const notificationLogRepository = {
    * Lista notificações de um usuário de forma paginada para a Inbox
    * (Será usado principalmente na v8.2/8.3, mas deixamos pronto o backend)
    */
-  async listByUser(userId, { limit = 20, offset = 0 } = {}) {
+  async listByUserId(userId, { limit = 20, offset = 0 } = {}) {
     const { data, error } = await supabase
       .from('notification_log')
       .select(`
@@ -63,7 +63,7 @@ export const notificationLogRepository = {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('[notificationLogRepository.listByUser] Erro ao listar logs:', {
+      console.error('[notificationLogRepository.listByUserId] Erro ao listar logs:', {
         userId,
         error: error.message
       });
