@@ -6,7 +6,7 @@
  * @module useNotificationLog
  */
 
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useCachedQuery, generateCacheKey } from '@shared/hooks/useCachedQuery'
 import { createNotificationLogRepository, CACHE_KEYS } from '@dosiq/shared-data'
 import { supabase } from '@shared/utils/supabase'
@@ -34,10 +34,11 @@ export function useNotificationLog(options = {}) {
   }, [userId, limit, offset])
 
   // Fetcher que utiliza o repositório compartilhado
-  const fetcher = async () => {
+  // High Priority: Memorizado para evitar loops de re-renderização
+  const fetcher = useCallback(async () => {
     if (!userId) return []
     return repo.listByUserId(userId, { limit, offset })
-  }
+  }, [userId, limit, offset])
 
   return useCachedQuery(cacheKey, fetcher, {
     enabled: enabled && !!userId,
