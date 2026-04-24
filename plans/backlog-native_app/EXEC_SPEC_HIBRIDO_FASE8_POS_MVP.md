@@ -220,22 +220,49 @@ Foco em paridade funcional rigorosa com a web, resiliência de cache para uso of
 
 ---
 
-## Epic 5: Interações Avançadas & Hardening (Próxima)
+## Epic 5: Estabilização de Contadores & Polimento de UX (v0.1.7)
+
+Foco na correção de regressões funcionais, humanização da interface e automação de workflow.
+
+### 5.1. Confiabilidade dos Contadores de Dose
+- Injeção da flag `isRegistered` na lógica de adesão do `@dosiq/core` para garantir paridade entre Web e Mobile.
+- Correção do bug onde o contador de doses tomadas permanecia zerado `(0/X)` no Dashboard Nativo.
+- **Status**: ✅ Concluído.
+
+### 5.2. Humanização de Terminologia (Copy)
+- Substituição global do termo técnico "Protocolo" pelo termo centrado no paciente **"Tratamento"** em toda a interface mobile.
+- Atualização de labels, subtítulos e estados vazios (Empty States).
+- **Status**: ✅ Concluído.
+
+### 5.3. Refinamento de Densidade Visual (Spacing)
+- Ajuste dos gaps entre blocos de turnos (Dashboard) e planos de tratamento (Treatments).
+- Unificação do espaçamento em **16px** (paridade com cards) para uma interface mais coesa e densa.
+- **Status**: ✅ Concluído.
+
+### 5.4. Automação e Governança (DEVFLOW)
+- Otimização do script `build-ios.sh` para extração e renomeação automática de bundles `.app`.
+- Implementação da **"Hard Stop Rule"** no protocolo DEVFLOW para garantir o carregamento de contexto (Bootstrap) em novas sessões.
+- **Status**: ✅ Concluído.
+
+---
+
+## Epic 6: Interações Avançadas & Hardening (Próxima)
 
 Foco em deleite do usuário, micro-interações e profundidade visual (Wave 11-12).
 
-### 5.1. Haptic Feedback & Som
+### 6.1. Haptic Feedback & Som
 - Reforço sensorial ao confirmar doses (Feedback de sucesso).
 - Vibração diferenciada para doses críticas em atraso.
 
-### 5.2. Gráficos de Adesão Evoluídos
+### 6.2. Gráficos de Adesão Evoluídos
 - Visualização de "Heatmap" de adesão mensal (estilo GitHub).
 
-### 5.3. Biometria & Lock Screen
+### 6.3. Biometria & Lock Screen
 - Proteção da agenda via FaceID/TouchID (Opcional por usuário).
 
-### 5.4. Refinamento de Micro-animações
+### 6.4. Refinamento de Micro-animações
 - Transições de estado entre "Planejada" -> "Tomada" com animação de check celebrativo.
 - Skeleton UI aprimorado para carregamento de dados lento.
 
 ---
+
