@@ -36,6 +36,7 @@ export function useTreatments() {
       if (!result.success) throw new Error(result.error)
 
       const newData = result.data
+      const today = getTodayLocal()
       const snapshot = {
         data: newData,
         capturedAt: new Date().toISOString(),
