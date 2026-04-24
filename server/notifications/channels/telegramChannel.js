@@ -70,7 +70,7 @@ export async function sendTelegramNotification({ userId, payload, context, bot }
   }
 
   try {
-    await bot.sendMessage(chatId, message, options)
+    const sentMessage = await bot.sendMessage(chatId, message, options)
 
     console.info('[telegramChannel] entregue', { 
       correlationId, 
@@ -87,6 +87,7 @@ export async function sendTelegramNotification({ userId, payload, context, bot }
       failed: 0,
       deactivatedTokens: [],
       errors: [],
+      messageId: sentMessage.message_id,
     }
   } catch (error) {
     console.error('[telegramChannel] falha no envio', { correlationId, userId, chatId, error: error.message })
