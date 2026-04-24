@@ -35,7 +35,7 @@ A vantagem é que **metade do caminho técnico já está construído** (a tabela
 
 ---
 
-## 2. Inventário Existente e Complexidade (Baixa)
+### 2. Inventário Existente e Complexidade (Baixa)
 
 O banco de dados já possui as seguintes estruturas (via `docs/architecture/DATABASE.md`):
 
@@ -49,18 +49,18 @@ O banco de dados já possui as seguintes estruturas (via `docs/architecture/DATA
 
 ---
 
-## 3. Escopo Exato da Entrega
+### 3. Escopo Exato da Entrega
 
-### 3.1. Supabase & Backend
+#### 3.1. Supabase & Backend
 1. **Migration Simples**: Hoje, `notification_log` tem a coluna `telegram_message_id`. Precisaremos de uma migration SQL simples renomeando/substituindo essa coluna para `provider_message_id` ou adicionando `provider_metadata` (jsonb) para suportar tanto IDs de Telegram quanto _Receipt Tickets_ de serviços Push (Expo).
 2. **Atualização do Dispatcher**: Injetar o repositório de logs no `dispatchNotification.js`. Sempre que um canal consolidado reportar "Sucesso" (Push ou Telegram), fazer um `INSERT` na `notification_log` assincronamente (Fire-and-forget, para não travar o envio).
 
-### 3.2. Novo Pacote Compartilhado (`packages/shared-data`)
+#### 3.2. Novo Pacote Compartilhado (`packages/shared-data`)
 1. Implementar `notificationLogRepository.js` no client-side para listar histórico paginado.
 2. Criar hook universal `useNotificationLog({ limit: 20 })` usando SWR (`useCachedQuery`) para web e mobile consumirem.
 3. Criar utilitário e schema Zod para formatar a visualização dos ícones locais em função do tipo da notificação.
 
-### 3.3. Frontend App (Native) & Web (PWA)
+#### 3.3. Frontend App (Native) & Web (PWA)
 1. **Notification Inbox UI**: Uma nova rota (ex: `/notifications`), acessível ou pelo Perfil ou através de um novo ícone 🔔 na Header bar/Tab bar.
 2. Contendo uma **Lista Virtualizada** (já possuímos `Virtuoso` otimizado para mobile) exibindo cards das últimas notificações.
 3. **Deep Linking**: O botão "Ação" do card das notificações antigas deve aproveitar os deeplinks de metadado (ex: Abrir aba Hoje para um Lembrete, aba Estoque para alerta de medicamento acabando).
@@ -68,15 +68,15 @@ O banco de dados já possui as seguintes estruturas (via `docs/architecture/DATA
 
 ---
 
-## 4. Ordem Recomendada de Implementação (Sprints)
+### 4. Ordem Recomendada de Implementação (Sprints)
 
-- **Sprint 8.1 - Data Layer:** Migration SQL de `provider_metadata` + Dispatcher salva no DB. (O log começa a ser populado sem UI).
+- [x] **Sprint 8.1 - Data Layer:** Migration SQL de `provider_metadata` + Dispatcher salva no DB. ✅ (PR #489)
 - **Sprint 8.2 - Shared Service:** Hook de leitura + Mocks.
 - **Sprint 8.3 - UX Web & Mobile:** Desenvolvimento da tela e sinergia de badging 🔔.
 
 ---
 
-## 5. DoD (Definition of Done) Verificável
+### 5. DoD (Definition of Done) Verificável
 
 - [ ] Lembrete disparado pelo cron (ou manualmente via admin) gera linha na tabela `notification_log`.
 - [ ] Um disparo que for englobado pelo canal `both` registra perfeitamente na tabela, seja duplicado (por provedor) ou compilado.
