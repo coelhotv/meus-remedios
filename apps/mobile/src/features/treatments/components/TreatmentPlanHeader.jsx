@@ -34,7 +34,7 @@ export default function TreatmentPlanHeader({
         
         <View style={styles.textContainer}>
           <Text style={styles.title} numberOfLines={1}>{title}</Text>
-          <Text style={styles.subtitle}>{count} {count === 1 ? 'protocolo' : 'protocolos'}</Text>
+          <Text style={styles.subtitle}>{count} {count === 1 ? 'tratamento' : 'tratamentos'}</Text>
         </View>
         
         <View style={styles.chevronContainer}>

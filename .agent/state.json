@@ -20,7 +20,7 @@
   "session": {
     "mode": "coding",
     "status": "completed",
-    "goal": "Ajuste de espaçamento (padding) na TreatmentsScreen (Complex)",
+    "goal": "Ajuste de copy UI: Substituir 'Protocolo' por 'Tratamento'",
     "goal_type": "fix"
   },
   "memory": {
