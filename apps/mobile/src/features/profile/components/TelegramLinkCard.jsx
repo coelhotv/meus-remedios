@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.card,
     borderRadius: borderRadius.lg,
     padding: spacing[4],
-    marginHorizontal: 16,
+    marginHorizontal: spacing[4],
     ...shadows.sm,
     marginBottom: spacing[4],
   },
