@@ -71,8 +71,8 @@ export async function dispatchNotification({ userId, kind, payload, channels, co
     })
     .filter(Boolean)
 
-  const normalized = normalizeChannelResults(results)
-
+  const normalized = normalizeChannelResults(results);
+  
   // Sprint 8.1: Persistência em notification_log (Assíncrona / Fire-and-forget)
   // Fazemos isso sem travar o retorno da função para o cron/request original
   (async () => {
