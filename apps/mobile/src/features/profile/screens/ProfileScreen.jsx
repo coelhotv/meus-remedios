@@ -131,7 +131,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Telegram</Text>
+          <Text style={styles.sectionTitle}>Bot Telegram</Text>
           <TelegramLinkCard
             settings={settings}
           />
