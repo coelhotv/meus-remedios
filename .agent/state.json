@@ -19,8 +19,8 @@
   },
   "session": {
     "mode": "coding",
-    "status": "analysis",
-    "goal": "N1.7 — Web: deeplink Today + service worker tag",
+    "status": "coding",
+    "goal": "PWA & Web Push",
     "goal_type": "feature"
   },
   "memory": {
@@ -44,7 +44,7 @@
     "pending_mutations": []
   },
   "quality_gates": {
-    "index_loaded_at": "2026-04-26T20:25:00Z"
+    "index_loaded_at": "2026-04-26T18:13:00-03:00"
   },
   "migration": {
     "status": "complete",
