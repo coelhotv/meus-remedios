@@ -7,8 +7,10 @@ export const webpushService = {
       let subscription = await registration.pushManager.getSubscription()
 
       if (!subscription) {
-        const response = await fetch('/api/vapid-public-key')
-        const vapidPublicKey = await response.text()
+        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+        if (!vapidPublicKey) {
+            throw new Error('VITE_VAPID_PUBLIC_KEY não está definido')
+        }
         const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey)
 
         subscription = await registration.pushManager.subscribe({
