@@ -12,6 +12,7 @@
    ============================================ */
 :root {
   --color-primary: #006a5e;
+  --primary-rgb: 0, 106, 94;
   --color-primary-container: #008577;
   --color-primary-fixed: #90f4e3;
   --color-primary-light: #4db6ac;
@@ -30,6 +31,7 @@
    ============================================ */
 :root {
   --color-secondary: #005db6;
+  --secondary-rgb: 0, 93, 182;
   --color-secondary-fixed: #d6e3ff;
   --color-secondary-light: #42a5f5;
   --color-secondary-dark: #003c8f;
