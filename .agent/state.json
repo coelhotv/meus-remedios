@@ -18,10 +18,10 @@
     "current_sprint": "2026-W17"
   },
   "session": {
-    "mode": "coding",
-    "status": "completed",
-    "goal": "N1.8 — Notification Inbox: 4 fixes críticos (Mobile + Web) + DEVFLOW C5",
-    "goal_type": "fix"
+    "mode": "planning",
+    "status": "planned",
+    "goal": "Wave N2 — Quiet Hours + redesign UX de notificações nativas",
+    "goal_type": "feature"
   },
   "memory": {
     "rules_count": 142,
@@ -30,7 +30,7 @@
     "contracts_count": 20,
     "knowledge_count": 89,
     "last_distillation": "2026-04-26T05:15:00Z",
-    "journal_entries_since_distillation": 4,
+    "journal_entries_since_distillation": 6,
     "recent_additions": {
       "rules": ["R-194", "R-195"],
       "anti_patterns": ["AP-116", "AP-117", "AP-118"],
@@ -44,7 +44,7 @@
     "pending_mutations": []
   },
   "quality_gates": {
-    "index_loaded_at": "2026-04-27T03:10:00Z"
+    "index_loaded_at": "2026-04-27T21:09:17Z"
   },
   "migration": {
     "status": "complete",

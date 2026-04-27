@@ -5,7 +5,7 @@
 > **Idea Plan origem:** [`IDEA_PLAN_NOTIFICATIONS_REVAMP.md`](./IDEA_PLAN_NOTIFICATIONS_REVAMP.md)
 > **Exec Specs derivados:**
 > - [`EXEC_SPEC_WAVE_N1_GROUPING.md`](./EXEC_SPEC_WAVE_N1_GROUPING.md) — agrupamento por treatment_plan + bulk register mobile · **EM EXECUÇÃO (7/8 ✅ — N1.7 desbloqueada, aguardando execução)**
-> - [`EXEC_SPEC_WAVE_N2_QUIET_HOURS.md`](./EXEC_SPEC_WAVE_N2_QUIET_HOURS.md) — quiet hours + digest mode · **Não iniciado**
+> - [`EXEC_SPEC_WAVE_N2_QUIET_HOURS.md`](./EXEC_SPEC_WAVE_N2_QUIET_HOURS.md) — quiet hours + digest mode + redesign da experiência nativa de notificações · **Não iniciado**
 > - [`EXEC_SPEC_WAVE_N3_COPY_METRICS.md`](./EXEC_SPEC_WAVE_N3_COPY_METRICS.md) — copy variável + métricas de engajamento · **Não iniciado**
 
 ---
@@ -17,12 +17,13 @@ O sistema de notificações do Dosiq emite **1 push por protocolo** quando o `ti
 Este Master Plan estrutura uma reforma em **três waves** que:
 
 1. **Preserva o ganho do produto** (lembrar nada se perde) sem o custo de fadiga.
-2. **Aproveita estrutura já modelada** (`treatment_plans`, `LogForm type='plan'`, `TreatmentAccordion`, dispatcher multicanal Telegram + Expo) — não inventa abstração.
+2. **Aproveita estrutura já modelada** (`treatment_plans`, `LogForm type='plan'`, `TreatmentAccordion`, dispatcher multicanal Telegram + Expo + Web Push) — não inventa abstração.
 3. **Estende a UX para o canal mobile native** (`apps/mobile/`), incluindo deeplink real, Inbox cruzamento por grupo e **bulk register que ainda não existe** nativamente.
-4. **Devolve controle ao usuário** com quiet hours e digest mode.
+4. **Devolve controle ao usuário** com quiet hours, digest mode e preferências de canais App/Telegram/Web (PWA) mais claras.
 5. **Mede impacto** com tracking de `opened_at` e `action_taken_at` para calibrar copy e cadência.
+6. **Organiza a experiência nativa** em uma jornada coerente: Perfil → Avisos → Preferências → Telegram.
 
-**Investimento estimado**: ~9 dias de implementação focada, divididos em 3 PRs faseados. **Resultado esperado**: redução de 80–90% no número de notificações por usuário em horários de pico, mantendo (ou melhorando) cobertura de doses lembradas.
+**Investimento estimado**: ~10 dias de implementação focada, divididos em 3 PRs faseados. **Resultado esperado**: redução de 80–90% no número de notificações por usuário em horários de pico, mantendo (ou melhorando) cobertura de doses lembradas e tornando a experiência de notificações nativa mais compreensível.
 
 ---
 
@@ -40,7 +41,7 @@ Screenshot real às 23:39 — 8 notificações empilhadas: Ansitec, Olmesartana,
 | `api/notify.js:47–79` (`buildNotificationPayload`) | Template único `dose_reminder` com title/body fixos | Sem variação por hora, criticidade, plano, streak |
 | `server/services/notificationDeduplicator.js` | Janela 5min por `(userId, type, protocolId)` | Chave por protocolo — não dedupa por janela coletiva |
 | `apps/mobile/.../usePushNotifications.js:53–68` | `addNotificationResponseReceivedListener` só faz `console.log` em DEV | **Tap em push não navega** — gap crítico em produção |
-| `user_settings` | Apenas `notification_preference` (canal) | Sem quiet hours, modo, digest_time |
+| `user_settings` | Apenas `notification_preference` (canal legado) | Sem quiet hours, modo, digest_time e flags explícitas para App/Telegram/Web (PWA) |
 | `notification_log` | Status, channels, message_id | Sem `opened_at`, `action_taken_at` — não medimos engajamento |
 
 ### 2.3 Por que isto importa para o posicionamento do produto
@@ -71,10 +72,11 @@ A notificação pode (e deve) **espelhar essa modelagem** — uma notif por plan
 | P2 | **Degradação graciosa** | Sem plano → consolidada "Suas doses agora". 1 plano → notif do plano. N planos → N notifs nomeadas. 1 dose só → formato atual. |
 | P3 | **Botão = escopo claro** | "Registrar este plano" age **apenas** sobre o `treatment_plan_id` da notif. Nunca cross-plano. |
 | P4 | **Não repetir copy** | Variação por horário (saudação), streak, status anterior. Seed determinística por (userId, dia) evita repetição em dias consecutivos. |
-| P5 | **Controle ao usuário** | Quiet hours e digest mode dão poder ao usuário sem desligar lembretes. |
+| P5 | **Controle ao usuário** | Quiet hours, digest mode e canais configuráveis dão poder ao usuário sem desligar todos os lembretes. |
 | P6 | **Mensurar antes de iterar** | `opened_at` e `action_taken_at` em `notification_log` para fechar o loop. |
 | P7 | **Não inventar abstração** | Reusar `treatmentPlanService`, `LogForm type='plan'`, `dispatcher`, `notificationDeduplicator`. Evitar paralelos. |
 | P8 | **Cobrir o canal mobile** | Mobile app não é segunda-classe: deeplink real, bulk register nativo, settings completos. |
+| P9 | **Uma jornada, não telas soltas** | No app nativo, notificações entram por Perfil → Avisos → Preferências → Telegram. Evitar cards paralelos e duplicados. |
 
 ---
 
@@ -86,9 +88,9 @@ A notificação pode (e deve) **espelhar essa modelagem** — uma notif por plan
 
 **Resolve o screenshot**. Não exige migrations. Maior alavanca da reforma.
 
-### Wave N2 — Quiet Hours + Digest Mode
+### Wave N2 — Quiet Hours + Redesign da Experiência Nativa
 
-**Objetivo**: Dar controle ao usuário sobre **quando** ser interrompido. Adicionar `quiet_hours_start`, `quiet_hours_end`, `notification_mode` (`realtime` / `digest_morning` / `silent`), `digest_time` em `user_settings`. UI Settings nas duas pontas (web + mobile com `DateTimePicker`). Digest matinal com formato simples funcional — enriquecimento estético pelo formatter de N3.
+**Objetivo**: Dar controle ao usuário sobre **quando** e **onde** ser interrompido, e reorganizar a experiência nativa de notificações em quatro níveis: Perfil → Avisos → Preferências → Telegram. Adicionar `quiet_hours_start`, `quiet_hours_end`, `notification_mode` (`realtime` / `digest_morning` / `silent`), `digest_time` e flags explícitas de canais App/Telegram/Web (PWA) em `user_settings`. UI Settings nas duas pontas, com redesign completo no app nativo e switch funcional de Web Push na web. Digest matinal com formato simples funcional — enriquecimento estético pelo formatter de N3.
 
 **Dependência**: apenas N1. Independente de N3. Pode executar em paralelo com N3.
 
@@ -119,6 +121,8 @@ A notificação pode (e deve) **espelhar essa modelagem** — uma notif por plan
 - **1-tap to bulk register** — modal abre com checkboxes pré-marcados (web já tem; mobile passa a ter)
 - **Quiet hours** — usuário noturno deixa de receber push 22:00–07:00 sem perder histórico (vai para Inbox)
 - **Digest matinal** opcional — 1 push por dia com agenda completa para quem prefere planejamento ao real-time
+- **Canal Web (PWA) configurável** — usuário pode ativar/desativar push no navegador sem depender do enum legado de preferência
+- **Jornada nativa clara** — Perfil concentra a entrada, Avisos concentra mensagens e ações, Preferências concentra canais/cadência, Telegram vira fluxo dedicado
 - **Copy não repete dia após dia** — saudação contextual, motivação por streak quando aplicável
 
 ### 5.3 Resultados não-objetivos (out of scope)
@@ -149,7 +153,8 @@ server/services/notificationDeduplicator.js           (chaves novas em N1)
 
 ```
 apps/web/src/schemas/userSettingsSchema.js             (estender N2)
-apps/web/src/features/settings/...                     (UI quiet hours/modo N2)
+apps/web/src/features/settings/...                     (UI quiet hours/modo/canal Web PWA N2)
+apps/web/src/shared/services/webpushService.js         (subscribe/register usado por N1.7 e settings N2)
 apps/web/src/features/dashboard/components/...         (insight card N3 opcional)
 apps/web/src/App.jsx                                   (?notif=id tracker N3; onOpenDoseModal wiring ✅ N1.8)
 apps/web/src/shared/hooks/useNotificationLog.js        (enrichWithDoses relacional ✅ N1.8)
@@ -179,14 +184,21 @@ apps/mobile/src/features/notifications/screens/NotificationInboxScreen.jsx
 apps/mobile/src/shared/hooks/useNotificationLog.js    (enrichWithDoses relacional N1.8 ✅)
 apps/mobile/src/navigation/Navigation.jsx              (expor navigationRef N1 ✅)
 apps/mobile/src/features/profile/screens/NotificationPreferencesScreen.jsx
-                                                      (3 seções novas N2)
+                                                      (redesign Preferências + canais + quiet hours/digest N2)
+apps/mobile/src/features/profile/screens/ProfileScreen.jsx
+                                                      (hub Perfil com entrada única "Notificações" N2)
+apps/mobile/src/features/profile/screens/TelegramLinkScreen.jsx
+                                                      (fluxo dedicado Telegram redesenhado N2)
 ```
 
 ### 6.4 Migrations Supabase
 
 ```
 N2: ALTER user_settings ADD quiet_hours_start TIME, quiet_hours_end TIME,
-                            notification_mode TEXT, digest_time TIME
+                            notification_mode TEXT, digest_time TIME,
+                            channel_mobile_push_enabled BOOLEAN,
+                            channel_web_push_enabled BOOLEAN,
+                            channel_telegram_enabled BOOLEAN
 N3: ALTER notification_log ADD opened_at TIMESTAMPTZ, action_taken_at TIMESTAMPTZ,
                                 action_type TEXT
 ```
@@ -203,7 +215,7 @@ Cada wave gera registros canônicos em `.agent/memory/`:
 | **AP-NNN (Anti-Pattern)** | Após N1 | "Não emitir 1 push por protocolo no mesmo minuto (caso real: 8 notifs em 23:39, screenshot)" |
 | **AP-NNN (extra)** | Após N1 | "Não colapsar todas as doses simultâneas em 1 só notif consolidada — botão 'registrar todos' fica ambíguo em multimorbidade" |
 | **R-NNN** | Após N1 | "Mobile push payload deve incluir `data.navigation = { screen, params }` para deeplink funcionar via `addNotificationResponseReceivedListener`" |
-| **ADR-NNN** | Após N2 | "Política de quiet hours e modos de notificação (`realtime`/`digest_morning`/`silent`) — campos em `user_settings`" |
+| **ADR-NNN** | Após N2 | "Política de quiet hours, modos de notificação (`realtime`/`digest_morning`/`silent`) e canais App/Web/Telegram — campos em `user_settings`" |
 | **R-NNN** | Após N3 | "Tracking de notificação requer `notificationLogId` no payload do push, gerado em `createPending` antes do dispatch" |
 | **Journal entries** | Após cada wave | `.agent/memory/journal/2026-W17.jsonl` (ou seguinte) |
 
@@ -220,6 +232,7 @@ Cada wave gera registros canônicos em `.agent/memory/`:
 | Migration de `notification_log.opened_at` em produção | Baixa | Coluna nullable, default seguro, sem rollback necessário |
 | Refactor de `dispatchNotification` 2-fase quebra fire-and-forget existente | Média | Cobertura por testes; manter fallback de log pós-envio se `createPending` falhar |
 | Schema `userSettingsSchema` duplicado web/mobile | Baixa | Idealmente consolidar em `packages/core/`; aceitar duplicação se mobile não importar de core ainda |
+| `web_push` inferido só por subscription ativa | Média | N2 adiciona `channel_web_push_enabled`; resolver deve exigir flag ativa + device `provider='webpush'` ativo. |
 | Multimorbidade em horário de pico gera spam de 4–5 push em sequência (Wave N1) | Média | Aceitar — ainda é melhor que 8 idênticas. Wave N2 (digest) resolve para quem opt-in. |
 
 ---
@@ -229,7 +242,7 @@ Cada wave gera registros canônicos em `.agent/memory/`:
 | Wave | Sprints internos | Estimativa | PR | Dependência |
 |------|-----------------|------------|----|-------------|
 | **N1** — Agrupamento + Bulk Mobile | 8 sprints (`1.1` a `1.8`) | ~3 dias úteis | PR #1 | — |
-| **N2** — Quiet Hours + Digest (gates) | 6 sprints (`2.1` a `2.7`) | ~2.5 dias úteis | PR #2 | N1 |
+| **N2** — Quiet Hours + Native UX Redesign | 9 sprints (`2.1` a `2.9`) | ~3.5 dias úteis | PR #2 | N1 |
 | **N3** — Copy + Métricas + Formatter Digest | 9 sprints (`3.1` a `3.9`) | ~3.5 dias úteis | PR #3 | N1 |
 
 > **N2 e N3 são independentes entre si** — podem executar em paralelo após N1. Formatter enriquecido
@@ -246,8 +259,10 @@ O projeto é considerado entregue quando:
 1. ✅ Cenários A–I da tabela de agrupamento (em `IDEA_PLAN_NOTIFICATIONS_REVAMP.md` §Wave N1) passam em validação manual no sandbox bot **e** em device físico mobile.
 2. ✅ Tap em push mobile abre `BulkDoseRegisterModal` com checkboxes pré-marcados (cold start e foreground).
 3. ✅ Inbox mobile exibe "X/N tomadas" para grouped notifications.
-4. ✅ Quiet hours configurado em Settings suprime push em janela definida (validado por device físico durante 24h).
-5. ✅ `notification_log.opened_at` é populado quando usuário toca em push (web e mobile).
-6. ✅ Copy de "Bom dia" não é idêntica em dois dias consecutivos para o mesmo usuário (seed determinístico válido).
-7. ✅ `npm run validate:agent` passa antes de cada PR. `npm run lint` passa antes de commit.
-8. ✅ Memória DEVFLOW atualizada com R/AP/ADR após cada wave (3 entries de journal mínimo).
+4. ✅ App nativo organiza notificações em Perfil → Avisos → Preferências → Telegram, sem cards paralelos concorrentes.
+5. ✅ Canal Web (PWA) é configurável e só envia `web_push` quando flag e subscription ativa existem.
+6. ✅ Quiet hours configurado em Settings suprime push em janela definida (validado por device físico durante 24h).
+7. ✅ `notification_log.opened_at` é populado quando usuário toca em push (web e mobile).
+8. ✅ Copy de "Bom dia" não é idêntica em dois dias consecutivos para o mesmo usuário (seed determinístico válido).
+9. ✅ `npm run validate:agent` passa antes de cada PR. `npm run lint` passa antes de commit.
+10. ✅ Memória DEVFLOW atualizada com R/AP/ADR após cada wave (3 entries de journal mínimo).
