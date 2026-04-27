@@ -97,6 +97,38 @@ export async function getUserSettings() {
 }
 
 /**
+ * Atualizar configurações de notificação do utilizador (Sprint N2.6)
+ * @param {string} userId
+ * @param {Object} settings
+ * @returns {Promise<{success: boolean, error: string|null}>}
+ */
+export async function updateNotificationSettings(userId, settings) {
+  try {
+    z.string().uuid().parse(userId)
+
+    const { error } = await supabase
+      .from('user_settings')
+      .upsert({
+        user_id: userId,
+        notification_mode: settings.notification_mode,
+        quiet_hours_start: settings.quiet_hours_start ?? null,
+        quiet_hours_end:   settings.quiet_hours_end   ?? null,
+        digest_time:       settings.digest_time,
+        channel_mobile_push_enabled: settings.channel_mobile_push_enabled,
+        channel_web_push_enabled:    settings.channel_web_push_enabled,
+        channel_telegram_enabled:    settings.channel_telegram_enabled,
+        notification_preference:     settings.notification_preference,
+      }, { onConflict: 'user_id' })
+
+    if (error) throw error
+    return { success: true, error: null }
+  } catch (err) {
+    if (__DEV__) console.error('[profileService] erro ao salvar notificações:', err)
+    return { success: false, error: mapErrorToMessage(err) }
+  }
+}
+
+/**
  * Gerar token de verificação via Supabase RPC (Opção A)
  * @returns {Promise<{token: string|null, error: string|null}>}
  */
