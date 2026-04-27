@@ -31,9 +31,10 @@ export function buildNotificationPayload({ kind, data }) {
     case 'dose_reminder_by_plan': {
       const n = data.doses?.length ?? 0
       const planName = data.planName ?? 'Plano de tratamento'
+      const scheduledTime = data.scheduledTime ?? 'agora'
       return {
         title: `💊 ${planName}`,
-        body: `${n} medicamento${n !== 1 ? 's' : ''} agora — ${data.scheduledTime}`,
+        body: `${n} medicamento${n !== 1 ? 's' : ''} — ${scheduledTime}`,
         deeplink: `dosiq://today?bulkMode=plan&planId=${data.planId}&at=${data.scheduledTime}`,
         metadata: {
           kind: 'dose_reminder_by_plan',
@@ -49,9 +50,10 @@ export function buildNotificationPayload({ kind, data }) {
 
     case 'dose_reminder_misc': {
       const n = data.doses?.length ?? 0
+      const scheduledTime = data.scheduledTime ?? 'agora'
       return {
         title: '💊 Hora dos medicamentos',
-        body: `${n} medicamento${n !== 1 ? 's' : ''} agora — ${data.scheduledTime}`,
+        body: `${n} medicamento${n !== 1 ? 's' : ''} — ${scheduledTime}`,
         deeplink: `dosiq://today?bulkMode=misc&at=${data.scheduledTime}`,
         metadata: {
           kind: 'dose_reminder_misc',
