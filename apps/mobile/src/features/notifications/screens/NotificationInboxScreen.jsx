@@ -7,7 +7,7 @@
  * R-169: SafeAreaView obrigatório. R-180: header 28/800 padrão Santuário.
  * R-184: auto-refresh no useNotificationLog. R-187: cache key por userId.
  */
-import { useEffect, useCallback, useMemo, useState } from 'react'
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react'
 import {
   View, Text, SectionList, StyleSheet, TouchableOpacity,
   RefreshControl, ActivityIndicator, AppState, ScrollView,
@@ -140,6 +140,7 @@ export default function NotificationInboxScreen({ navigation, route }) {
 
   // Filtro ativo
   const [activeFilter, setActiveFilter] = useState('all')
+  const hasMarkedRead = useRef(false)
 
   // localDay: detecta virada de dia via AppState + timer de meia-noite (R5-008)
   const [localDay, setLocalDay] = useState(getTodayLocal)
@@ -186,11 +187,11 @@ export default function NotificationInboxScreen({ navigation, route }) {
     await Promise.all([refresh(), loadDoseLogs()])
   }, [refresh, loadDoseLogs])
 
-  // Marca tudo como lido ao abrir e atualiza lastSeen local
+  // Marca tudo como lido apenas no carregamento inicial (useRef garante execução única)
   useEffect(() => {
-    if (!loading && data) {
+    if (!loading && data && !hasMarkedRead.current) {
+      hasMarkedRead.current = true
       markAllRead()
-      // Atualiza lastSeen local para que filtro "Não lidos" seja recalculado
       AsyncStorage.getItem(getStorageKey(userId))
         .then((val) => setLastSeen(val))
         .catch(() => {})
