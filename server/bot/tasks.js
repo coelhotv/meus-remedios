@@ -15,6 +15,7 @@ import {
 } from '../utils/timezone.js';
 import { calculateDaysRemaining, escapeMarkdownV2 } from '../utils/formatters.js';
 import { partitionDoses } from './utils/partitionDoses.js';
+import { shouldSendNow } from './utils/notificationGate.js';
 
 const logger = createLogger('Tasks');
 
@@ -334,7 +335,7 @@ async function checkRemindersViaDispatcher(dispatcher, correlationId) {
     // R-111: Buscar apenas usuários ativos (evita queries em massa na auth.users)
     const { data: users, error: userError } = await supabase
       .from('user_settings')
-      .select('user_id, timezone');
+      .select('user_id, timezone, notification_mode, quiet_hours_start, quiet_hours_end');
 
     if (userError) throw userError;
 
@@ -380,6 +381,22 @@ async function checkRemindersViaDispatcher(dispatcher, correlationId) {
         // R-020: Usar utilitário central de timezone
         const currentHHMM = getCurrentTimeInTimezone(timezone);
         const currentHour = parseInt(currentHHMM.split(':')[0], 10);
+
+        // Wave N2: gate de supressão por modo e quiet hours
+        const canSend = shouldSendNow({
+          mode: user.notification_mode || 'realtime',
+          quietHoursStart: user.quiet_hours_start || null,
+          quietHoursEnd:   user.quiet_hours_end   || null,
+          currentHHMM,
+        })
+        if (!canSend) {
+          logger.info('Notificações suprimidas por modo/quiet hours', {
+            userId, correlationId,
+            mode: user.notification_mode,
+            currentHHMM,
+          })
+          continue
+        }
 
         const protocols = protocolsByUser[userId] || [];
         if (protocols.length === 0) continue;
