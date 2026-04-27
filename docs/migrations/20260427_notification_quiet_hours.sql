@@ -5,7 +5,7 @@ ALTER TABLE user_settings
   ADD COLUMN IF NOT EXISTS quiet_hours_start TIME,
   ADD COLUMN IF NOT EXISTS quiet_hours_end   TIME,
   ADD COLUMN IF NOT EXISTS notification_mode TEXT DEFAULT 'realtime',
-  ADD COLUMN IF NOT EXISTS digest_time       TIME DEFAULT '07:00',
+  ADD COLUMN IF NOT EXISTS digest_time       TIME DEFAULT '09:00',
   ADD COLUMN IF NOT EXISTS channel_mobile_push_enabled BOOLEAN,
   ADD COLUMN IF NOT EXISTS channel_web_push_enabled    BOOLEAN DEFAULT false,
   ADD COLUMN IF NOT EXISTS channel_telegram_enabled    BOOLEAN;
