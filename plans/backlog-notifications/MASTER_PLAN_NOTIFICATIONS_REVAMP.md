@@ -1,10 +1,10 @@
 # Master Plan — Notifications Revamp
 
-> **Status:** EM EXECUÇÃO — Wave N1 5/8 sprints ✅ (N1.1–N1.5 mergeados, N1.6–N1.8 pendentes)
-> **Sprint início:** 2026-W17 · **Último merge:** PR #500 (N1.5) — 2026-04-26
+> **Status:** EM EXECUÇÃO — Wave N1 7/8 sprints ✅ + N1.7 DESBLOQUEADA (aguardando execução)
+> **Sprint início:** 2026-W17 · **Último merge:** commit `55e968fc` (N1.8 fixes) — 2026-04-27
 > **Idea Plan origem:** [`IDEA_PLAN_NOTIFICATIONS_REVAMP.md`](./IDEA_PLAN_NOTIFICATIONS_REVAMP.md)
 > **Exec Specs derivados:**
-> - [`EXEC_SPEC_WAVE_N1_GROUPING.md`](./EXEC_SPEC_WAVE_N1_GROUPING.md) — agrupamento por treatment_plan + bulk register mobile · **EM EXECUÇÃO (5/8)**
+> - [`EXEC_SPEC_WAVE_N1_GROUPING.md`](./EXEC_SPEC_WAVE_N1_GROUPING.md) — agrupamento por treatment_plan + bulk register mobile · **EM EXECUÇÃO (7/8 ✅ — N1.7 desbloqueada, aguardando execução)**
 > - [`EXEC_SPEC_WAVE_N2_QUIET_HOURS.md`](./EXEC_SPEC_WAVE_N2_QUIET_HOURS.md) — quiet hours + digest mode · **Não iniciado**
 > - [`EXEC_SPEC_WAVE_N3_COPY_METRICS.md`](./EXEC_SPEC_WAVE_N3_COPY_METRICS.md) — copy variável + métricas de engajamento · **Não iniciado**
 
@@ -149,30 +149,37 @@ server/services/notificationDeduplicator.js           (chaves novas em N1)
 
 ```
 apps/web/src/schemas/userSettingsSchema.js             (estender N2)
-apps/web/src/features/dashboard/views/Today.jsx        (deeplink params N1)
 apps/web/src/features/settings/...                     (UI quiet hours/modo N2)
 apps/web/src/features/dashboard/components/...         (insight card N3 opcional)
-apps/web/src/App.jsx (router)                          (?notif=id tracker N3)
-apps/web/public/sw.js (service worker)                 (tag N1)
+apps/web/src/App.jsx                                   (?notif=id tracker N3; onOpenDoseModal wiring ✅ N1.8)
+apps/web/src/shared/hooks/useNotificationLog.js        (enrichWithDoses relacional ✅ N1.8)
+apps/web/src/features/notifications/components/
+  NotificationCard.jsx                                 (doses rendering + onOpenDoseModal ✅ N1.8)
+  NotificationList.jsx                                 (prop chain onOpenDoseModal ✅ N1.8)
+apps/web/src/views/redesign/NotificationInbox.jsx      (prop chain onOpenDoseModal ✅ N1.8)
+apps/web/src/shared/components/ui/GlobalDoseModal.jsx  (initialValues prop ✅ N1.8)
+apps/web/public/sw.js (service worker)                 (tag N1 — aguarda push web)
 ```
 
 ### 6.3 Mobile (apps/mobile/)
 
 ```
 apps/mobile/src/platform/notifications/usePushNotifications.js
-                                                      (deeplink real N1, opened_at N3)
+                                                      (deeplink real N1 ✅; screen key fix N1.8 ✅; opened_at N3)
 apps/mobile/src/features/dose/components/BulkDoseRegisterModal.jsx
-                                                      (NOVO em N1)
+                                                      (NOVO em N1.5 ✅; scheduledTime→usePlanProtocols N1.8 ✅)
+apps/mobile/src/features/dose/hooks/usePlanProtocols.js
+                                                      (filtro por janela ±2h N1.8 ✅)
 apps/mobile/src/features/dashboard/screens/TodayScreen.jsx
-                                                      (abrir modal por params N1)
+                                                      (abrir modal por params N1 ✅; dose-individual deeplink N1.8 ✅)
 apps/mobile/src/features/notifications/components/NotificationItem.jsx
-                                                      (CTA_MAP + resolveTitle N1)
+                                                      (CTA_MAP + resolveTitle + doses rendering N1.6+N1.8 ✅)
 apps/mobile/src/features/notifications/screens/NotificationInboxScreen.jsx
-                                                      (DEEP_LINK_TARGETS + buildWasTakenMap N1)
+                                                      (DEEP_LINK_TARGETS + buildWasTakenMap + params fix N1.6+N1.8 ✅)
+apps/mobile/src/shared/hooks/useNotificationLog.js    (enrichWithDoses relacional N1.8 ✅)
+apps/mobile/src/navigation/Navigation.jsx              (expor navigationRef N1 ✅)
 apps/mobile/src/features/profile/screens/NotificationPreferencesScreen.jsx
                                                       (3 seções novas N2)
-apps/mobile/src/shared/hooks/useNotificationLog.js    (incluir treatment_plan_* N1)
-apps/mobile/src/navigation/Navigation.jsx              (expor navigationRef N1)
 ```
 
 ### 6.4 Migrations Supabase

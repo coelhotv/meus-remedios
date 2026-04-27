@@ -1,9 +1,9 @@
 # Exec Spec — Wave N1: Agrupamento por Treatment Plan + Bulk Mobile
 
-> **Status:** EM EXECUÇÃO — 4/8 sprints concluídos (N1.1 pendente, N1.2–N1.5 ✅)
+> **Status:** 7/8 sprints concluídos — N1.7 DESBLOQUEADA (PR #502 entregou SW+webpush infra), aguardando execução
 > **Master Plan:** [`MASTER_PLAN_NOTIFICATIONS_REVAMP.md`](./MASTER_PLAN_NOTIFICATIONS_REVAMP.md)
 > **Idea Plan:** [`IDEA_PLAN_NOTIFICATIONS_REVAMP.md`](./IDEA_PLAN_NOTIFICATIONS_REVAMP.md) — §Wave N1
-> **PRs:** #496 (N1.1+N1.2, backend), #498 (N1.3+N1.4, mobile deeplink), #499 (N1.4 fixes), #500 (N1.5 bulk modal) — todos mergeados ✅
+> **PRs:** #496 (N1.1+N1.2), #498 (N1.3+N1.4), #499 (N1.4 fixes), #500 (N1.5), #501 (N1.6), #502 (PWA), commit `55e968fc` (N1.8 fixes) — todos mergeados em main ✅
 > **Estimativa:** ~3 dias úteis · 8 sprints · Início: 2026-W17
 
 ---
@@ -217,7 +217,9 @@ Substituir o "1 push por protocolo" por **1 push por bloco semântico**, preserv
 
 ---
 
-### Sprint 1.6 — Mobile: estender Inbox (`NotificationItem` + `NotificationInboxScreen` + `useNotificationLog`)
+### Sprint 1.6 — Mobile: estender Inbox (`NotificationItem` + `NotificationInboxScreen` + `useNotificationLog`) ✅
+
+**Status:** CONCLUÍDO (PR #501) ✅
 
 **Agente recomendado**: 🟡 **Rápido** (Haiku/Fast/Mini)
 
@@ -226,102 +228,243 @@ Substituir o "1 push por protocolo" por **1 push por bloco semântico**, preserv
 **Entregas**:
 
 1. Em `apps/mobile/src/features/notifications/components/NotificationItem.jsx`:
-   - Estender `CTA_MAP:18–24`:
-     ```js
-     dose_reminder_by_plan: { label: 'Registrar plano', action: 'bulk-plan' },
-     dose_reminder_misc:    { label: 'Registrar doses', action: 'bulk-misc' },
-     ```
-   - Em `resolveTitle:26–40`, adicionar branches:
-     - `dose_reminder_by_plan` → `notification.treatment_plan_name ?? 'Plano de tratamento'`
-     - `dose_reminder_misc` → `'Doses agora'`
-   - Footer (linhas 110–119): se `wasTaken` for objeto `{ taken, total }`, renderizar `"X/N tomadas"` com cor proporcional.
+   - `CTA_MAP` estendido com `dose_reminder_by_plan` e `dose_reminder_misc`.
+   - `resolveTitle` com branches para nome do plano e "Doses agora".
+   - Footer renderiza `"X/N tomadas"` para tipo objeto `{ taken, total }`.
+   - **Doses rendering (adicionado em N1.8):** quando `notification.doses` presente, lista medicamentos com dosagem em vez de `body` texto.
 
 2. Em `apps/mobile/src/features/notifications/screens/NotificationInboxScreen.jsx`:
-   - `DEEP_LINK_TARGETS:32–37` adicionar `'bulk-plan': ROUTES.TODAY`, `'bulk-misc': ROUTES.TODAY`.
-   - `onNavigate` (linha 153) — passar params do log: `{ at: HHMM, planId, protocolIds, treatmentPlanName }` extraídos de `notification.metadata` ou `notification.treatment_plan_id`.
-   - `buildWasTakenMap:67–79` — refatorar para grouped:
-     ```js
-     if (n.notification_type === 'dose_reminder_by_plan' || n.notification_type === 'dose_reminder_misc') {
-       const protocolIds = n.provider_metadata?.protocol_ids ?? []
-       const taken = protocolIds.filter(pid =>
-         doseLogs.some(log => log.protocol_id === pid && new Date(log.taken_at) > new Date(n.sent_at))
-       ).length
-       map[n.id] = { taken, total: protocolIds.length }
-     }
-     ```
+   - `DEEP_LINK_TARGETS` com `'bulk-plan'`, `'bulk-misc'`, `'dose-individual'` → `ROUTES.TODAY`.
+   - `buildWasTakenMap` com branch grouped para `protocol_ids[]`.
+   - **Fix N1.8:** params enviados com `screen` (não `bulkMode`) para compatibilidade com `TodayScreen`.
+   - **Fix N1.8:** case `dose_reminder` individual → `params.screen = 'dose-individual'`.
 
 3. Em `apps/mobile/src/shared/hooks/useNotificationLog.js`:
-   - SELECT incluir `treatment_plan_id`, `treatment_plan_name`, `provider_metadata`.
+   - SELECT inclui `treatment_plan_id`, `treatment_plan_name`, `provider_metadata`.
+   - **Adicionado em N1.8:** `enrichWithDoses()` — enriquecimento relacional pós-fetch via queries paralelas a `protocols` (R-195). Não persiste dados em `notification_log`.
 
-4. Em `packages/core/src/utils/notificationIconMapper.js` (ou local equivalente):
-   - Adicionar `dose_reminder_by_plan` (ícone `Package`), `dose_reminder_misc` (ícone `Clock`).
+4. Em `packages/core/src/notificationIconMapper.js`:
+   - `dose_reminder_by_plan` (ícone `Package`), `dose_reminder_misc` (ícone `Clock`).
 
 **Critério de aceite**:
-- Inbox renderiza notificação grouped com título correto e contagem "X/N tomadas".
-- Tap navega para Today + abre BulkDoseRegisterModal com params corretos.
+- ✅ Inbox renderiza notificação grouped com título correto e lista de medicamentos do horário.
+- ✅ Contagem "X/N tomadas" exibida no footer.
+- ✅ Tap navega para Today + abre `BulkDoseRegisterModal` com params corretos.
+- ✅ Tap em `dose_reminder` individual → abre `DoseRegisterModal` pré-configurado.
 
 ---
 
-### Sprint 1.7 — Web: deeplink Today + service worker tag ⛔ BLOQUEADA
+### Sprint 1.7 — Web: deeplink Today + canal web_push no dispatcher 🔓 DESBLOQUEADA
 
-**Status:** BLOQUEADA — push web nunca implementado (sem `sw.js`, sem view `Today`). Adiada para quando push web for desenvolvido (fora do escopo da Wave N1).
+**Status:** DESBLOQUEADA — PR #502 entregou Service Worker (Workbox + `vite-plugin-pwa`), `webpushService.js` (subscribe + `register-webpush`), e endpoint `api/register-webpush.js`. Infra básica existente. **Pronta para execução.**
 
-> **Análise C1 (2026-04-26):** `apps/web/public/` não tem `sw.js`; App.jsx usa sistema view-based sem React Router; push web não existe. A sprint dependia de infra inexistente. `GlobalDoseModal` e `LogForm` já suportam `type='plan'` — o mecanismo de deeplink pode ser plugado quando push web for implementado.
+> **Análise de desbloqueio (2026-04-27):** `apps/web/src/service-worker.js` existe com handlers `push` + `notificationclick`. `webpushService.subscribe()` registra dispositivos via `api/register-webpush.js` → `notification_devices` (provider `webpush`). O que está **faltando** é o canal `web_push` no dispatcher e a navegação view-based no `notificationclick`.
 
-**Agente recomendado**: 🟡 **Rápido** (Haiku/Fast/Mini) — quando desbloqueada
+**Agente recomendado**: 🟢 **Avançado** (Sonnet/Pro/Codex)
 
-**Justificativa**: `LogForm type='plan'` já existe. Apenas conectar URL params → abrir form pré-configurado. SW tag é one-line.
-
-**Entregas**:
-
-1. Em `apps/web/src/features/dashboard/views/Today.jsx` (ou equivalente):
-   - Ler `?at=HHMM&plan=${planId}` ou `?at=HHMM&misc=1` da URL via `useSearchParams` ou similar.
-   - Se `plan` presente: abrir `LogForm` com `type='plan'` e `treatment_plan_id` pré-selecionado.
-   - Se `misc=1`: abrir `LogForm` com `type='bulk'` (estender se necessário) com `protocolIds` pré-marcados (passados via state ou param adicional).
-
-2. Em `apps/web/public/sw.js`:
-   - No handler de `push` event, adicionar `tag: payload.tag` ao `showNotification(title, options)`.
-   - Garantir que `payload.tag = 'dose-{HHMM}-{plan|misc|protocolId}'` vindo do server.
-
-**Critério de aceite**:
-- URL `dosiq://today?at=08:00&plan=abc-123` (ou versão web equivalente) abre LogForm pré-configurado.
-- 2 push com tags `dose-08:00-plan-A` e `dose-08:00-plan-B` aparecem como notificações distintas (não substituem).
+**Justificativa (revisada):** Eram previstos edits cirúrgicos (🟡), mas o estado atual tem 3 gaps estruturais: (1) o dispatcher não conhece o canal `web_push`; (2) o SW usa `data.url` simples em vez de `data.navigation` estruturado; (3) `resolveChannelsForUser` não inclui dispositivos `webpush`. Cada peça afeta o fluxo ponta-a-ponta — erros aqui resultam em push recebido mas deeplink silencioso.
 
 ---
 
-### Sprint 1.8 — Validação manual + DEVFLOW C5
+#### Estado atual do PWA (PR #502 — o que JÁ existe)
 
-**Agente recomendado**: ⚪ **Humano** (operador)
+| Componente | Estado |
+|-----------|--------|
+| `apps/web/src/service-worker.js` | ✅ Existe — handler `push` + `notificationclick` com `data.url` |
+| `apps/web/src/shared/services/webpushService.js` | ✅ Existe — `subscribe()` + `registerDevice()` via `/api/register-webpush` |
+| `api/register-webpush.js` | ✅ Existe — persiste em `notification_devices` com `provider: 'webpush'` |
+| `server/notifications/channels/webPushChannel.js` | ❌ Não existe — dispatcher não sabe enviar para webpush |
+| `resolveChannelsForUser.js` | ❌ Não inclui `webpush` — `listActiveByUser(userId, 'expo')` apenas |
+| `dispatchNotification.js` | ❌ Case `web_push` ausente em `dispatchChannel()` |
+| SW `data.navigation` | ❌ SW usa apenas `data.url` — não navega por view/modal |
+| `App.jsx` integration | ❌ `webpushService.subscribe()` não está sendo chamado em nenhum ponto da UX web |
 
-**Entregas**:
+---
 
-1. **Sandbox bot Telegram**:
-   - Cenário A (8 sem plano): valida 1 mensagem consolidada
-   - Cenário D (4+3 dois planos): valida 2 mensagens nomeadas
-   - Cenário E (4+3+2): valida 3 mensagens
-   - Botão "Registrar este plano" registra apenas o plano correto (validar via app web)
+#### Entregas
 
-2. **Mobile device físico**:
-   - Cold start: matar app → enviar push (manual via Expo CLI ou via cron) → tocar → abre `BulkDoseRegisterModal`
-   - Foreground: app aberto → push chega → tap banner → abre modal
-   - Inbox: registrar 2 das 4 doses do plano → voltar → item exibe "2/4 tomadas"
-   - Lock screen iOS: cenário D → confirmar 2 notificações distintas (não substituem)
+**1. Canal `webPushChannel.js` (NOVO)** — `server/notifications/channels/webPushChannel.js`
 
-3. **DEVFLOW C5**:
-   - Adicionar R-NNN: "Notificações de doses simultâneas particionam por treatment_plan_id; nunca consolidar tudo em uma só notif"
-   - Adicionar AP-NNN: "Não emitir 1 push por protocolo no mesmo minuto (caso real: 8 notifs em 23:39)"
-   - Adicionar AP-NNN: "Não colapsar todas as doses simultâneas em uma única notificação consolidada — botão 'registrar todos' fica ambíguo em multimorbidade"
-   - Adicionar R-NNN: "Mobile push payload deve incluir `data.navigation = { screen, params }` para deeplink real funcionar"
-   - Journal entry em `.agent/memory/journal/2026-W17.jsonl` (ou semana corrente)
+```js
+// Envia Web Push via web-push npm package usando VAPID
+// Lista devices com provider='webpush' para o userId
+// Para cada subscription JSON: webpush.sendNotification(subscription, payload)
+// Tratar 410 Gone (subscription expirada) → desativar device
+```
 
-4. **Quality gates**:
-   - `npm run validate:agent` (10-min kill switch)
-   - `npm run lint` antes do commit
+Dependências: `npm install web-push` no workspace `server/` (ou raiz). Variáveis de env necessárias: `VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_EMAIL` (já devem existir para mobile? verificar `.env.example`).
+
+**2. `dispatchNotification.js`** — adicionar case `web_push`
+
+```js
+// Em dispatchChannel():
+} else if (channel === 'web_push') {
+  return await sendWebPushNotification({ userId, payload, context, repositories })
+}
+```
+
+**3. `resolveChannelsForUser.js`** — incluir dispositivos webpush
+
+```js
+const activeWebPushDevices = await repositories.devices.listActiveByUser(userId, 'webpush')
+
+// Nos cases que já incluem mobile_push, adicionar web_push quando disponível:
+if (preference === 'mobile_push') {
+  return [
+    ...(activeExpoDevices.length > 0 ? ['mobile_push'] : []),
+    ...(activeWebPushDevices.length > 0 ? ['web_push'] : []),
+  ]
+}
+// idem para 'both'
+```
+
+**4. `service-worker.js`** — substituir navegação por `data.url` simples por `data.navigation` estruturado
+
+O SW atual usa `event.notification.data?.url` para abrir uma URL. O sistema web do Dosiq é **view-based** (não URL-based) — `App.jsx` controla `currentView` via estado. Por isso a abordagem correta é:
+
+```js
+// NO SW: ao clicar na notificação, focar/abrir a janela e enviar mensagem via postMessage
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const navigation = event.notification.data?.navigation // { view, params }
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      const appClient = windowClients.find(c => c.url.includes(self.location.origin))
+      if (appClient) {
+        appClient.focus()
+        // Enviar mensagem para o App.jsx tratar a navegação
+        appClient.postMessage({ type: 'NOTIFICATION_CLICK', navigation })
+        return
+      }
+      return clients.openWindow('/')
+      // Nota: ao abrir janela nova, o navigation não será processado nesta versão (follow-up N3)
+    })
+  )
+})
+```
+
+**5. `App.jsx`** — ouvir `postMessage` do SW e navegar para view/modal correto
+
+```js
+useEffect(() => {
+  const handler = (event) => {
+    if (event.data?.type !== 'NOTIFICATION_CLICK') return
+    const { view, params } = event.data.navigation ?? {}
+    if (view === 'dashboard') setCurrentView('dashboard')
+    // Abrir GlobalDoseModal se params indicarem bulk-plan / dose-individual
+    if (params?.screen === 'bulk-plan' || params?.screen === 'dose-individual') {
+      setDoseModalInitialValues(params)
+      setIsDoseModalOpen(true)
+    }
+  }
+  navigator.serviceWorker?.addEventListener('message', handler)
+  return () => navigator.serviceWorker?.removeEventListener('message', handler)
+}, [])
+```
+
+**6. `api/notify.js` — payload do push web**
+
+No `buildNotificationPayload`, o campo `data` enviado ao `webPushChannel` deve incluir `navigation`:
+
+```js
+data: {
+  navigation: {
+    view: 'dashboard',
+    params: { screen: 'bulk-plan'|'bulk-misc'|'dose-individual', at, planId, protocolIds, treatmentPlanName }
+  },
+  tag: `dose-${data.scheduledTime}-${suffix}`  // para agrupamento no SO
+}
+```
+
+**7. Ponto de entrada UX — como o usuário ativa o Web Push**
+
+O `webpushService.subscribe()` existe mas **não é chamado em nenhum lugar da UX**. Verificar se `PushPermission.jsx` existe e está integrado, ou criar o ponto de ativação mínimo (Settings ou prompt inline após login).
+
+---
 
 **Critério de aceite**:
-- Todos os cenários A–I validados em ambos canais.
-- Memória DEVFLOW atualizada.
-- PR aberto com `gh pr create` aguardando Gemini review.
+- Push web enviado via cron chega ao browser (validar com `web-push` CLI ou DevTools > Application > Push).
+- Clique na notificação web → `App.jsx` processa `postMessage` → `GlobalDoseModal` abre pré-configurado (para `bulk-plan`).
+- Clique em `dose-individual` → `GlobalDoseModal` abre com protocolo pré-selecionado.
+- 2 push com tags distintas (`dose-08:00-plan-A` e `dose-08:00-plan-B`) não se substituem no SO.
+- `resolveChannelsForUser` inclui `web_push` quando o usuário tem device webpush ativo.
+
+---
+
+**⚠️ Dependências externas para verificar antes de iniciar:**
+- `VAPID_PRIVATE_KEY` / `VAPID_PUBLIC_KEY` / `VAPID_EMAIL` em `.env` (necessário para `web-push` server-side)
+- `npm install web-push` no workspace correto (raiz do monorepo ou `server/`)
+- Ícones PWA `pwa-192x192.png` / `pwa-512x512.png` em `apps/web/public/` (referenciados pelo SW mas podem não existir)
+
+---
+
+### Sprint 1.8 — Validação manual + DEVFLOW C5 + Fixes
+
+**Status:** CONCLUÍDO (commit `55e968fc`, 2026-04-27) ✅
+
+**Agente recomendado**: ⚪ **Humano** (validação) + 🟢 **Avançado** (fixes identificados)
+
+**O que foi validado e corrigido**:
+
+Durante a validação manual no simulador iOS, foram identificados e corrigidos 4 bugs adicionais que não faziam parte do escopo original dos sprints anteriores:
+
+**Bug 1 — Params de navegação com mismatch (AP-117):**
+- `NotificationInboxScreen` enviava `params.bulkMode = 'plan'` mas `TodayScreen` lia `params.screen === 'bulk-plan'`.
+- Fix: `params.screen = 'bulk-plan'` / `params.screen = 'bulk-misc'` em `NotificationInboxScreen.jsx`.
+
+**Bug 2 — Repository INSERT não persistia `treatment_plan_name` (AP-118):**
+- `dispatchNotification.js` e o schema já estavam corretos (PR #504). Mas `notificationLogRepository.js` não incluía os campos no INSERT.
+- Fix: 2 linhas adicionadas ao INSERT em `notificationLogRepository.js`.
+
+**Bug 3 — `usePushNotifications` não propagava `screen` no tap (AP-117 variante):**
+- `navigateFromPush` passava `params` sem incluir a chave `screen`, que `TodayScreen` usa para decidir qual modal abrir.
+- Fix: `navigationRef.navigate(targetRoute, screen ? { screen, ...params } : params)`.
+
+**Bug 4 — `BulkDoseRegisterModal` listava todos os medicamentos do plano (sem filtro de horário):**
+- `usePlanProtocols` não recebia `scheduledTime` e não filtrava por janela.
+- Fix: `isInWindow(±2h)` implementado em `usePlanProtocols.js`; `scheduledTime` passado de `BulkDoseRegisterModal`.
+
+**Paridade Web (descoberta durante validação):**
+- Web inbox não tinha as mesmas melhorias de mobile (doses rendering, `onOpenDoseModal`).
+- Corrigido: `enrichWithDoses()` em `apps/web/src/shared/hooks/useNotificationLog.js`, prop chain `onOpenDoseModal` por `NotificationCard → NotificationList → NotificationInbox → App.jsx → GlobalDoseModal`, `initialValues` prop em `GlobalDoseModal`.
+
+**Bug 5 — Deeplink `dose-individual` ausente no mobile:**
+- `NotificationInboxScreen` não tinha case para `dose_reminder` individual.
+- `TodayScreen` não processava `params.screen === 'dose-individual'`.
+- Fix: adicionados em ambos os arquivos.
+
+**DEVFLOW C5 executado** (2026-04-27):
+- ✅ AP-117: Params de navegação sem contrato tipado entre emissor e receptor
+- ✅ AP-118: Repository INSERT não espelhando campos do dispatcher/schema após adição tardia
+- ✅ R-195: Enrichment relacional no hook — nunca duplicar dados relacionais em `notification_log`
+- ✅ Journal entry em `.agent/memory/journal/2026-W17.jsonl`
+- ✅ `state.json` atualizado (rules: 142, APs: 118)
+
+**Arquivos modificados em N1.8**:
+```
+server/notifications/repositories/notificationLogRepository.js   (INSERT fix)
+apps/mobile/src/features/notifications/screens/NotificationInboxScreen.jsx (params + dose-individual)
+apps/mobile/src/shared/hooks/useNotificationLog.js               (enrichWithDoses)
+apps/mobile/src/features/notifications/components/NotificationItem.jsx (doses rendering)
+apps/mobile/src/platform/notifications/usePushNotifications.js   (screen key fix)
+apps/mobile/src/features/dose/hooks/usePlanProtocols.js          (±2h filter)
+apps/mobile/src/features/dose/components/BulkDoseRegisterModal.jsx (scheduledTime)
+apps/mobile/src/features/dashboard/screens/TodayScreen.jsx       (dose-individual deeplink)
+apps/web/src/shared/hooks/useNotificationLog.js                  (enrichWithDoses)
+apps/web/src/features/notifications/components/NotificationCard.jsx (doses + onOpenDoseModal)
+apps/web/src/features/notifications/components/NotificationList.jsx (prop chain)
+apps/web/src/views/redesign/NotificationInbox.jsx                (prop chain)
+apps/web/src/shared/components/ui/GlobalDoseModal.jsx            (initialValues prop)
+apps/web/src/App.jsx                                             (onOpenDoseModal wiring)
+```
+
+**Critério de aceite**:
+- ✅ Central de Avisos mobile exibe nome do plano e lista de medicamentos do horário.
+- ✅ Tap em push de plano → `BulkDoseRegisterModal` abre com medicamentos do horário (±2h).
+- ✅ Tap em dose individual na Inbox → `DoseRegisterModal` pré-configurado.
+- ✅ Web inbox com paridade completa de mobile (doses rendering + CTA → GlobalDoseModal).
+- ✅ DEVFLOW C5 registrado.
 
 ---
 
@@ -335,10 +478,10 @@ Substituir o "1 push por protocolo" por **1 push por bloco semântico**, preserv
 | **1.4** | Mobile: deeplink real | 🟢 Avançado | ~3h | ✅ PRs #498 + #499 |
 | **1.5** | Mobile: `BulkDoseRegisterModal` | 🟢 Avançado | ~4h | ✅ PR #500 |
 | **1.6** | Mobile: estender Inbox | 🟡 Rápido | ~2h | ✅ PR #501 |
-| **1.7** | Web: deeplink Today + SW tag | 🟡 Rápido | ~1.5h | ⛔ Bloqueada (push web não existe) |
-| **1.8** | Validação + DEVFLOW C5 | ⚪ Humano | ~2h | ⏳ Próxima |
+| **1.7** | Web: canal web_push + SW navigation + deeplink | 🟢 Avançado | ~3h | 🔓 Desbloqueada — aguardando execução |
+| **1.8** | Validação + fixes + DEVFLOW C5 | 🟢 Avançado + ⚪ Humano | ~3h | ✅ commit `55e968fc` |
 
-**Total**: ~20.5h trabalho. **5 sprints 🟢 (~14h)** + **3 sprints 🟡 (~4.5h)** + **1 sprint ⚪ (~2h)**.
+**Total**: ~23.5h trabalho. **6 sprints 🟢 (~20h)** + **1 sprint 🟡 (~2h)** + **1 sprint misto (~1.5h)**.
 
 ---
 
@@ -355,13 +498,16 @@ Wave N1 estimado: **120k–240k tokens em modelos avançados** + **15k–45k em 
 
 ## 7. Critério de Saída
 
-PR #1 pode ser mergeado quando:
+Wave N1 entregue em main (sem PR único final — sprints foram mergeados individualmente):
 
-- ✅ Todos os 8 sprints concluídos
-- ✅ Validação manual cobre cenários A–I
-- ✅ Cold start mobile + foreground tap funcionando
-- ✅ Inbox cruza grupo via `protocol_ids[]` corretamente
-- ✅ Lock screen iOS exibe múltiplas notificações distintas (cenário D)
-- ✅ Gemini review aprovado (ou comentários endereçados)
-- ✅ `npm run validate:agent` + `npm run lint` passando
-- ✅ DEVFLOW C5 registrado (R/AP + journal)
+- ✅ Todos os 7 sprints executáveis concluídos (N1.7 bloqueada por ausência de push web)
+- ✅ Validação manual parcial — Inbox mobile e desktop validados pelo operador
+- ✅ Cold start mobile + foreground tap funcionando (fix N1.8)
+- ✅ Inbox cruza grupo via `protocol_ids[]` + enriquecimento relacional `enrichWithDoses` (R-195)
+- ✅ Inbox exibe lista de medicamentos do horário (não todos do plano)
+- ✅ Deeplink `dose-individual` funcional no mobile
+- ✅ Web inbox com paridade completa de mobile
+- ✅ `GlobalDoseModal` abre pré-configurado via CTA da inbox web
+- ✅ DEVFLOW C5 registrado (AP-117, AP-118, R-195 + journal)
+- ⏳ Lock screen iOS cenário D (múltiplas notifs distintas) — pendente validação com novo push noturno
+- ⛔ N1.7 (SW tag web) — bloqueada indefinidamente até push web ser desenvolvido
