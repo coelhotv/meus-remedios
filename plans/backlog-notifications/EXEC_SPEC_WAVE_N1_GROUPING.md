@@ -334,9 +334,9 @@ Substituir o "1 push por protocolo" por **1 push por bloco semântico**, preserv
 | **1.3** | Backend: dedup + payload Expo | 🟡 Rápido | ~1h | ✅ PR #498 |
 | **1.4** | Mobile: deeplink real | 🟢 Avançado | ~3h | ✅ PRs #498 + #499 |
 | **1.5** | Mobile: `BulkDoseRegisterModal` | 🟢 Avançado | ~4h | ✅ PR #500 |
-| **1.6** | Mobile: estender Inbox | 🟡 Rápido | ~2h | 🔲 Próximo |
-| **1.7** | Web: deeplink Today + SW tag | 🟡 Rápido | ~1.5h | 🔲 Pendente |
-| **1.8** | Validação + DEVFLOW C5 | ⚪ Humano | ~2h | 🔲 Pendente |
+| **1.6** | Mobile: estender Inbox | 🟡 Rápido | ~2h | ✅ PR #501 |
+| **1.7** | Web: deeplink Today + SW tag | 🟡 Rápido | ~1.5h | ⛔ Bloqueada (push web não existe) |
+| **1.8** | Validação + DEVFLOW C5 | ⚪ Humano | ~2h | ⏳ Próxima |
 
 **Total**: ~20.5h trabalho. **5 sprints 🟢 (~14h)** + **3 sprints 🟡 (~4.5h)** + **1 sprint ⚪ (~2h)**.
 
