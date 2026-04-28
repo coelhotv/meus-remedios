@@ -25,6 +25,8 @@ export default function SettingsRedesign({ onNavigate }) {
   const [loading, setLoading] = useState(true)
   const [savingChannel, setSavingChannel] = useState(false)
   const [savingNotification, setSavingNotification] = useState(false)
+  const [savingQuietHours, setSavingQuietHours] = useState(false)
+  const [savingDigestTime, setSavingDigestTime] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [isAdmin, setIsAdmin] = useState(false)
   const [dlqCount, setDlqCount] = useState(0)
@@ -157,6 +159,7 @@ export default function SettingsRedesign({ onNavigate }) {
 
   const saveQuietHours = async () => {
     try {
+      setSavingQuietHours(true)
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -172,8 +175,8 @@ export default function SettingsRedesign({ onNavigate }) {
       setMessage({ type: 'success', text: 'Período silencioso salvo.' })
     } catch {
       setMessage({ type: 'error', text: 'Erro ao salvar período silencioso.' })
-
     } finally {
+      setSavingQuietHours(false)
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     }
   }
@@ -181,6 +184,7 @@ export default function SettingsRedesign({ onNavigate }) {
 
   const saveDigestTime = async () => {
     try {
+      setSavingDigestTime(true)
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -193,6 +197,7 @@ export default function SettingsRedesign({ onNavigate }) {
     } catch {
       setMessage({ type: 'error', text: 'Erro ao salvar horário.' })
     } finally {
+      setSavingDigestTime(false)
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     }
   }
@@ -316,9 +321,11 @@ export default function SettingsRedesign({ onNavigate }) {
             quietHoursEnd={quietHoursEnd}
             setQuietHoursEnd={setQuietHoursEnd}
             saveQuietHours={saveQuietHours}
+            savingQuietHours={savingQuietHours}
             digestTime={digestTime}
             setDigestTime={setDigestTime}
             saveDigestTime={saveDigestTime}
+            savingDigestTime={savingDigestTime}
           />
 
           <IntegrationSection
