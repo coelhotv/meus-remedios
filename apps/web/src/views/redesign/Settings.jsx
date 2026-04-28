@@ -12,7 +12,7 @@ import AccountSection from './settings/sections/AccountSection'
 import AdminSection from './settings/sections/AdminSection'
 
 // Import CSS
-import './SettingsRedesign.css'
+import './settings/SettingsRedesign.css'
 
 /**
  * SettingsRedesign (v10.0) — Orquestrador principal de configurações.
