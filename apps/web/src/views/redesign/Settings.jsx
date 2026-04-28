@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '@shared/utils/supabase'
 import { useTheme } from '@shared/hooks/useTheme'
 
@@ -18,8 +17,7 @@ import './settings/SettingsRedesign.css'
  * SettingsRedesign (v10.0) — Orquestrador principal de configurações.
  * Utiliza o Sectional Pattern para modularidade.
  */
-export default function SettingsRedesign() {
-  const navigate = useNavigate()
+export default function SettingsRedesign({ onNavigate }) {
   const { complexityMode, setComplexityMode } = useTheme()
 
   // ── States ──
@@ -275,13 +273,17 @@ export default function SettingsRedesign() {
   const handleLogout = async () => {
     if (!window.confirm('Deseja realmente sair?')) return
     await supabase.auth.signOut()
-    navigate('/login')
+    onNavigate('login')
   }
 
   // ── Render ──
   return (
     <main className="sr-view">
-      <SettingsHeader navigate={navigate} message={message} />
+      <SettingsHeader 
+        onNavigate={onNavigate} 
+        message={message.type === 'success' ? message.text : null} 
+        error={message.type === 'error' ? message.text : null} 
+      />
 
       {loading ? (
         <div className="sr-loading">Carregando configurações...</div>
@@ -330,7 +332,7 @@ export default function SettingsRedesign() {
             handleLogout={handleLogout}
           />
 
-          <AdminSection isAdmin={isAdmin} dlqCount={dlqCount} navigate={navigate} />
+          <AdminSection isAdmin={isAdmin} dlqCount={dlqCount} onNavigate={onNavigate} />
 
           <footer className="sr-footer">Dosiq v3.3.0 • Design Santuário</footer>
         </>

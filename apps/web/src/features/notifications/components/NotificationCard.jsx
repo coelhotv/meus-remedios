@@ -13,24 +13,22 @@
  */
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Clock, Package, AlertTriangle, BarChart2, TrendingUp, Bell,
-  ChevronRight, BellOff, CheckCircle2,
-} from 'lucide-react'
+import { Clock, Package, AlertTriangle, BarChart2, TrendingUp, Bell, ChevronRight, BellOff, CheckCircle2 } from 'lucide-react'
 import { getNotificationIcon, formatRelativeTime } from '@dosiq/core'
+import { NOTIFICATION_TYPES, DOSE_RELATED_NOTIFICATION_TYPES } from '@schemas'
 import './NotificationCard.css'
 
 const ICON_MAP = { Clock, Package, AlertTriangle, BarChart2, TrendingUp, Bell }
 
 // Mapeamento de tipo → CTA
 const CTA_MAP = {
-  dose_reminder:         { label: 'Registrar dose',    action: 'dashboard' },
-  dose_reminder_by_plan: { label: 'Registrar plano',   action: 'dashboard' },
-  dose_reminder_misc:    { label: 'Registrar doses',   action: 'dashboard' },
-  stock_alert:           { label: 'Ver estoque',        action: 'stock' },
-  missed_dose:           { label: 'Registrar atrasada', action: 'history' },
-  titration_update:      { label: 'Ver tratamento',     action: 'treatment' },
-  daily_digest:          null,
+  [NOTIFICATION_TYPES.DOSE_REMINDER]:         { label: 'Registrar dose',    action: 'dashboard' },
+  [NOTIFICATION_TYPES.DOSE_REMINDER_BY_PLAN]: { label: 'Registrar plano',   action: 'dashboard' },
+  [NOTIFICATION_TYPES.DOSE_REMINDER_MISC]:    { label: 'Registrar doses',   action: 'dashboard' },
+  [NOTIFICATION_TYPES.STOCK_ALERT]:           { label: 'Ver estoque',        action: 'stock' },
+  [NOTIFICATION_TYPES.MISSED_DOSE]:           { label: 'Registrar atrasada', action: 'history' },
+  [NOTIFICATION_TYPES.TITRATION_UPDATE]:      { label: 'Ver tratamento',     action: 'treatment' },
+  [NOTIFICATION_TYPES.DAILY_DIGEST]:          null,
 }
 
 /**
@@ -40,17 +38,17 @@ const CTA_MAP = {
 function resolveTitle(notification, label) {
   const { notification_type, medicine_name, protocol_name, treatment_plan_name } = notification
   switch (notification_type) {
-    case 'dose_reminder':
-    case 'stock_alert':
-    case 'missed_dose':
+    case NOTIFICATION_TYPES.DOSE_REMINDER:
+    case NOTIFICATION_TYPES.STOCK_ALERT:
+    case NOTIFICATION_TYPES.MISSED_DOSE:
       return medicine_name ?? label
-    case 'titration_update':
+    case NOTIFICATION_TYPES.TITRATION_UPDATE:
       return protocol_name ?? label
-    case 'daily_digest':
+    case NOTIFICATION_TYPES.DAILY_DIGEST:
       return 'Resumo do dia'
-    case 'dose_reminder_by_plan':
+    case NOTIFICATION_TYPES.DOSE_REMINDER_BY_PLAN:
       return treatment_plan_name ?? 'Plano de tratamento'
-    case 'dose_reminder_misc':
+    case NOTIFICATION_TYPES.DOSE_REMINDER_MISC:
       return 'Doses agendadas'
     default:
       return label
@@ -80,8 +78,8 @@ export default function NotificationCard({
   const relativeTime  = formatRelativeTime(sent_at)
   const isFailed      = ['falhou', 'failed'].includes(status?.toLowerCase())
   const isMuted       = status?.toLowerCase() === 'muted'
-  const isDailyDigest = notification_type === 'daily_digest'
-  const isDoseRelated = ['dose_reminder', 'dose_reminder_by_plan', 'dose_reminder_misc'].includes(notification_type)
+  const isDailyDigest = notification_type === NOTIFICATION_TYPES.DAILY_DIGEST
+  const isDoseRelated = DOSE_RELATED_NOTIFICATION_TYPES.includes(notification_type)
 
   // Título: sempre resolve pelo tipo (medicine_name, protocol_name, etc.)
   const displayTitle = resolveTitle(notification, label)
@@ -152,12 +150,7 @@ export default function NotificationCard({
         ) : displayBody ? (
           <>
             <p
-              className="notif-card__preview"
-              style={
-                isDailyDigest && !expanded
-                  ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }
-                  : undefined
-              }
+              className={`notif-card__preview ${isDailyDigest && !expanded ? 'notif-card__preview--collapsed' : ''}`}
             >
               {displayBody}
             </p>
@@ -166,7 +159,6 @@ export default function NotificationCard({
                 className="notif-card__expand"
                 onClick={() => setExpanded(prev => !prev)}
                 aria-expanded={expanded}
-                style={{ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: 12, color: '#6b7280' }}
               >
                 {expanded ? 'Ver menos' : 'Ver mais'}
               </button>
@@ -187,9 +179,9 @@ export default function NotificationCard({
             <button
               className="notif-card__action"
               onClick={() => {
-                const isPlan = notification_type === 'dose_reminder_by_plan'
-                const isMisc = notification_type === 'dose_reminder_misc'
-                const isIndividual = notification_type === 'dose_reminder'
+                const isPlan = notification_type === NOTIFICATION_TYPES.DOSE_REMINDER_BY_PLAN
+                const isMisc = notification_type === NOTIFICATION_TYPES.DOSE_REMINDER_MISC
+                const isIndividual = notification_type === NOTIFICATION_TYPES.DOSE_REMINDER
                 if (isIndividual && onOpenDoseModal && notification.protocol_id) {
                   onOpenDoseModal({ type: 'protocol', protocol_id: notification.protocol_id })
                 } else if ((isPlan || isMisc) && onOpenDoseModal) {

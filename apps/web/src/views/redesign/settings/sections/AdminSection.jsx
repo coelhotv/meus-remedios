@@ -4,7 +4,7 @@ import { Terminal, Database } from 'lucide-react'
  * AdminSection — Ferramentas administrativas e DLQ.
  * Só é exibida se o usuário for administrador.
  */
-export default function AdminSection({ isAdmin, dlqCount, navigate }) {
+export default function AdminSection({ isAdmin, dlqCount, onNavigate }) {
   if (!isAdmin) return null
 
   return (
@@ -17,7 +17,7 @@ export default function AdminSection({ isAdmin, dlqCount, navigate }) {
         <h3 className="sr-section__card-header">Infraestrutura</h3>
         <div
           className="sr-admin__row"
-          onClick={() => navigate('/admin/dlq')}
+          onClick={() => onNavigate('admin-dlq')}
           style={{ cursor: 'pointer' }}
         >
           <div className="sr-admin__label">
