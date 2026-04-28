@@ -118,6 +118,7 @@ function TimePicker({ value, onChange, label }) {
 export default function NotificationPreferencesScreen({ navigation }) {
   const { user } = useAuth()
   const { settings, loading: settingsLoading, refresh } = useProfile()
+  const isTelegramConnected = !!settings?.telegram_chat_id
 
   const [globalEnabled, setGlobalEnabled] = useState(true)
   const [mobilePushEnabled, setMobilePushEnabled] = useState(true)
@@ -137,24 +138,29 @@ export default function NotificationPreferencesScreen({ navigation }) {
     if (!settings) return
 
     const pref = settings.notification_preference
-    setMobilePushEnabled(
-      settings.channel_mobile_push_enabled ??
-      (pref === 'mobile_push' || pref === 'both')
-    )
-    setTelegramEnabled(
-      settings.channel_telegram_enabled ??
-      (pref === 'telegram' || pref === 'both')
-    )
-    setWebPushEnabled(settings.channel_web_push_enabled ?? false)
-    setNotificationMode(settings.notification_mode ?? 'realtime')
     setQuietHoursEnabled(!!(settings.quiet_hours_start || settings.quiet_hours_end))
     setQuietHoursStart(settings.quiet_hours_start ?? '22:00')
     setQuietHoursEnd(settings.quiet_hours_end ?? '07:00')
     setDigestTime(settings.digest_time ?? '07:00')
 
-    // globalEnabled = desabilitado apenas quando pref='none'
-    setGlobalEnabled(pref !== 'none')
-  }, [settings])
+    const isGlobal = pref !== 'none'
+    setGlobalEnabled(isGlobal)
+
+    // Apenas sincroniza canais individuais se o global estiver ON
+    if (isGlobal) {
+      setMobilePushEnabled(
+        settings.channel_mobile_push_enabled ??
+        (pref === 'mobile_push' || pref === 'both')
+      )
+      setTelegramEnabled(
+        settings.channel_telegram_enabled ??
+        (pref === 'telegram' || pref === 'both')
+      )
+      setWebPushEnabled(settings.channel_web_push_enabled ?? false)
+    } else {
+      setTelegramEnabled(isTelegramConnected)
+    }
+  }, [settings, isTelegramConnected])
 
   useEffect(() => {
     checkPermission()
@@ -169,7 +175,6 @@ export default function NotificationPreferencesScreen({ navigation }) {
     }
   }
 
-  const isTelegramConnected = !!settings?.telegram_chat_id
   const hasAnyChannel = mobilePushEnabled || telegramEnabled || webPushEnabled
   const showChannelWarning = globalEnabled && !hasAnyChannel
 
@@ -179,7 +184,7 @@ export default function NotificationPreferencesScreen({ navigation }) {
     setSaving(true)
     try {
       const mobile = patch.mobilePushEnabled ?? mobilePushEnabled
-      const telegram = patch.telegramEnabled ?? telegramEnabled
+      const telegram = isTelegramConnected // Telegram segue o vínculo
       const web = patch.webPushEnabled ?? webPushEnabled
       const mode = patch.notificationMode ?? notificationMode
       const qEnabled = patch.quietHoursEnabled ?? quietHoursEnabled
@@ -190,12 +195,12 @@ export default function NotificationPreferencesScreen({ navigation }) {
 
       const result = await updateNotificationSettings(user.id, {
         notification_mode: mode,
-        quiet_hours_start: qEnabled ? qStart : null,
-        quiet_hours_end: qEnabled ? qEnd : null,
+        quiet_hours_start: (global && qEnabled) ? qStart : null,
+        quiet_hours_end: (global && qEnabled) ? qEnd : null,
         digest_time: dTime,
-        channel_mobile_push_enabled: mobile,
-        channel_web_push_enabled: web,
-        channel_telegram_enabled: telegram,
+        channel_mobile_push_enabled: global && mobile,
+        channel_web_push_enabled: global && web,
+        channel_telegram_enabled: global && telegram,
         notification_preference: global 
           ? deriveLegacyPreference({ 
               channel_mobile_push_enabled: mobile, 
