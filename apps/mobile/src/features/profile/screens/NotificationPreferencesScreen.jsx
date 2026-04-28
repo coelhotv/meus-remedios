@@ -152,11 +152,8 @@ export default function NotificationPreferencesScreen({ navigation }) {
     setQuietHoursEnd(settings.quiet_hours_end ?? '07:00')
     setDigestTime(settings.digest_time ?? '07:00')
 
-    // globalEnabled = desabilitado apenas quando todos canais off e pref='none'
-    const allOff = pref === 'none' &&
-      !settings.channel_mobile_push_enabled &&
-      !settings.channel_telegram_enabled
-    setGlobalEnabled(!allOff)
+    // globalEnabled = desabilitado apenas quando pref='none'
+    setGlobalEnabled(pref !== 'none')
   }, [settings])
 
   useEffect(() => {
@@ -193,16 +190,18 @@ export default function NotificationPreferencesScreen({ navigation }) {
 
       const result = await updateNotificationSettings(user.id, {
         notification_mode: mode,
-        quiet_hours_start: (global && qEnabled) ? qStart : null,
-        quiet_hours_end: (global && qEnabled) ? qEnd : null,
+        quiet_hours_start: qEnabled ? qStart : null,
+        quiet_hours_end: qEnabled ? qEnd : null,
         digest_time: dTime,
-        channel_mobile_push_enabled: global && mobile,
-        channel_web_push_enabled: global && web,
-        channel_telegram_enabled: global && telegram,
-        notification_preference: deriveLegacyPreference({ 
-          channel_mobile_push_enabled: global && mobile, 
-          channel_telegram_enabled: global && telegram 
-        }),
+        channel_mobile_push_enabled: mobile,
+        channel_web_push_enabled: web,
+        channel_telegram_enabled: telegram,
+        notification_preference: global 
+          ? deriveLegacyPreference({ 
+              channel_mobile_push_enabled: mobile, 
+              channel_telegram_enabled: telegram 
+            }) 
+          : 'none',
       })
 
       if (result.success) {
@@ -248,7 +247,14 @@ export default function NotificationPreferencesScreen({ navigation }) {
 
   function handleGlobalToggle(val) {
     setGlobalEnabled(val)
-    persist({ globalEnabled: val })
+    // Se está ativando e nada está ligado, ativa mobile_push como padrão
+    // para evitar que o estado volte a 'none' no DB e dê snap-back para off
+    if (val && !hasAnyChannel) {
+      setMobilePushEnabled(true)
+      persist({ globalEnabled: true, mobilePushEnabled: true })
+    } else {
+      persist({ globalEnabled: val })
+    }
   }
 
   function handleModeSelect(mode) {
