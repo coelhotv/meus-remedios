@@ -23,19 +23,19 @@ function scheduleTask(name, schedule, task) {
   logger.info(`Scheduled task registered: ${name}`, { schedule });
 }
 
-export function startScheduler(bot) {
+export function startScheduler(bot, options = {}) {
   // Main notification scheduler - runs every minute
-  scheduleTask('checkReminders', '* * * * *', () => checkReminders(bot));
+  scheduleTask('checkReminders', '* * * * *', () => checkReminders(bot, options));
   console.log('✅ Notificador de lembretes iniciado');
 }
 
-export function startDailyDigest(bot) {
-  scheduleTask('runDailyDigest', '0 23 * * *', () => runDailyDigest(bot));
+export function startDailyDigest(bot, options = {}) {
+  scheduleTask('runDailyDigest', '0 23 * * *', () => runDailyDigest(bot, options));
   console.log('✅ Resumo diário configurado (diariamente às 23h)');
 }
 
-export function startPrescriptionAlerts(bot) {
+export function startPrescriptionAlerts(bot, options = {}) {
   // Run once daily at 8h to check for prescription alerts
-  scheduleTask('checkPrescriptionAlerts', '0 8 * * *', () => checkPrescriptionAlerts(bot));
+  scheduleTask('checkPrescriptionAlerts', '0 8 * * *', () => checkPrescriptionAlerts(bot, options));
   console.log('✅ Alertas de prescrição configurados (diariamente às 8h)');
 }
