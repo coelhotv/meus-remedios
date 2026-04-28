@@ -36,6 +36,26 @@ function deriveLegacyPreference(mobile, telegram) {
   return 'none'
 }
 
+// Formata hora de forma amigável (22h ou 10PM)
+function formatTimeFriendly(timeStr) {
+  if (!timeStr) return ''
+  const [hour] = timeStr.split(':')
+  const h = parseInt(hour, 10)
+  
+  // Detecta formato 12/24h do dispositivo (simplificado)
+  const is24h = !new Intl.DateTimeFormat(undefined, { hour: 'numeric' })
+    .format(new Date(2024, 0, 1, 13))
+    .match(/am|pm/i)
+
+  if (is24h) {
+    return `${h}h`
+  } else {
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}${ampm}`
+  }
+}
+
 // Picker de hora inline via Modal
 function TimePicker({ value, onChange, label }) {
   const [visible, setVisible] = useState(false)
@@ -48,7 +68,7 @@ function TimePicker({ value, onChange, label }) {
         accessibilityLabel={`${label}: ${value}`}
         accessibilityRole="button"
       >
-        <Text style={styles.timePickerValue}>{value}</Text>
+        <Text style={styles.timePickerValue}>{formatTimeFriendly(value)}</Text>
         <ChevronRight size={14} color={colors.text.muted} />
       </TouchableOpacity>
 
@@ -82,7 +102,7 @@ function TimePicker({ value, onChange, label }) {
                   accessibilityRole="menuitem"
                 >
                   <Text style={[styles.hourItemText, item === value && styles.hourItemTextActive]}>
-                    {item}
+                    {formatTimeFriendly(item)}
                   </Text>
                   {item === value && <Check size={16} color={colors.primary[600]} />}
                 </TouchableOpacity>
@@ -249,7 +269,7 @@ export default function NotificationPreferencesScreen({ navigation }) {
 
   const MODES = [
     { value: 'realtime', label: 'Tempo real' },
-    { value: 'digest_morning', label: 'Resumo matinal' },
+    { value: 'digest_morning', label: 'Resumo diário' },
     { value: 'silent', label: 'Silencioso' },
   ]
 
@@ -387,7 +407,7 @@ export default function NotificationPreferencesScreen({ navigation }) {
         {/* Hora do resumo — só quando digest_morning */}
         {notificationMode === 'digest_morning' && globalEnabled && (
           <>
-            <Text style={styles.sectionLabel}>HORA DO RESUMO</Text>
+            <Text style={styles.sectionLabel}>HORA DO RESUMO DIÁRIO</Text>
             <View style={[styles.card, styles.timeRow]}>
               <Text style={styles.rowLabel}>Enviar resumo às</Text>
               <TimePicker

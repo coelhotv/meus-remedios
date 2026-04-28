@@ -95,14 +95,13 @@ export async function getUserSettings() {
     
     const settings = data || { user_id: user.id, telegram_chat_id: null }
     
-    // Adicionando validação do output conforme sugerido
-    userSettingsNotificationSchema.extend({
+    const validated = userSettingsNotificationSchema.extend({
       user_id: z.string().uuid(),
       telegram_chat_id: z.string().nullable().optional(),
       verification_token: z.string().nullable().optional()
     }).parse(settings)
 
-    return { data: settings, error: null }
+    return { data: validated, error: null }
   } catch (err) {
     console.error('[profileService] erro ao buscar definições:', err)
     return { data: null, error: mapErrorToMessage(err) }
