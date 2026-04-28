@@ -3,8 +3,7 @@ import { createLogger } from '../bot/logger.js';
 import { ErrorCategories } from '../services/deadLetterQueue.js';
 import { getCurrentCorrelationId } from './correlationLogger.js';
 import {
-  getActiveProtocols,
-  getUserSettings
+  getActiveProtocols
 } from '../services/protocolCache.js';
 import { shouldSendNotification, logSuccessfulNotification, shouldSendGroupedNotification } from '../services/notificationDeduplicator.js';
 import {
@@ -266,27 +265,30 @@ export async function checkReminders(bot, options = {}) {
  */
 async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
   try {
-    const { data: users } = await supabase.from('auth.users').select('id');
-    if (!users || users.length === 0) {
-      logger.debug('No users found for daily digest dispatch');
+    // Bug B7: auth.users não é acessível pelo client JS — usar user_settings
+    // Aproveitar para pré-carregar settings e evitar N+1 de getUserSettings()
+    const { data: usersRaw } = await supabase
+      .from('user_settings')
+      .select('user_id, notification_mode, digest_time, timezone')
+      .eq('notification_mode', 'digest_morning');
+
+    const users = usersRaw ?? [];
+    if (users.length === 0) {
+      logger.debug('Daily digest: nenhum usuário em modo digest_morning', { correlationId });
       return;
     }
 
     logger.info(`Running daily digest via dispatcher for ${users.length} users`, { correlationId });
 
-    // Fase 1: filtrar usuários elegíveis (mode=digest_morning, no horário correto)
+    // Fase 1: filtrar usuários cujo digest_time bate com o horário atual
     const eligibleEntries = [];
     for (const user of users) {
-      const userId = user.id;
+      const userId = user.user_id;
       try {
-        const settings = await getUserSettings(userId, true);
-        if (!settings) continue;
-
-        const notificationMode = settings.notification_mode || 'realtime';
-        if (notificationMode !== 'digest_morning') continue;
-
-        const timezone = settings.timezone || 'America/Sao_Paulo';
-        const digestTime = settings.digest_time || '07:00';
+        const timezone = user.timezone || 'America/Sao_Paulo';
+        // Bug B-formato: Postgres TIME retorna '14:00:00' (com segundos)
+        // getCurrentTimeInTimezone retorna 'HH:MM' — fatiar para comparar
+        const digestTime = (user.digest_time || '07:00').slice(0, 5);
         const currentHHMM = getCurrentTimeInTimezone(timezone);
 
         if (currentHHMM !== digestTime) continue;
@@ -297,9 +299,9 @@ async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
           continue;
         }
 
-        eligibleEntries.push({ userId, settings, timezone });
+        eligibleEntries.push({ userId, timezone });
       } catch (err) {
-        logger.error(`Error evaluating daily digest eligibility for user`, err, { userId: user.id, correlationId });
+        logger.error(`Error evaluating daily digest eligibility for user`, err, { userId, correlationId });
       }
     }
 

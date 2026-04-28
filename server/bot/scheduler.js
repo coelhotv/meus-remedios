@@ -30,8 +30,10 @@ export function startScheduler(bot, options = {}) {
 }
 
 export function startDailyDigest(bot, options = {}) {
-  scheduleTask('runDailyDigest', '0 23 * * *', () => runDailyDigest(bot, options));
-  console.log('✅ Resumo diário configurado (diariamente às 23h)');
+  // Bug B-cron: digest precisa rodar a cada minuto para honrar o digest_time por usuário
+  // A função runDailyDigestViaDispatcher filtra internamente quem está no horário correto
+  scheduleTask('runDailyDigest', '* * * * *', () => runDailyDigest(bot, options));
+  console.log('✅ Resumo diário configurado (verifica a cada minuto, envia no horário do usuário)');
 }
 
 export function startPrescriptionAlerts(bot, options = {}) {
