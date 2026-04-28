@@ -29,10 +29,10 @@ const HOURS = Array.from({ length: 24 }, (_, i) => {
 })
 
 // Derivar notification_preference legado
-function deriveLegacyPreference(mobile, telegram) {
-  if (mobile && telegram) return 'both'
-  if (mobile) return 'mobile_push'
-  if (telegram) return 'telegram'
+function deriveLegacyPreference({ channel_mobile_push_enabled, channel_telegram_enabled }) {
+  if (channel_mobile_push_enabled && channel_telegram_enabled) return 'both'
+  if (channel_mobile_push_enabled) return 'mobile_push'
+  if (channel_telegram_enabled) return 'telegram'
   return 'none'
 }
 
