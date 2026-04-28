@@ -128,14 +128,7 @@ export async function updateNotificationSettings(userId, settings) {
       .from('user_settings')
       .upsert({
         user_id: userId,
-        notification_mode: settings.notification_mode,
-        quiet_hours_start: settings.quiet_hours_start ?? null,
-        quiet_hours_end:   settings.quiet_hours_end   ?? null,
-        digest_time:       settings.digest_time,
-        channel_mobile_push_enabled: settings.channel_mobile_push_enabled,
-        channel_web_push_enabled:    settings.channel_web_push_enabled,
-        channel_telegram_enabled:    settings.channel_telegram_enabled,
-        notification_preference:     settings.notification_preference,
+        ...parsed.data
       }, { onConflict: 'user_id' })
 
     if (error) throw error

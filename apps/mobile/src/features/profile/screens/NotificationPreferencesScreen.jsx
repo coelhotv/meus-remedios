@@ -163,6 +163,7 @@ export default function NotificationPreferencesScreen({ navigation }) {
     try {
       const mobile = patch.mobilePushEnabled ?? mobilePushEnabled
       const telegram = patch.telegramEnabled ?? telegramEnabled
+      const web = patch.webPushEnabled ?? webPushEnabled
       const mode = patch.notificationMode ?? notificationMode
       const qEnabled = patch.quietHoursEnabled ?? quietHoursEnabled
       const qStart = patch.quietHoursStart ?? quietHoursStart
@@ -170,19 +171,26 @@ export default function NotificationPreferencesScreen({ navigation }) {
       const dTime = patch.digestTime ?? digestTime
       const global = patch.globalEnabled ?? globalEnabled
 
-      await updateNotificationSettings(user.id, {
+      const result = await updateNotificationSettings(user.id, {
         notification_mode: mode,
         quiet_hours_start: (global && qEnabled) ? qStart : null,
         quiet_hours_end: (global && qEnabled) ? qEnd : null,
         digest_time: dTime,
         channel_mobile_push_enabled: global && mobile,
-        channel_web_push_enabled: global && webPushEnabled,
+        channel_web_push_enabled: global && web,
         channel_telegram_enabled: global && telegram,
-        notification_preference: deriveLegacyPreference(global && mobile, global && telegram),
+        notification_preference: deriveLegacyPreference({ 
+          channel_mobile_push_enabled: global && mobile, 
+          channel_telegram_enabled: global && telegram 
+        }),
       })
 
-      if (__DEV__) console.log('[NotificationPreferencesScreen] Configurações salvas')
-      await refresh()
+      if (result.success) {
+        if (__DEV__) console.log('[NotificationPreferencesScreen] Configurações salvas')
+        await refresh()
+      } else {
+        throw new Error(result.error || 'Erro desconhecido ao salvar')
+      }
     } catch (err) {
       if (__DEV__) console.error('[NotificationPreferencesScreen] Erro ao salvar:', err)
       Alert.alert('Erro', 'Não foi possível salvar as preferências: ' + err.message)
