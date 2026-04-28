@@ -122,6 +122,7 @@ export default function ProfileScreen() {
                   <Text style={styles.comingSoonText}>em breve</Text>
                 </View>
               </View>
+              <ChevronRight size={18} color={colors.text.muted} strokeWidth={1.5} />
             </TouchableOpacity>
             <View style={styles.otherDivider} />
             <TouchableOpacity
@@ -136,6 +137,7 @@ export default function ProfileScreen() {
                   <Text style={styles.comingSoonText}>em breve</Text>
                 </View>
               </View>
+              <ChevronRight size={18} color={colors.text.muted} strokeWidth={1.5} />
             </TouchableOpacity>
           </View>
         </View>
@@ -211,12 +213,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     color: colors.text.secondary,
+    lineHeight: 20,
   },
   value: {
     fontSize: 14,
     color: colors.text.primary,
     fontWeight: '600',
     maxWidth: '70%',
+    lineHeight: 20,
   },
   logoutSection: {
     marginTop: spacing[4],
@@ -280,13 +284,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.muted,
     fontWeight: '500',
+    lineHeight: 22,
   },
   otherLabelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   comingSoonBadge: {
-    backgroundColor: colors.status.error + '15',
+    backgroundColor: colors.neutral[200],
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: borderRadius.full,
@@ -294,9 +299,10 @@ const styles = StyleSheet.create({
   },
   comingSoonText: {
     fontSize: 10,
-    color: colors.status.error,
+    color: colors.text.muted,
     fontWeight: '700',
     textTransform: 'uppercase',
+    lineHeight: 14,
   },
   otherDivider: {
     height: 1,
