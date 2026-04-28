@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@shared/utils/supabase'
-import { useTheme } from '@shared/hooks/useTheme'
 
 // Import components
 import SettingsHeader from './settings/sections/SettingsHeader'
@@ -20,7 +19,6 @@ import { useComplexityMode } from '@dashboard/hooks/useComplexityMode'
  * Utiliza o Sectional Pattern para modularidade.
  */
 export default function SettingsRedesign({ onNavigate }) {
-  const { theme, toggleTheme } = useTheme()
   const { mode: complexityMode, setOverride: setComplexityOverride, overrideMode } = useComplexityMode()
 
   // ── States ──
@@ -334,8 +332,6 @@ export default function SettingsRedesign({ onNavigate }) {
             overrideMode={overrideMode}
             handleComplexityChange={handleComplexityChange}
             getComplexityDisplayMode={getComplexityDisplayMode}
-            theme={theme}
-            toggleTheme={toggleTheme}
           />
 
           <AccountSection
