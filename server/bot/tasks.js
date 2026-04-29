@@ -449,16 +449,14 @@ async function runDailyAdherenceReportViaDispatcher(dispatcher, correlationId) {
   try {
     const { data: users } = await supabase
       .from('user_settings')
-      .select('user_id, timezone, display_name, digest_time, notification_mode');
+      .select('user_id, timezone, display_name, digest_time, notification_mode')
+      .neq('notification_mode', 'digest_morning');
 
     if (!users || users.length === 0) return;
 
     const eligibleUsers = [];
     for (const user of users) {
       try {
-        // Pular usuários em modo digest_morning (eles já recebem o report concatenado no digest)
-        if (user.notification_mode === 'digest_morning') continue;
-
         const timezone = user.timezone || 'America/Sao_Paulo';
         const currentHHMM = getCurrentTimeInTimezone(timezone);
         // Default para 23:00 se não houver digest_time definido
