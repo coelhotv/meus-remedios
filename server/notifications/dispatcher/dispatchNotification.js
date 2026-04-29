@@ -210,5 +210,29 @@ export async function dispatchNotification({ userId, kind, payload, data, channe
     totalFailed: normalized.totalFailed,
   })
 
+  // --- DLQ Integration (Gate 3.5) ---
+  // Se houver falhas e o repositório estiver presente, enfileiramos para o Admin (DLQ)
+  // Evitamos re-enfileirar retentativas manuais (que já estão na DLQ e são tratadas pelo handler de retry)
+  if (normalized.totalFailed > 0 && repositories?.dlq && !context?.isRetry) {
+    const firstError = results.find(r => !r.success)?.errors?.[0];
+    const isGroupedKind = kind === 'dose_reminder_by_plan' || kind === 'dose_reminder_misc';
+    const protocolId = isGroupedKind ? null : (finalPayload?.metadata?.protocolId ?? null);
+
+    // Enfileira de forma assíncrona (não bloqueia o retorno do dispatch)
+    ;(async () => {
+      try {
+        await repositories.dlq.enqueue({
+          userId,
+          protocolId,
+          type: kind,
+          ...(data || {}) // L1 payload original para futura retentativa
+        }, firstError, 1, correlationId);
+        logger.info('Notificação falha enfileirada na DLQ', { correlationId, userId, kind });
+      } catch (dlqErr) {
+        logger.error('Falha ao enfileirar na DLQ', dlqErr, { correlationId, userId, kind });
+      }
+    })();
+  }
+
   return normalized
 }

@@ -52,6 +52,16 @@ export const prescriptionAlertDataSchema = z.object({
   daysRemaining: z.number()
 });
 
+export const dlqDigestDataSchema = z.object({
+  failedCount: z.number(),
+  failures: z.array(z.object({
+    id: z.string(),
+    type: z.string(),
+    error_message: z.string().optional(),
+    created_at: z.string()
+  }))
+});
+
 export const kindSchema = z.enum([
   'dose_reminder',
   'dose_reminder_by_plan',
@@ -61,7 +71,8 @@ export const kindSchema = z.enum([
   'adherence_report',
   'monthly_report',
   'titration_alert',
-  'prescription_alert'
+  'prescription_alert',
+  'dlq_digest'
 ]);
 
 // Contrato de saída da Presentation Layer (L2) para a Delivery Layer (L3)
@@ -243,6 +254,19 @@ export function buildNotificationPayload({ kind, data }) {
       break;
     }
 
+    case 'dlq_digest': {
+      const { failedCount, failures } = dlqDigestDataSchema.parse(data);
+      title = '⚠️ DLQ Digest';
+      body = `*${failedCount} notificações falhadas*\n\n`;
+      
+      body += failures.map(f => {
+        const time = new Date(f.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const error = (f.error_message || 'Erro desconhecido').substring(0, 50);
+        return `• [${time}] *${escapeMarkdownV2(f.type)}*: _${escapeMarkdownV2(error)}_`;
+      }).join('\n');
+      break;
+    }
+
     default:
       throw new Error(`Unsupported notification kind: ${kind}`);
   }
@@ -251,6 +275,8 @@ export function buildNotificationPayload({ kind, data }) {
   let deeplink = 'dosiq://today';
   if (validatedKind === 'adherence_report' || validatedKind === 'monthly_report') deeplink = 'dosiq://history';
   if (validatedKind === 'stock_alert' || validatedKind === 'prescription_alert') deeplink = 'dosiq://stock';
+  if (validatedKind === 'dlq_digest') deeplink = 'dosiq://admin/dlq';
+  
   if (validatedKind === 'dose_reminder' && data.protocolId) {
     deeplink = `dosiq://today?protocolId=${data.protocolId}`;
   }
@@ -259,6 +285,12 @@ export function buildNotificationPayload({ kind, data }) {
   }
   if (validatedKind === 'dose_reminder_misc') {
     deeplink = `dosiq://today?bulkMode=misc&at=${data.scheduledTime || 'now'}`;
+  }
+
+  // 4. Aplicar Decoração de Reenvio (Gate 3.5)
+  if (data.isRetry) {
+    title = `🔄 ${title} (Reenvio)`;
+    body = `${body}\n\n_Esta é uma nova tentativa de envio\\._`;
   }
 
   // Validação do Contrato de Saída (Gate L2 -> L3)

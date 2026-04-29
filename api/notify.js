@@ -62,6 +62,28 @@ const devicesRepo = {
   }
 };
 
+const dlqRepo = {
+  async enqueue(notificationData, error, retryCount, correlationId) {
+    const { error: upsertError } = await supabase
+      .from('failed_notification_queue')
+      .upsert({
+        user_id: notificationData.userId,
+        protocol_id: notificationData.protocolId,
+        notification_type: notificationData.type,
+        notification_payload: notificationData,
+        error_code: error?.code || error?.error_code,
+        error_message: error?.message || 'Unknown error',
+        retry_count: retryCount,
+        correlation_id: correlationId,
+        status: 'pending'
+      }, {
+        onConflict: 'correlation_id',
+        ignoreDuplicates: false
+      });
+    if (upsertError) throw upsertError;
+  }
+};
+
 
 // --- Bot Adapter (Minimal for Notifications) ---
 function createNotifyBotAdapter(token) {
@@ -234,7 +256,11 @@ export default async function handler(req, res) {
           kind,
           data,
           context,
-          repositories: { preferences: preferencesRepo, devices: devicesRepo },
+          repositories: { 
+            preferences: preferencesRepo, 
+            devices: devicesRepo,
+            dlq: dlqRepo
+          },
           bot,
           expoClient
         });
@@ -312,7 +338,7 @@ export default async function handler(req, res) {
       results.push('stock_alerts');
 
       await withCorrelation(
-        (context) => sendDLQDigest(bot, context),
+        (context) => sendDLQDigest(notificationDispatcher, context),
         { correlationId, jobType: 'dlq_digest' }
       );
       results.push('dlq_digest');

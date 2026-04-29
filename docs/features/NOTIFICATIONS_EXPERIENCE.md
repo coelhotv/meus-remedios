@@ -14,7 +14,8 @@ Nossa abordagem central baseia-se na **responsabilidade de dados** e na **onipre
 
 1.  **Zero Perda de Contexto**: Toda notificação é um registro imutável no `notification_log` antes de ser um push. Se o canal falhar, o valor de produto permanece no App Inbox.
 2.  **Accountability**: Medimos o sucesso não pelo "envio", mas pela "ação tomada" (`action_taken_at`).
-3.  **Respeito à Atenção**: O usuário é o dono do seu tempo. Oferecemos ferramentas para reduzir o ruído sem comprometer a adesão (Quiet Hours e Agrupamento).
+3.  **Resiliência (DLQ-First)**: Falhas de entrega não são ignoradas. Elas são capturadas por uma Dead Letter Queue (DLQ), permitindo auditoria e reenvio manual ou automático.
+4.  **Respeito à Atenção**: O usuário é o dono do seu tempo. Oferecemos ferramentas para reduzir o ruído sem comprometer a adesão (Quiet Hours e Agrupamento).
 
 ---
 
@@ -199,6 +200,30 @@ Este catálogo serve como a referência canônica para o tom de voz e os formato
     > 📈 Próxima etapa: 5mg cp
     > ⏰ Data prevista: 30/04/2026
 
+### 8. Resumo de Falhas de Sistema (`dlq_digest`)
+*   **Gatilho**: Execução diária da tarefa de limpeza/auditoria da DLQ.
+*   **Canais**: Telegram (Admin), Inbox (Admin).
+*   **Destinatário**: Admin (via `SYSTEM_USER_ID`).
+*   **Exemplo Rico**:
+    > 🛠️ **Resumo da Dead Letter Queue**
+    > 
+    > Encontramos **3 notificações falhadas** nas últimas 24h que precisam de atenção.
+    > 
+    >   ❌ **prescription_alert** (User: João) — 08:00
+    >   ❌ **daily_digest** (User: Maria) — 07:30
+    > 
+    > [ 📋 Ver Painel DLQ ]
+
+### 9. Notificações de Reenvio (`isRetry`)
+*   **Gatilho**: Reenvio manual através do Admin Panel.
+*   **Decoração**: Título com prefixo `🔄` e rodapé explicativo.
+*   **Exemplo Rico**:
+    > 🔄 **💊 Lembrete de nova dose (Reenvio)**
+    > 
+    > Está na hora de tomar 1x de Atorvastatina.
+    > 
+    > _Esta é uma nova tentativa de envio._
+
 ---
 
 ## 🧠 Lógica de Behavioral Nudges (Gamificação)
@@ -234,6 +259,10 @@ Propostas para elevar o componente de notificações a uma ferramenta de **Engaj
 ### [N6] Smart Snooze baseada em Contexto
 *   **Objetivo**: Reduzir o churn de notificações.
 *   **Ação**: Permitir "Adiar para quando chegar em casa" (via geofencing ou tempo inteligente) em vez de apenas um snooze fixo de 30min.
+
+### [N7] Auto-Healing de Notificações
+*   **Objetivo**: Eliminar intervenção manual em falhas transitórias.
+*   **Ação**: Implementar lógica de retry exponencial automático na DLQ para erros de rede detectados pela Camada de Entrega (L3).
 
 ---
 *Documento mantido pela equipe de Produto e Engenharia de Notificações.*
