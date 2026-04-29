@@ -15,6 +15,19 @@ export function getGreeting(hour) {
 }
 
 /**
+ * Retorna saudação contextual por horário para títulos de notificação
+ * @param {number} hour - Hora local (0-23)
+ * @returns {string}
+ */
+export function getTimeOfDayGreeting(hour) {
+  if (hour >= 5 && hour < 11) return '🌅 Hora dos medicamentos da manhã';
+  if (hour >= 11 && hour < 14) return '🍽️ Hora dos medicamentos do almoço';
+  if (hour >= 14 && hour < 18) return '☕ Hora dos medicamentos da tarde';
+  if (hour >= 18 && hour < 23) return '🌆 Hora dos medicamentos da noite';
+  return '🌙 Hora dos medicamentos';
+}
+
+/**
  * Retorna um incentivo motivacional baseado no percentual de adesão
  * @param {number} percentage - Percentual de 0 a 100
  * @returns {string}

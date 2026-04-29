@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { escapeMarkdownV2 } from '../../utils/formatters.js';
-import { getGreeting, getMotivationalNudge } from '../../bot/utils/notificationHelpers.js';
+import { getGreeting, getMotivationalNudge, getTimeOfDayGreeting } from '../../bot/utils/notificationHelpers.js';
 
 /**
  * Schemas de contrato para os dados de entrada (Layer 1 -> Layer 2)
@@ -24,7 +24,26 @@ export const adherenceReportDataSchema = z.object({
   period: z.string(), // ex: "hoje", "esta semana"
   percentage: z.number().min(0).max(100),
   taken: z.number(),
-  total: z.number()
+  total: z.number(),
+  storytelling: z.string().optional() // Insights comparativos vindos da L1
+});
+
+export const stockAlertDataSchema = z.object({
+  medicineName: z.string(),
+  remaining: z.number(),
+  daysRemaining: z.number().optional()
+});
+
+export const titrationAlertDataSchema = z.object({
+  medicineName: z.string(),
+  currentStage: z.number(),
+  totalStages: z.number(),
+  status: z.enum(['alvo_atingido', 'titulando']),
+  nextStage: z.object({
+    dosage: z.string(),
+    unit: z.string(),
+    date: z.string().optional()
+  }).optional()
 });
 
 export const kindSchema = z.enum([
@@ -33,7 +52,8 @@ export const kindSchema = z.enum([
   'dose_reminder_misc',
   'stock_alert',
   'daily_digest',
-  'adherence_report'
+  'adherence_report',
+  'titration_alert'
 ]);
 
 // Contrato de saída da Presentation Layer (L2) para a Delivery Layer (L3)
@@ -87,13 +107,18 @@ export function buildNotificationPayload({ kind, data }) {
     }
 
     case 'adherence_report': {
-      const { firstName, period, percentage, taken, total } = adherenceReportDataSchema.parse(data);
+      const { firstName, period, percentage, taken, total, storytelling } = adherenceReportDataSchema.parse(data);
       const nudge = getMotivationalNudge(percentage);
       title = '📈 Relatório de Adesão';
       
       let msg = `Olá, *${escapeMarkdownV2(firstName)}*\\!\\n\\n`;
       msg += `Sua adesão ${escapeMarkdownV2(period)} foi de *${percentage}%*\\n`;
       msg += `✅ *${taken}* de *${total}* doses registradas\\.\\n\\n`;
+      
+      if (storytelling) {
+        msg += `📈 *Comparação:* ${escapeMarkdownV2(storytelling)}\\n\\n`;
+      }
+      
       msg += `_${escapeMarkdownV2(nudge)}_`;
       
       body = msg;
@@ -112,24 +137,55 @@ export function buildNotificationPayload({ kind, data }) {
       const n = data.doses?.length ?? 0;
       const planName = data.planName ?? 'Plano de tratamento';
       const scheduledTime = data.scheduledTime ?? 'agora';
-      title = `💊 ${escapeMarkdownV2(planName)}`;
-      body = `Está na hora de tomar ${n} medicamento${n !== 1 ? 's' : ''} \\(${escapeMarkdownV2(scheduledTime)}\\)\\.`;
+      const hour = data.hour ?? new Date().getHours();
+      
+      title = `${getTimeOfDayGreeting(hour)} — ${escapeMarkdownV2(planName)}`;
+      body = `Está na hora de tomar ${n} medicamento${n !== 1 ? 's' : ''} do seu plano \\(${escapeMarkdownV2(scheduledTime)}\\)\\.`;
       break;
     }
 
     case 'dose_reminder_misc': {
       const n = data.doses?.length ?? 0;
       const scheduledTime = data.scheduledTime ?? 'agora';
-      title = '💊 Hora dos Medicamentos';
-      body = `Você tem ${n} medicamento${n !== 1 ? 's' : ''} agendado${n !== 1 ? 's' : ''} para ${escapeMarkdownV2(scheduledTime)}\\.`;
+      const hour = data.hour ?? new Date().getHours();
+      
+      title = getTimeOfDayGreeting(hour);
+      body = `Você tem ${n} medicamento${n !== 1 ? 's' : ''} pendente${n !== 1 ? 's' : ''} para ${escapeMarkdownV2(scheduledTime)}\\. Clique para registrar\\.`;
       break;
     }
 
     case 'stock_alert': {
-      const medicineName = escapeMarkdownV2(data.medicineName || 'Medicamento');
-      const remaining = data.remaining || 0;
-      title = '⚠️ Alerta de Estoque';
-      body = `Seu estoque de *${medicineName}* está acabando\\. Restam apenas *${remaining}* doses\\.`;
+      const { medicineName, remaining, daysRemaining } = stockAlertDataSchema.parse(data);
+      title = `📦 Alerta de Estoque: ${escapeMarkdownV2(medicineName)}`;
+      
+      let msg = `📉 **Restam:** ${remaining} doses\\.\n`;
+      if (daysRemaining !== undefined) {
+        msg += `⏳ **Previsão:** Acaba em aproximadamente **${daysRemaining} dias**\\.\n\n`;
+      }
+      msg += `Recomendamos a reposição em breve\\.`;
+      
+      body = msg;
+      break;
+    }
+
+    case 'titration_alert': {
+      const { medicineName, currentStage, totalStages, status, nextStage } = titrationAlertDataSchema.parse(data);
+      const name = escapeMarkdownV2(medicineName);
+      title = '🎯 Atualização de Titulação';
+
+      let msg = `🎯 *Atualização de Titulação*\n\n`;
+      msg += `Medicamento: **${name}**\n`;
+      msg += `Etapa atual: ${currentStage}/${totalStages}\n\n`;
+
+      if (status === 'alvo_atingido') {
+        msg += `✅ *Parabéns\\!* Você atingiu a dose alvo\\!\n`;
+        msg += `Continue com o acompanhamento médico\\.`;
+      } else if (status === 'titulando' && nextStage) {
+        msg += `📈 Próxima etapa: ${escapeMarkdownV2(nextStage.dosage)} ${escapeMarkdownV2(nextStage.unit)}\n`;
+        msg += `⏰ Data prevista: ${escapeMarkdownV2(nextStage.date || 'a definir')}`;
+      }
+
+      body = msg;
       break;
     }
 
