@@ -4,7 +4,7 @@
 // correlationId é obrigatório em todos os logs (R-087)
 
 import { z } from 'zod'
-import { buildNotificationPayload } from '../payloads/buildNotificationPayload.js'
+import { buildNotificationPayload, kindSchema } from '../payloads/buildNotificationPayload.js'
 import { sendTelegramNotification } from '../channels/telegramChannel.js'
 import { sendExpoPushNotification } from '../channels/expoPushChannel.js'
 import { shouldSendNow } from '../utils/notificationGate.js'
@@ -16,7 +16,7 @@ const logger = createLogger('Dispatcher')
 
 const dispatchInputSchema = z.object({
   userId: z.string().min(1),
-  kind: z.string().min(1), // Relaxed for flexibility, buildNotificationPayload will validate
+  kind: kindSchema,
   channels: z.array(z.string()).default([]),
 })
 

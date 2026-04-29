@@ -417,7 +417,7 @@ async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
         
         // Template Rico (Telegram / Inbox) - Planejador Matinal
         const richTitle = `📅 Seu Planejador — ${dateStr}`;
-        let richBody = `${greeting}, ${displayName || 'Paciente'}! 👋\n\n`;
+        let richBody = `${escapeMarkdownV2(greeting)}, ${escapeMarkdownV2(displayName || 'Paciente')}\\! 👋\n\n`;
         
         if (expectedDosesYesterday > 0) {
           richBody += `📊 **Ontem:** você completou ${percentageYesterday}% das doses\\. `;
@@ -428,14 +428,14 @@ async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
         if (todaySchedule.length > 0) {
           richBody += `🕒 **Sua Agenda de Hoje:**\n`;
           todaySchedule.forEach(s => {
-            richBody += `• ${s.time} — ${escapeMarkdownV2(s.medicineName)} (${s.dosage} ${escapeMarkdownV2(s.unit)})\n`;
+            richBody += `• ${s.time} — ${escapeMarkdownV2(s.medicineName)} \\(${s.dosage} ${escapeMarkdownV2(s.unit)}\\)\n`;
           });
         } else {
           richBody += `✨ Você não tem doses agendadas para hoje\\. Aproveite o descanso\\!`;
         }
 
-        // Template Compacto (Push)
-        const pushBody = `${greeting}\\! Ontem: ${percentageYesterday}%\\. Hoje você tem ${todaySchedule.length} doses agendadas\\. Vamos nessa?`;
+        // Template Compacto (Push) - Sem escapes Markdown
+        const pushBody = `${greeting}! Ontem: ${percentageYesterday}%. Hoje você tem ${todaySchedule.length} doses agendadas. Vamos nessa?`;
 
         await dispatcher.dispatch({
           userId,
@@ -563,8 +563,8 @@ async function runDailyAdherenceReportViaDispatcher(dispatcher, correlationId) {
         const dateStr = startOfDay.toLocaleDateString('pt-BR');
 
         const title = `🌙 Resumo do seu Dia — ${dateStr}`;
-        let body = `Olá, ${displayName || 'Paciente'}! 👋\n\n`;
-        body += `📊 **Hoje:** ${percentage}% das doses concluídas (${takenDoses}/${expectedDoses})\\.\n`;
+        let body = `Olá, ${escapeMarkdownV2(displayName || 'Paciente')}\\! 👋\n\n`;
+        body += `📊 **Hoje:** ${percentage}% das doses concluídas \\(${takenDoses}/${expectedDoses}\\)\\.\n`;
         body += `📈 **Comparação:** ${storytelling}\n\n`;
         body += `${escapeMarkdownV2(nudge)}\n\n`;
 
@@ -574,8 +574,8 @@ async function runDailyAdherenceReportViaDispatcher(dispatcher, correlationId) {
           body += `💡 Amanhã é uma nova chance de brilhar\\!`;
         }
 
-        // Template Compacto (Push)
-        const pushBody = `🌙 Resumo: ${percentage}% concluído hoje\\. ${storytelling.split('\\!')[0]}\\! Prepare-se para amanhã\\!`;
+        // Template Compacto (Push) - Sem escapes Markdown
+        const pushBody = `🌙 Resumo: ${percentage}% concluído hoje. ${storytelling.replace(/\\/g, '')} Prepare-se para amanhã!`;
 
         await dispatcher.dispatch({
           userId,
