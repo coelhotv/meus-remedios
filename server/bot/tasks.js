@@ -407,7 +407,7 @@ async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
         }
 
         // Template Compacto (Push)
-        const pushBody = `${nudge} Hoje: ${percentageToday}%. ${storytelling.split('!')[0]}!`;
+        const pushBody = `${nudge} Hoje: ${percentageToday}%.` + (storytelling ? ` ${storytelling.split('!')[0]}!` : '');
 
         await dispatcher.dispatch({
           userId,
@@ -539,10 +539,10 @@ async function runDailyAdherenceReportViaDispatcher(dispatcher, correlationId) {
             expected_doses: expectedDoses,
             nudge,
             details: protocols.map(p => ({
-              name: p.name,
+              name: p.medicine?.name || 'Medicamento',
               protocol_id: p.id,
               taken: logs?.filter(l => l.protocol_id === p.id).length || 0,
-              expected: p.time_schedule?.length || 0
+              expected: p.time_schedule?.length || 1
             }))
           }
         });
