@@ -272,20 +272,7 @@ export function buildNotificationPayload({ kind, data }) {
   }
 
   // 3. Resolver Deeplink lógico (Responsabilidade da Layer 2)
-  let deeplink = 'dosiq://today';
-  if (validatedKind === 'adherence_report' || validatedKind === 'monthly_report') deeplink = 'dosiq://history';
-  if (validatedKind === 'stock_alert' || validatedKind === 'prescription_alert') deeplink = 'dosiq://stock';
-  if (validatedKind === 'dlq_digest') deeplink = 'dosiq://admin/dlq';
-  
-  if (validatedKind === 'dose_reminder' && data.protocolId) {
-    deeplink = `dosiq://today?protocolId=${data.protocolId}`;
-  }
-  if (validatedKind === 'dose_reminder_by_plan' && data.planId) {
-    deeplink = `dosiq://today?bulkMode=plan&planId=${data.planId}&at=${data.scheduledTime || 'now'}`;
-  }
-  if (validatedKind === 'dose_reminder_misc') {
-    deeplink = `dosiq://today?bulkMode=misc&at=${data.scheduledTime || 'now'}`;
-  }
+  const deeplink = resolveDeeplink(validatedKind, data);
 
   // 4. Aplicar Decoração de Reenvio (Gate 3.5)
   if (data.isRetry) {
@@ -303,4 +290,44 @@ export function buildNotificationPayload({ kind, data }) {
       builtAt: new Date().toISOString()
     }
   });
+}
+
+/**
+ * Resolve o deeplink canônico para cada tipo de notificação.
+ * Centraliza a lógica de rotas e parâmetros.
+ */
+function resolveDeeplink(kind, data) {
+  const BASE_URL = 'dosiq://';
+  
+  // 1. Mapeamento de rotas estáticas
+  const staticRoutes = {
+    adherence_report: 'history',
+    monthly_report: 'history',
+    stock_alert: 'stock',
+    prescription_alert: 'stock',
+    dlq_digest: 'admin/dlq'
+  };
+
+  if (staticRoutes[kind]) {
+    return `${BASE_URL}${staticRoutes[kind]}`;
+  }
+
+  // 2. Rotas dinâmicas com parâmetros
+  switch (kind) {
+    case 'dose_reminder':
+      return data.protocolId 
+        ? `${BASE_URL}today?protocolId=${data.protocolId}` 
+        : `${BASE_URL}today`;
+
+    case 'dose_reminder_by_plan':
+      return data.planId
+        ? `${BASE_URL}today?bulkMode=plan&planId=${data.planId}&at=${data.scheduledTime || 'now'}`
+        : `${BASE_URL}today`;
+
+    case 'dose_reminder_misc':
+      return `${BASE_URL}today?bulkMode=misc&at=${data.scheduledTime || 'now'}`;
+
+    default:
+      return `${BASE_URL}today`;
+  }
 }
