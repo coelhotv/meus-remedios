@@ -20,7 +20,7 @@
   "session": {
     "mode": "coding",
     "status": "completed",
-    "goal": "Fix 1: Safe Intl.DateTimeFormat in NotificationPreferences",
+    "goal": "Fix 2: useNotificationLog respects enabled flag",
     "goal_type": "fix"
   },
   "memory": {
