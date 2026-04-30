@@ -20,7 +20,7 @@
   "session": {
     "mode": "coding",
     "status": "completed",
-    "goal": "Fix Android 7 Crash: ProfileStack JS Navigator",
+    "goal": "Fix 1: Safe Intl.DateTimeFormat in NotificationPreferences",
     "goal_type": "fix"
   },
   "memory": {
