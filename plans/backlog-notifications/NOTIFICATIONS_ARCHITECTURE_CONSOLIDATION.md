@@ -1,9 +1,9 @@
 # Prescriptive Plan: Notification Architecture Consolidation (Wave N+1)
 
-Sequencia o refactor de 3 camadas iniciado em `notifications_architecture_refactor_plan.md`, fechando vazamentos residuais identificados pos-merge — principalmente o caso `dose_reminder*` que ficou de fora do plano original. Resultado: arquitetura limpa, contratos estritos, **drop-in ready** para novos canais (WhatsApp, SMS, Email) e novos formatos (HTML inbox, rich push) sem nova rodada de refactor.
+Sequencia o refactor de 3 camadas iniciado em `ORIGINAL_NOTIFICATONS_ARCHITECTURE_REFACTOR.md`, fechando vazamentos residuais identificados pos-merge — principalmente o caso `dose_reminder*` que ficou de fora do plano original. Resultado: arquitetura limpa, contratos estritos, **drop-in ready** para novos canais (WhatsApp, SMS, Email) e novos formatos (HTML inbox, rich push) sem nova rodada de refactor.
 
 > Branch: `fix/wave-12/notification-architecture-consolidation`
-> Pre-requisito: refactor original (`notifications_architecture_refactor_plan.md`) ja mergeado.
+> Pre-requisito: refactor original (`ORIGINAL_NOTIFICATONS_ARCHITECTURE_REFACTOR.md`) ja mergeado.
 
 ---
 
