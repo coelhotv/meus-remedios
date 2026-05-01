@@ -1,6 +1,6 @@
 module.exports = {
   // Testes apenas dos arquivos em staged - suporte a monorepo
-  "apps/*/src/**/*.{js,jsx}": [
+  "{apps/*/src,server,api}/**/*.{js,jsx}": [
     "vitest related --run --passWithNoTests"
   ],
 
