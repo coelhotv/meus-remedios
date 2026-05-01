@@ -1,6 +1,6 @@
 # EXEC SPEC — GATE 1: Schema & Contract Hardening
 
-> **Part of**: `notifications_architecture_consolidation_plan.md`
+> **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
 > **Branch**: `fix/wave-12/notification-architecture-consolidation`
 > **Difficulty**: Low — schema additions only, no behavioral changes
 > **Estimated time**: 1–2 hours

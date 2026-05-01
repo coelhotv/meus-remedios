@@ -3,7 +3,7 @@
 > **Audiencia**: Time tecnico do Dosiq (atual e futuro). Stakeholders interessados em entender **para onde** vamos com notificacoes.
 > **Status**: Documento vivo. Atualizar quando decisoes arquiteturais materializarem ou quando triggers de revisao atingirem.
 > **Data**: 2026-04-30
-> **Origem**: Discussao de design pos-survey arquitetural durante planejamento da Wave de Consolidacao (ver `notifications_architecture_consolidation_plan.md`).
+> **Origem**: Discussao de design pos-survey arquitetural durante planejamento da Wave de Consolidacao (ver `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`).
 
 ---
 

@@ -1,6 +1,6 @@
 # EXEC SPEC — GATE 6: Validation, Frontend Sync & Documentation
 
-> **Part of**: `notifications_architecture_consolidation_plan.md`
+> **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
 > **Branch**: `fix/wave-12/notification-architecture-consolidation`
 > **Prerequisite**: GATE 5.5 approved and committed
 > **Difficulty**: Low — verification, small fixes, and documentation
@@ -185,7 +185,7 @@ Update the file to reflect the post-consolidation architecture. The document sho
 ```
 L1 (Business) → L2 (Presentation) → L3 (Delivery)
 ```
-Include the ASCII diagram from `notifications_architecture_consolidation_plan.md`.
+Include the ASCII diagram from `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`.
 
 **Section 2: Layer Responsibilities**
 - L1: domain data only, no formatting
@@ -220,7 +220,7 @@ Step-by-step:
 
 **Section 6: Related Documents**
 - `plans/backlog-notifications/notifications_architecture_vision.md` — strategic roadmap
-- `plans/backlog-notifications/notifications_architecture_consolidation_plan.md` — this refactor's plan
+- `plans/backlog-notifications/NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md` — this refactor's plan
 - ADR-037, ADR-038, ADR-039 — architectural decisions
 
 ---
@@ -292,7 +292,7 @@ Present the following to the human for review:
 3. **Output of `validate:agent`**: pass/fail, test count, duration
 4. **Output of all verification commands above** (copy-paste each result)
 5. **Smoke test trace** for all three test cases (A, B, C) — describe what each channel would receive
-6. **Complete success criteria checklist** from `notifications_architecture_consolidation_plan.md`:
+6. **Complete success criteria checklist** from `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`:
    - [ ] `grep -r "doseFormatters"` → zero
    - [ ] `grep -r "data.isRetry"` → zero
    - [ ] `grep -n "passthrough"` → zero

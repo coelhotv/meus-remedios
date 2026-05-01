@@ -1,6 +1,6 @@
 # EXEC SPEC — GATE 5: Dispatcher & Boundary Cleanup
 
-> **Part of**: `notifications_architecture_consolidation_plan.md`
+> **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
 > **Branch**: `fix/wave-12/notification-architecture-consolidation`
 > **Prerequisite**: GATE 4 approved and committed
 > **Difficulty**: Medium — touches the core dispatcher; careful reading required before changes

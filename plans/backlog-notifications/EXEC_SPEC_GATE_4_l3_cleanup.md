@@ -1,6 +1,6 @@
 # EXEC SPEC — GATE 4: L3 Cleanup — Channels Become Pure Delivery
 
-> **Part of**: `notifications_architecture_consolidation_plan.md`
+> **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
 > **Branch**: `fix/wave-12/notification-architecture-consolidation`
 > **Prerequisite**: GATE 3 approved and committed
 > **Difficulty**: Medium-High — must preserve callback_data wire format exactly; risk of breaking Telegram buttons

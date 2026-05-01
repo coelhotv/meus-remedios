@@ -1,6 +1,6 @@
 # EXEC SPEC — GATE 3: L1 Cleanup — tasks.js Purge Presentation
 
-> **Part of**: `notifications_architecture_consolidation_plan.md`
+> **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
 > **Branch**: `fix/wave-12/notification-architecture-consolidation`
 > **Prerequisite**: GATE 2 approved and committed
 > **Difficulty**: Medium — requires understanding data flow between tasks.js and the dispatcher

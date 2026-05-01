@@ -1,6 +1,6 @@
 # EXEC SPEC — GATE 5.5: Inbox Markdown Renderer (Visual Bug Fix)
 
-> **Part of**: `notifications_architecture_consolidation_plan.md`
+> **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
 > **Branch**: `fix/wave-12/notification-architecture-consolidation`
 > **Prerequisite**: GATE 5 approved and committed
 > **Difficulty**: Low-Medium — UI-only change; no backend work
