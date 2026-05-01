@@ -1,6 +1,6 @@
 # Prescriptive Plan: 3-Layer Notification Architecture
 
-Resolves Wave 11 production regressions by formalizing the architecture into strict, contracted layers.
+Resolves organic notifications structure grow by formalizing the architecture into strict, contracted layers.
 
 ## Architectural Vision
 
