@@ -6,8 +6,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { AppState } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { getTodayLocal, parseLocalDate, evaluateDoseTimelineState, isProtocolActiveOnDate } from '@dosiq/core'
-import { calculateAdherenceStats, calculateDosesByDate } from '@dosiq/core'
+import { getTodayLocal, parseLocalDate, evaluateDoseTimelineState, isProtocolActiveOnDate, calculateAdherenceStats, calculateDosesByDate  } from '@dosiq/core'
 import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
 import {
   getActiveProtocols,

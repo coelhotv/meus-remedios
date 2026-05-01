@@ -77,7 +77,7 @@ vi.mock('@dashboard/components/SparklineAdesao', () => ({
   default: () => <div data-testid="sparkline" />,
 }))
 
-import HealthHistory from '../HealthHistory'
+import HealthHistory from '@/views/HealthHistory'
 
 describe('HealthHistory', () => {
   beforeEach(() => {

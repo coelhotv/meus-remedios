@@ -83,7 +83,7 @@ vi.mock('@utils/dateUtils', () => ({
   parseLocalDate: (dateStr) => new Date(dateStr + 'T00:00:00'),
 }))
 
-import { getConsultationData } from '../consultationDataService'
+import { getConsultationData } from '@/features/consultation/services/consultationDataService'
 
 describe('consultationDataService', () => {
   beforeEach(() => {

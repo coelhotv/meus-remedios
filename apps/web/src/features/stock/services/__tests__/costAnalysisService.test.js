@@ -6,7 +6,7 @@ import {
   formatBRL,
   calculateDailyIntake,
   calculateAvgUnitPrice,
-} from '../costAnalysisService'
+} from '@/features/stock/services/costAnalysisService'
 
 describe('costAnalysisService', () => {
   afterEach(() => {

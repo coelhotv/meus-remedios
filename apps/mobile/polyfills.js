@@ -15,7 +15,7 @@ global.SharedArrayBuffer = global.SharedArrayBuffer || global.ArrayBuffer
 
   function needsPatch(prop) {
     try {
-      // eslint-disable-next-line no-new
+       
       new URL('https://example.com')[prop]
       return false
     } catch (e) {

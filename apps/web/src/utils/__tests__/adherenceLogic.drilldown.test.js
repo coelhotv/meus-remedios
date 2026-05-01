@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateDosesByDate } from '../adherenceLogic'
+import { calculateDosesByDate } from '@/utils/adherenceLogic'
 
 describe('calculateDosesByDate', () => {
   const baseDate = '2026-02-11'

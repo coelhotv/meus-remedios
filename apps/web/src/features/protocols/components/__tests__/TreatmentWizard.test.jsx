@@ -49,7 +49,7 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }))
 
-import TreatmentWizard from '../TreatmentWizard'
+import TreatmentWizard from '@/features/protocols/components/TreatmentWizard'
 import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 
 describe('TreatmentWizard', () => {

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { getTodayLocal } from '../utils/dateUtils.js'
+import { getTodayLocal } from '@/utils/dateUtils.js'
 
 /**
  * Schema de validação para Protocolos

@@ -3,7 +3,7 @@ import {
   analyzeReminderTiming,
   isSuggestionDismissed,
   dismissSuggestion,
-} from '../reminderOptimizerService'
+} from '@/features/protocols/services/reminderOptimizerService'
 
 // Mock localStorage para ambiente de teste (AP-T03: localStorage pode nao estar disponivel em jsdom)
 const localStorageMock = (() => {

@@ -44,7 +44,7 @@ vi.mock('@features/reports/components/ReportGenerator', () => ({
   default: () => <div data-testid="report-generator" />,
 }))
 
-import Profile from '../Profile'
+import Profile from '@/views/Profile'
 
 describe('Profile', () => {
   beforeEach(() => {

@@ -33,7 +33,7 @@ vi.mock('@protocols/components/TreatmentWizard', () => ({
   ),
 }))
 
-import Treatment from '../Treatment'
+import Treatment from '@/views/Treatment'
 import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import { useCachedQuery } from '@shared/hooks/useCachedQuery'
 

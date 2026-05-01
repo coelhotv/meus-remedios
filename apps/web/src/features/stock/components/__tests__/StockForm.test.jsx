@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import StockForm from '../StockForm'
+import StockForm from '@/features/stock/components/StockForm'
 
 // Mock Button component
 vi.mock('../../ui/Button', () => ({

@@ -6,7 +6,7 @@ import {
   expandProtocolsToDoses,
   filterTodayLogs,
   useDoseZones,
-} from '../useDoseZones'
+} from '@/features/dashboard/hooks/useDoseZones'
 
 // Mock do useDashboard
 const mockUseDashboard = vi.fn()

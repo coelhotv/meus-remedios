@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import EmergencyQRCode from '../EmergencyQRCode'
+import EmergencyQRCode from '@/features/emergency/components/EmergencyQRCode'
 
 // Mock da biblioteca qrcode
 vi.mock('qrcode', () => ({

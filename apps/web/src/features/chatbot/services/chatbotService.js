@@ -6,7 +6,7 @@ import {
   CHATBOT_RATE_LIMIT_MAX,
   CHATBOT_HISTORY_STORAGE_KEY,
   CHATBOT_HISTORY_MAX_DISPLAY,
-} from '../config/chatbotConfig'
+} from '@/features/chatbot/config/chatbotConfig'
 
 const MAX_HISTORY = CHATBOT_MAX_HISTORY
 const RATE_LIMIT_WINDOW = CHATBOT_RATE_LIMIT_WINDOW

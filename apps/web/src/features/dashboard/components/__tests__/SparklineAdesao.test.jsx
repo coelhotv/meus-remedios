@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { SparklineAdesao } from '../SparklineAdesao'
+import { SparklineAdesao } from '@/features/dashboard/components/SparklineAdesao'
 
 vi.mock('@dashboard/services/analyticsService', () => ({
   analyticsService: { track: vi.fn() },

@@ -6,8 +6,8 @@ import {
   loadPersistedHistory,
   savePersistedHistory,
   clearPersistedHistory,
-} from '../services/chatbotService'
-import { createWelcomeMessage } from '../config/chatbotConfig'
+} from '@/features/chatbot/services/chatbotService'
+import { createWelcomeMessage } from '@/features/chatbot/config/chatbotConfig'
 import { useDashboard } from '@dashboard/hooks/useDashboardContext.jsx'
 import ConfirmDialog from '@shared/components/ui/ConfirmDialog'
 import styles from './ChatWindow.module.css'
