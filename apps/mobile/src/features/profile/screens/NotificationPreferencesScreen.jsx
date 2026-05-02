@@ -221,10 +221,9 @@ export default function NotificationPreferencesScreen({ navigation }) {
     } catch (err) {
       errorLog('NotificationPreferencesScreen', 'Erro ao salvar', err)
       Alert.alert('Erro', 'Não foi possível salvar as preferências: ' + err.message)
-    } finally {
     }
   }, [user, mobilePushEnabled, isTelegramConnected, webPushEnabled, notificationMode,
-      quietHoursEnabled, quietHoursStart, quietHoursEnd, digestTime, globalEnabled])
+      quietHoursEnabled, quietHoursStart, quietHoursEnd, digestTime, globalEnabled, refresh])
 
   async function handleMobilePushToggle(val) {
     if (val && !hasPermission) {
@@ -373,7 +372,7 @@ export default function NotificationPreferencesScreen({ navigation }) {
           <View style={styles.divider} />
 
           {/* Email — em breve */}
-          <View style={[styles.channelRow, { opacity: 0.4 }]} pointerEvents="none">
+          <View style={[styles.channelRow, styles.rowSoon]} pointerEvents="none">
             <View style={styles.rowLeft}>
               <Mail size={20} color={colors.text.muted} strokeWidth={2} />
               <Text style={styles.rowLabel}>Email</Text>
@@ -541,6 +540,9 @@ const styles = StyleSheet.create({
   },
   rowDisabled: {
     opacity: 0.6,
+  },
+  rowSoon: {
+    opacity: 0.4,
   },
   rowLeft: {
     flexDirection: 'row',
