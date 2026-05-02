@@ -44,11 +44,6 @@ function DoseCard({ dose, onRegisterDose, selectedDoses, onToggleSelection, done
         })
       : dose.scheduledTime
 
-  const handleCardClick = (e) => {
-    if (done || !onToggleSelection || e.target.closest('.dose-card__register-btn')) return
-    onToggleSelection(dose.protocolId, dose.scheduledTime)
-  }
-
   return (
     <motion.div
       className={`dose-card${done ? ' dose-card--done' : ''}${isSelected ? ' dose-card--selected' : ''}`}

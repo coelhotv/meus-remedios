@@ -8,10 +8,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { AppState } from 'react-native'
-import { getTodayLocal, getNow, parseISO, addDays, cloneDate } from '@dosiq/core'
+import { getTodayLocal, getNow, parseISO, addDays } from '@dosiq/core'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createNotificationLogRepository } from '@dosiq/shared-data'
-import { supabase } from '../../platform/supabase/nativeSupabaseClient'
+import { supabase } from '@platform/supabase/nativeSupabaseClient'
 
 /**
  * Gera chave de cache dinâmica por usuário para evitar vazamento de dados (Security Fix)
@@ -94,7 +94,7 @@ async function enrichWithDoses(logs) {
  * @returns {Object} { data, loading, error, stale, refresh }
  */
 export function useNotificationLog(options = {}) {
-  const { userId, limit = 20, offset = 0, enabled = true } = options
+  const { userId, limit = 20, enabled = true } = options
 
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -116,7 +116,7 @@ export function useNotificationLog(options = {}) {
     try {
       if (__DEV__) console.log('[useNotificationLog] Fetching notifications...')
 
-      const raw  = await repo.listByUserId(userId, { limit, offset })
+      const raw  = await repo.listByUserId(userId, { limit })
       const logs = await enrichWithDoses(raw)
 
       const cacheKey = getCacheKey(userId)

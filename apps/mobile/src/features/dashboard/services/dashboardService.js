@@ -3,8 +3,8 @@
 // Schemas de domínio via @dosiq/core (nunca duplicar lógica de negócio)
 
 import { z } from 'zod'
-import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
-import { parseLocalDate, getTodayLocal, cloneDate, addDays } from '@dosiq/core'
+import { supabase } from '@platform/supabase/nativeSupabaseClient'
+import { parseLocalDate, getTodayLocal, addDays } from '@dosiq/core'
 
 /**
  * Busca protocolos ativos do utilizador.

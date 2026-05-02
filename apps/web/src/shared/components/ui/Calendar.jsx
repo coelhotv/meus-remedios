@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { getNow, addDays, getTodayLocal, parseLocalDate, getSaoPauloTime, cloneDate, addMonths } from '@utils/dateUtils.js'
+import { getTodayLocal, parseLocalDate, getSaoPauloTime, cloneDate, addMonths } from '@utils/dateUtils.js'
 import './Calendar.css'
 
 /**

@@ -21,7 +21,8 @@ export default [
     '**/.vercel/**',
     '**/scripts/**',
     '**/scratches/**',
-    '**/__tests__/**'    
+    '**/__tests__/**',
+    '**/.agent/**'
   ] },
   {
     files: ['**/*.{js,jsx}'],
@@ -200,7 +201,15 @@ export default [
         ...globals.node,
       },
     },
+    settings: {
+      'import-x/resolver': {
+        node: {
+          moduleDirectory: ['node_modules', 'server/node_modules']
+        }
+      }
+    },
     rules: {
+      'import-x/no-unresolved': 'off',
       'n/no-process-exit': 'error',
       'n/no-path-concat': 'error',
       'no-console': 'off', // Logs são essenciais no server
@@ -244,6 +253,12 @@ export default [
             ['@protocols', './apps/mobile/src/features/protocols'],
             ['@stock', './apps/mobile/src/features/stock'],
             ['@dashboard', './apps/mobile/src/features/dashboard'],
+            ['@navigation', './apps/mobile/src/navigation'],
+            ['@platform', './apps/mobile/src/platform'],
+            ['@profile', './apps/mobile/src/features/profile'],
+            ['@notifications', './apps/mobile/src/features/notifications'],
+            ['@treatments', './apps/mobile/src/features/treatments'],
+            ['@dose', './apps/mobile/src/features/dose'],
           ],
           extensions: ['.ios.js', '.android.js', '.js', '.jsx', '.ts', '.tsx']
         }

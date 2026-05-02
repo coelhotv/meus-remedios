@@ -12,10 +12,10 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native'
-import { usePlanProtocols } from '../hooks/usePlanProtocols'
+import { usePlanProtocols } from '@dose/hooks/usePlanProtocols'
 import { registerDoseMany } from '../services/doseService'
 import { getNow } from '@dosiq/core'
-import { colors, spacing, borderRadius } from '../../../shared/styles/tokens'
+import { colors, spacing, borderRadius } from '@shared/styles/tokens'
 
 /**
  * @param {{

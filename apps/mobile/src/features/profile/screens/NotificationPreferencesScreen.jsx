@@ -12,15 +12,15 @@ import {
   FlatList,
 } from 'react-native'
 import { Bell, Smartphone, Send, Globe, Mail, ChevronRight, Check } from 'lucide-react-native'
-import { useAuth } from '../../../platform/auth/hooks/useAuth'
-import { useProfile } from '../hooks/useProfile'
-import { requestPushPermission } from '../../../platform/notifications/requestPushPermission'
-import { getExpoPushToken } from '../../../platform/notifications/getExpoPushToken'
-import { syncNotificationDevice } from '../../../platform/notifications/syncNotificationDevice'
+import { useAuth } from '@platform/auth/hooks/useAuth'
+import { useProfile } from '@profile/hooks/useProfile'
+import { requestPushPermission } from '@platform/notifications/requestPushPermission'
+import { getExpoPushToken } from '@platform/notifications/getExpoPushToken'
+import { syncNotificationDevice } from '@platform/notifications/syncNotificationDevice'
 import { updateNotificationSettings } from '../services/profileService'
-import ScreenContainer from '../../../shared/components/ui/ScreenContainer'
-import { colors, spacing, borderRadius, shadows } from '../../../shared/styles/tokens'
-import { ROUTES } from '../../../navigation/routes'
+import ScreenContainer from '@shared/components/ui/ScreenContainer'
+import { colors, spacing, borderRadius, shadows } from '@shared/styles/tokens'
+import { ROUTES } from '@navigation/routes'
 import { parseLocalDate } from '@dosiq/core'
 
 // Horas disponíveis para o picker inline

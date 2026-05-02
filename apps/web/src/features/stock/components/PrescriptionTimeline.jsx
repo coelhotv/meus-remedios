@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { parseLocalDate, getTodayLocal } from '@utils/dateUtils'
 import { PRESCRIPTION_STATUS } from '@features/prescriptions/services/prescriptionService'
@@ -60,12 +61,14 @@ export default function PrescriptionTimeline({
   const isExpired = status === PRESCRIPTION_STATUS.VENCIDA
   const isContinuous = !endDate
 
-  const todayPercent = calcTodayPercent(startDate, endDate)
-  const filledWidth = isContinuous ? 100 : (todayPercent ?? 100)
-  const showTodayMarker =
-    !isContinuous && todayPercent !== null && todayPercent > 0 && todayPercent < 100
-  const showFutureSegment =
-    !isContinuous && !isExpired && todayPercent !== null && todayPercent < 100
+  const todayPercent = useMemo(() => calcTodayPercent(startDate, endDate), [startDate, endDate])
+  const filledWidth = useMemo(() => (isContinuous ? 100 : (todayPercent ?? 100)), [isContinuous, todayPercent])
+  
+  const { showTodayMarker, showFutureSegment } = useMemo(() => {
+    const todayMarker = !isContinuous && todayPercent !== null && todayPercent > 0 && todayPercent < 100
+    const futureSegment = !isContinuous && !isExpired && todayPercent !== null && todayPercent < 100
+    return { showTodayMarker: todayMarker, showFutureSegment: futureSegment }
+  }, [isContinuous, todayPercent, isExpired])
 
   // Label do badge de status
   let badgeLabel

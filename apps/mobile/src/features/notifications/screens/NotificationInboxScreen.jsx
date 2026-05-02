@@ -17,12 +17,12 @@ import { ArrowLeft, BellOff, Settings, WifiOff } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { z } from 'zod'
 import { getTodayLocal, getNow, parseISO, daysDifference, cloneDate, addDays } from '@dosiq/core'
-import { ROUTES } from '../../../navigation/routes'
-import { useNotificationLog } from '../../../shared/hooks/useNotificationLog'
-import { useUnreadNotificationCount } from '../../../shared/hooks/useUnreadNotificationCount'
-import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
-import NotificationItem from '../components/NotificationItem'
-import { colors } from '../../../shared/styles/tokens'
+import { ROUTES } from '@navigation/routes'
+import { useNotificationLog } from '@shared/hooks/useNotificationLog'
+import { useUnreadNotificationCount } from '@shared/hooks/useUnreadNotificationCount'
+import { supabase } from '@platform/supabase/nativeSupabaseClient'
+import NotificationItem from '@notifications/components/NotificationItem'
+import { colors } from '@shared/styles/tokens'
 
 // Schema para validar medicine_logs (R-010)
 const doseLogSchema = z.array(z.object({
@@ -65,7 +65,6 @@ const getStorageKey = (userId) =>
 // ─── Agrupamento temporal ──────────────────────────────────────────────────────
 
 function groupByDay(notifications) {
-  const now = getNow()
   const todayStr = getTodayLocal()
 
   const buckets = [
