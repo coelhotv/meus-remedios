@@ -3,7 +3,6 @@
 
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { dispatchNotification } from './dispatchNotification.js'
-import { vi as vitestVi } from 'vitest'
 
 vi.mock('../repositories/notificationLogRepository.js', () => ({
   notificationLogRepository: {
@@ -12,11 +11,15 @@ vi.mock('../repositories/notificationLogRepository.js', () => ({
   }
 }))
 
-vi.mock('../../utils/dateUtils.js', () => ({
-  getNow: vi.fn(() => new Date('2026-05-02T12:00:00Z')),
-  getCurrentTime: vi.fn(() => '12:00'),
-  getServerTimestamp: vi.fn(() => '2026-05-02T12:00:00Z')
-}))
+vi.mock('../../utils/dateUtils.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    getNow: vi.fn(() => actual.parseISO('2026-05-02T12:00:00Z')),
+    getCurrentTime: vi.fn(() => '12:00'),
+    getServerTimestamp: vi.fn(() => '2026-05-02T12:00:00Z')
+  }
+})
 
 const mockPayload = {
   title: '💊 Lembrete de nova dose',
