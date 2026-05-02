@@ -9,7 +9,7 @@
  */
 
 import { supabase } from '@shared/utils/supabase'
-import { getNow } from '@utils/adherenceLogic'
+import { getNow } from '@utils/dateUtils'
 
 // ============================================================================
 // CONFIGURAÇÃO

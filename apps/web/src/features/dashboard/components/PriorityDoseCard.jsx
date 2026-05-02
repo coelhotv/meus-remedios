@@ -47,11 +47,11 @@ export default function PriorityDoseCard({ doses = [], onRegister, onRegisterAll
       aria-label="Dose prioritária"
       style={{
         background:
-          'linear-gradient(135deg, var(--color-secondary, #005db6), var(--color-secondary-container, #63a1ff))',
+          'linear-gradient(135deg, var(--color-secondary), var(--color-secondary-container))',
         borderRadius: 'var(--radius-card, 2rem)',
         padding: '1.5rem',
-        color: '#ffffff',
-        boxShadow: '0 8px 32px rgba(0, 93, 182, 0.25)',
+        color: 'var(--color-white)',
+        boxShadow: 'var(--shadow-lg)',
       }}
     >
       {/* Header */}
@@ -65,7 +65,7 @@ export default function PriorityDoseCard({ doses = [], onRegister, onRegisterAll
       >
         <span
           style={{
-            background: 'rgba(255,255,255,0.2)',
+            background: 'var(--color-white-20)',
             borderRadius: 'var(--radius-full, 9999px)',
             padding: '0.25rem 0.75rem',
             fontSize: 'var(--text-label-sm, 0.625rem)',
@@ -130,7 +130,7 @@ export default function PriorityDoseCard({ doses = [], onRegister, onRegisterAll
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
-                background: 'rgba(255,255,255,0.7)',
+                background: 'var(--color-white-70)',
                 flexShrink: 0,
               }}
               aria-hidden="true"
@@ -160,8 +160,8 @@ export default function PriorityDoseCard({ doses = [], onRegister, onRegisterAll
           width: '100%',
           padding: '1rem',
           minHeight: '56px',
-          background: 'rgba(255,255,255,0.95)',
-          color: 'var(--color-secondary, #005db6)',
+          background: 'var(--color-white-95)',
+          color: 'var(--color-secondary)',
           border: 'none',
           borderRadius: 'var(--radius-button, 1.25rem)',
           fontFamily: 'var(--font-body, Lexend, sans-serif)',

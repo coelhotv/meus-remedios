@@ -105,6 +105,20 @@ export function getCurrentTime() {
 }
 
 /**
+ * Retorna o horário atual formatado para HH:mm em um fuso específico.
+ * @param {string} timezone - IANA timezone string (ex: 'America/Sao_Paulo')
+ * @returns {string}
+ */
+export function getCurrentTimeInTimezone(timezone = 'America/Sao_Paulo') {
+  return new Date().toLocaleTimeString('pt-BR', {
+    timeZone: timezone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}
+
+/**
  * Retorna o ISO UTC correspondente ao início do dia (00:00:00) em São Paulo.
  * @param {string} dateStr - Data no formato YYYY-MM-DD
  * @returns {string} ISO 8601 string (UTC)
@@ -124,4 +138,14 @@ export function getStartOfDayISO(dateStr) {
 export function getEndOfDayISO(dateStr) {
   const start = new Date(getStartOfDayISO(dateStr));
   return new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString();
+}
+
+/**
+ * Retorna o último dia de um determinado mês/ano.
+ * @param {number} year 
+ * @param {number} month - 0-11
+ * @returns {number}
+ */
+export function getLastDayOfMonth(year, month) {
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
 }

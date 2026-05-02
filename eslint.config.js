@@ -204,6 +204,16 @@ export default [
       'n/no-process-exit': 'error',
       'n/no-path-concat': 'error',
       'no-console': 'off', // Logs são essenciais no server
+      'no-restricted-imports': ['error', {
+        patterns: [
+          // API pode importar do server/ (exceção temporária), mas mantém outras restrições
+          {
+            group: ['**/lib/**'],
+            message: 'src/lib/ foi removido. Use "@shared/utils/supabase" ou "@shared/utils/queryCache".',
+          }
+          // Outras restrições de hooks/components não se aplicam a api/ (Node)
+        ]
+      }]
     },
   },
   {

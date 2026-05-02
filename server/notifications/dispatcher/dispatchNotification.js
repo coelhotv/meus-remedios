@@ -1,4 +1,5 @@
 // Dispatcher central de notificações multicanal (ADR-029)
+import { createLogger } from '../../bot/logger.js'
 // Recebe lista de canais resolvidos por resolveChannelsForUser e delega a cada canal
 // Falha de um canal não cancela os demais (Promise.allSettled por canal)
 // correlationId é obrigatório em todos os logs (R-087)
@@ -13,8 +14,7 @@ import { normalizeChannelResults } from '../utils/normalizeChannelResults.js'
 import { notificationLogRepository } from '../repositories/notificationLogRepository.js'
 import { 
   getNow, 
-  getCurrentTime, 
-  getServerTimestamp 
+  getCurrentTime
 } from '../../utils/dateUtils.js'
 
 const logger = createLogger('Dispatcher')

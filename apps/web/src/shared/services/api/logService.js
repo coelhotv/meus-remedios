@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { supabase, getUserId } from '@shared/utils/supabase'
 import { stockService } from '@stock/services/stockService'
 import { validateLogCreate, validateLogUpdate, validateLogBulkArray } from '@schemas/logSchema'
-import { parseLocalDate, getStartOfDayISO, getEndOfDayISO, getLastDayOfMonth } from '@utils/dateUtils'
+import { getStartOfDayISO, getEndOfDayISO, getLastDayOfMonth } from '@utils/dateUtils'
 
 // Schemas de validação para todos os métodos de leitura
 const limitSchema = z.number().int().positive().max(5000).default(50)

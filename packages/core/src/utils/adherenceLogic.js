@@ -14,7 +14,8 @@ import {
   parseISO,
   daysDifference,
   getSaoPauloTime,
-  cloneDate
+  cloneDate,
+  parseTimestamp
 } from './dateUtils.js'
 
 // Invariantes de Negócio (R-022, R-129)

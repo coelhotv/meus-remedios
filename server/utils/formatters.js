@@ -1,5 +1,4 @@
 import { 
-  getNow, 
   getTodayLocal, 
   getCurrentTime as getLocalTime,
   getSaoPauloTime,

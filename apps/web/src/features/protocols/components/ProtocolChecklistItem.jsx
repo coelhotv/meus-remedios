@@ -10,9 +10,11 @@ export default function ProtocolChecklistItem({ protocol, isSelected, onToggle }
   const currentTime = getCurrentTime()
 
   return (
-    <div
+    <button
+      type="button"
       className={`protocol-checklist-item ${isSelected ? 'selected' : ''}`}
       onClick={() => onToggle(protocol.id)}
+      aria-pressed={isSelected}
     >
       <div className="checklist-left">
         <div className={`custom-checkbox ${isSelected ? 'checked' : ''}`}>{isSelected && '✓'}</div>
@@ -59,6 +61,6 @@ export default function ProtocolChecklistItem({ protocol, isSelected, onToggle }
           ))}
         </div>
       </div>
-    </div>
+    </button>
   )
 }

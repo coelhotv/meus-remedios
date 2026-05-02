@@ -4,8 +4,7 @@
  * @module features/reports/services/pdfGeneratorService
  */
 
-import { parseLocalDate, formatLocalDate, addDays } from '@utils/dateUtils.js'
-import { getNow } from '@utils/adherenceLogic'
+import { parseLocalDate, formatLocalDate, addDays, getNow } from '@utils/dateUtils.js'
 
 /**
  * Dimensões da página A4 em milímetros.

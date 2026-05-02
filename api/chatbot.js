@@ -8,8 +8,8 @@ import {
   CHATBOT_TEMPERATURE,
   CHATBOT_TOP_P,
   CHATBOT_MAX_HISTORY,
-} from '../src/features/chatbot/config/chatbotConfig.js'
-import { getServerTimestamp } from '../server/utils/dateUtils.js'
+} from '../apps/web/src/features/chatbot/config/chatbotConfig.js'
+import { getServerTimestamp } from '../packages/core/src/utils/dateUtils.js'
 
 const MODEL = process.env.GROQ_MODEL || 'groq/compound'
 

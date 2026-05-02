@@ -385,7 +385,7 @@ export default function Dashboard({ onNavigate }) {
                   fontFamily: 'var(--font-display, Public Sans, sans-serif)',
                   fontSize: 'var(--text-headline-md, 1.75rem)',
                   fontWeight: '700',
-                  color: 'var(--color-on-surface, #191c1d)',
+                  color: 'var(--color-on-surface)',
                   lineHeight: 1.2,
                 }}
               >
@@ -397,7 +397,7 @@ export default function Dashboard({ onNavigate }) {
                   margin: '0.25rem 0 0',
                   fontFamily: 'var(--font-body, Lexend, sans-serif)',
                   fontSize: 'var(--text-label-md, 0.75rem)',
-                  color: 'var(--color-outline, #6d7a76)',
+                  color: 'var(--color-outline)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                   fontWeight: '600',
@@ -411,7 +411,7 @@ export default function Dashboard({ onNavigate }) {
                   margin: '0.5rem 0 0',
                   fontFamily: 'var(--font-body, Lexend, sans-serif)',
                   fontSize: 'var(--text-body-lg, 1rem)',
-                  color: 'var(--color-on-surface-variant, #3e4946)',
+                  color: 'var(--color-on-surface-variant)',
                 }}
               >
                 {getMotivationalMessage(adherenceScore, totals.remaining)}
@@ -480,7 +480,7 @@ export default function Dashboard({ onNavigate }) {
                     fontFamily: 'var(--font-display, Public Sans, sans-serif)',
                     fontSize: 'var(--text-title-lg, 1.125rem)',
                     fontWeight: '600',
-                    color: 'var(--color-on-surface, #191c1d)',
+                    color: 'var(--color-on-surface)',
                   }}
                 >
                   Cronograma de Hoje
@@ -490,7 +490,7 @@ export default function Dashboard({ onNavigate }) {
                     margin: '0.25rem 0 0',
                     fontFamily: 'var(--font-body, Lexend, sans-serif)',
                     fontSize: 'var(--text-label-md, 0.75rem)',
-                    color: 'var(--color-outline, #6d7a76)',
+                    color: 'var(--color-outline)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
                     fontWeight: '600',
@@ -516,7 +516,7 @@ export default function Dashboard({ onNavigate }) {
               style={{
                 textAlign: 'center',
                 padding: '3rem 1rem',
-                color: 'var(--color-outline, #6d7a76)',
+                color: 'var(--color-outline)',
               }}
               role="status"
             >
@@ -535,8 +535,8 @@ export default function Dashboard({ onNavigate }) {
                   marginTop: '1rem',
                   padding: '0.625rem 1.125rem',
                   minHeight: '3.5rem',
-                  background: 'var(--gradient-primary, linear-gradient(135deg, #006a5e, #008577))',
-                  color: '#ffffff',
+                  background: 'var(--color-primary)',
+                  color: 'var(--color-on-primary)',
                   border: 'none',
                   borderRadius: 'var(--radius-button, 1.25rem)',
                   fontFamily: 'var(--font-body, Lexend, sans-serif)',

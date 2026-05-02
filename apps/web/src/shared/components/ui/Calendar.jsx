@@ -245,8 +245,9 @@ export default function Calendar({
     ].filter(Boolean)
 
     days.push(
-      <div
+      <button
         key={d}
+        type="button"
         className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${hasLog ? 'has-log' : ''} ${hasHeatColor ? 'has-adherence' : ''}`}
         style={hasHeatColor ? { '--heat-color': heatColor } : undefined}
         role="gridcell"
@@ -256,7 +257,7 @@ export default function Calendar({
       >
         <span className="day-number">{d}</span>
         {hasLog && !hasHeatColor && <div className="log-dot"></div>}
-      </div>
+      </button>
     )
   }
 

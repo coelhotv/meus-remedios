@@ -343,8 +343,10 @@ export function SparklineAdesao({
   // -------------------------
   // SIZE: small, medium, large, expanded — renderização completa
   // -------------------------
+  const Tag = onDayClick || showTooltip ? 'button' : 'div'
+
   return (
-    <div
+    <Tag
       className={`sparkline-adhesion sparkline-adhesion--${size} ${className}`}
       role="img"
       aria-label={`Gráfico de adesão: ${stats.average}% média em ${daysCount} dias. Tendência: ${stats.trend}`}
@@ -355,6 +357,7 @@ export function SparklineAdesao({
         }
         handleSparklineTap(chartData[chartData.length - 1])
       }}
+      type={Tag === 'button' ? 'button' : undefined}
     >
       <svg viewBox={`0 0 ${width} ${height}`} className="sparkline-svg" preserveAspectRatio="none">
         <defs>
@@ -519,7 +522,7 @@ export function SparklineAdesao({
           {stats.trend === 'stable' && '→'}
         </span>
       </div>
-    </div>
+    </Tag>
   )
 }
 

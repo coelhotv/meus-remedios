@@ -94,12 +94,12 @@ export default function PrescriptionTimeline({
     .filter(Boolean)
     .join(' ')
 
+  const Tag = onPress ? 'button' : 'div'
+
   return (
-    <div
+    <Tag
       className={rootClass}
       onClick={onPress}
-      role={onPress ? 'button' : undefined}
-      tabIndex={onPress ? 0 : undefined}
       onKeyDown={handleKeyDown}
       aria-label={`Prescrição ${name}: ${badgeLabel}`}
       data-testid="prescription-timeline"
@@ -151,6 +151,6 @@ export default function PrescriptionTimeline({
           {isContinuous ? 'Sem vencimento' : formatDate(endDate)}
         </span>
       </div>
-    </div>
+    </Tag>
   )
 }

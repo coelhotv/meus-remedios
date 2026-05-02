@@ -1,5 +1,5 @@
 import { AnalyzeReminderTimingInputSchema } from '@schemas/reminderOptimizerSchema'
-import { getNow, parseISO } from '@utils/adherenceLogic'
+import { getNow, parseISO } from '@utils/dateUtils'
 
 /**
  * Analisa delta entre horário programado e horário real de tomada.

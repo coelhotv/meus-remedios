@@ -10,7 +10,6 @@
 export {
   parseLocalDate,
   formatLocalDate,
-  isProtocolActiveOnDate,
   getTodayLocal,
   getYesterdayLocal,
   addDays,
@@ -24,6 +23,9 @@ export {
   getEndOfDayISO,
   addMonths,
   cloneDate,
+  getLastDayOfMonth,
+  parseLocalDatetime,
+  parseTimestamp,
 } from './dateUtils.js'
 
 // Adherence logic and calculations
@@ -39,6 +41,7 @@ export {
   calculateDaysRemaining,
   calculateDosesByDate,
   evaluateDoseTimelineState,
+  isProtocolActiveOnDate,
 } from './adherenceLogic.js'
 
 // Form utilities

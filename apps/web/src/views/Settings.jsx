@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase, signOut, updatePassword } from '@shared/utils/supabase'
-import { getNow } from '@utils/adherenceLogic'
+import { getNow } from '@utils/dateUtils'
 import Button from '@shared/components/ui/Button'
 import Loading from '@shared/components/ui/Loading'
 import Modal from '@shared/components/ui/Modal'
 import ExportDialog from '@features/export/components/ExportDialog'
 import ReportGenerator from '@features/reports/components/ReportGenerator'
-import styles from './Settings.module.css'
 import './Settings.css'
 
 export default function Settings({ onNavigate }) {
@@ -224,7 +223,6 @@ export default function Settings({ onNavigate }) {
           <Button
             variant="outline"
             onClick={() => onNavigate('consultation')}
-            className={styles.consultationButton}
           >
             Modo Consulta Médica
           </Button>

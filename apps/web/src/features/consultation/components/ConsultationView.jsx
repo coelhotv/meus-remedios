@@ -301,10 +301,10 @@ function AdherenceCard({ period, data }) {
 
   // Determina cor baseada no score
   const getScoreColor = () => {
-    if (score >= 80) return '#10b981' // verde
-    if (score >= 60) return '#f59e0b' // amarelo
-    if (score >= 40) return '#f97316' // laranja
-    return '#ef4444' // vermelho
+    if (score >= 80) return 'var(--color-success)' // verde
+    if (score >= 60) return 'var(--color-warning)' // amarelo
+    if (score >= 40) return 'var(--color-warning)' // laranja (usando warning-light ou warning)
+    return 'var(--color-error)' // vermelho
   }
 
   return (

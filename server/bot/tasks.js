@@ -8,12 +8,11 @@ import {
 import { shouldSendNotification, shouldSendGroupedNotification } from '../services/notificationDeduplicator.js';
 import { 
   getNow, 
-  getServerTimestamp, 
   getTodayLocal, 
   addDays,
-  getSaoPauloTime,
   parseLocalDate,
-  getCurrentTime
+  getCurrentTime,
+  getCurrentTimeInTimezone
 } from '../utils/dateUtils.js';
 import { partitionDoses } from './utils/partitionDoses.js';
 import { 
@@ -84,8 +83,6 @@ async function checkRemindersViaDispatcher(dispatcher, correlationId) {
     const userIdsByHHMM = {};
     
     for (const user of realtimeUsers) {
-
-      const timezone = user.timezone || 'America/Sao_Paulo';
       // R-020: Usamos getCurrentTime() que já é blindado para Brasília
       const currentHHMM = getCurrentTime().replace(/[^\d:]/g, ''); 
       userTimes.set(user.user_id, currentHHMM);
@@ -451,7 +448,7 @@ async function runDailyAdherenceReportViaDispatcher(dispatcher, correlationId) {
     }
 
     for (const user of eligibleUsers) {
-      const { user_id: userId, timezone, display_name: displayName } = user;
+      const { user_id: userId, display_name: displayName } = user;
       try {
         const dateToday = getTodayLocal();
         const startOfDay = parseLocalDate(dateToday);

@@ -2,7 +2,6 @@ import { supabase } from '../../services/supabase.js';
 import { getUserIdByChatId } from '../../services/userService.js';
 import { escapeMarkdownV2 } from '../../utils/formatters.js';
 import { 
-  getNow, 
   getTodayLocal, 
   getCurrentTime, 
   parseLocalDate,
@@ -34,7 +33,6 @@ export async function handleHoje(bot, msg) {
     }
 
     // Get today's date in SP timezone
-    const now = getNow();
     const todayStr = getTodayLocal();
     const startOfDay = parseLocalDate(todayStr);
 

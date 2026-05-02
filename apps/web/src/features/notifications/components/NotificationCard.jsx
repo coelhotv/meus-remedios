@@ -125,7 +125,7 @@ export default function NotificationCard({
             {isFailed && (
               <AlertTriangle
                 size={12}
-                color="#dc2626"
+                color="var(--color-error)"
                 strokeWidth={2.5}
                 aria-label="Falhou ao enviar"
               />

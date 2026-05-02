@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { supabase } from '@shared/utils/supabase'
-import { parseLocalDate, getNow, getTodayLocal, getSaoPauloTime } from '@utils/dateUtils'
+import { parseLocalDate, getNow, getSaoPauloTime } from '@utils/dateUtils'
 import { validateUserProfile, BRAZILIAN_STATES } from '@schemas/userProfileSchema'
 import { emergencyCardService } from '@features/emergency/services/emergencyCardService'
 import Button from '@shared/components/ui/Button'
@@ -496,14 +496,10 @@ function EmergencyCard({ emergencyCard, qrMiniatureUrl, onNavigate }) {
  */
 function ConsultationCard({ onNavigate }) {
   return (
-    <div
+    <button
       className="ph-consultation-card"
       onClick={() => onNavigate('consultation')}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onNavigate('consultation')
-      }}
+      type="button"
     >
       <div className="ph-consultation-card__icon">
         <BriefcaseMedical size={32} />
@@ -513,7 +509,7 @@ function ConsultationCard({ onNavigate }) {
         <p>Abre um resumo clínico otimizado para compartilhar com seu médico durante a consulta.</p>
       </div>
       <span className="ph-consultation-card__chevron">→</span>
-    </div>
+    </button>
   )
 }
 

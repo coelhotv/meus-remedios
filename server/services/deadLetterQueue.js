@@ -3,7 +3,6 @@ import { supabase } from './supabase.js';
 import { createLogger } from '../bot/logger.js';
 import { updateDlqSize } from './notificationMetrics.js';
 import { 
-  getNow, 
   getServerTimestamp, 
   addDays, 
   parseISO 

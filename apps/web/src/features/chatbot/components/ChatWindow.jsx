@@ -16,6 +16,7 @@ import {
   parseTimestamp,
 } from '@utils/dateUtils.js'
 import ConfirmDialog from '@shared/components/ui/ConfirmDialog'
+import { useDashboard } from '@dashboard/hooks/useDashboardContext'
 import styles from './ChatWindow.module.css'
 
 // Funções auxiliares puras (fora do componente para melhor performance e organização)

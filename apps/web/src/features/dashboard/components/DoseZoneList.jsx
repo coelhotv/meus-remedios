@@ -56,21 +56,27 @@ function DoseCard({ dose, onRegisterDose, selectedDoses, onToggleSelection, done
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      onClick={handleCardClick}
-      style={!done && onToggleSelection ? { cursor: 'pointer' } : undefined}
     >
-      <div className="dose-card__time">{displayTime}</div>
-      <div className="dose-card__info">
-        <span className="dose-card__name">{dose.medicineName}</span>
-        {dose.planBadge && (
-          <PlanBadge
-            emoji={dose.planBadge.emoji}
-            color={dose.planBadge.color}
-            planName={dose.treatmentPlanName}
-          />
-        )}
-        <span className="dose-card__dosage">{dose.dosagePerIntake} cp</span>
-      </div>
+      <button
+        type="button"
+        className="dose-card__select-area"
+        onClick={() => onToggleSelection?.(dose.protocolId, dose.scheduledTime)}
+        disabled={done || !onToggleSelection}
+        style={!done && onToggleSelection ? { cursor: 'pointer' } : { cursor: 'default' }}
+      >
+        <div className="dose-card__time">{displayTime}</div>
+        <div className="dose-card__info">
+          <span className="dose-card__name">{dose.medicineName}</span>
+          {dose.planBadge && (
+            <PlanBadge
+              emoji={dose.planBadge.emoji}
+              color={dose.planBadge.color}
+              planName={dose.treatmentPlanName}
+            />
+          )}
+          <span className="dose-card__dosage">{dose.dosagePerIntake} cp</span>
+        </div>
+      </button>
       {done ? (
         <span className="dose-card__done-icon" aria-label="Registrada">
           ✓
@@ -97,15 +103,11 @@ function ZoneSection({ zoneKey, doses, expanded, onToggle, config, children }) {
 
   return (
     <div className="dose-zone-section" data-testid={`zone-${zoneKey}`}>
-      <div
+      <button
+        type="button"
         className={`zone-header zone-header--${config.color}`}
         onClick={onToggle}
-        role="button"
         aria-expanded={expanded}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') onToggle()
-        }}
       >
         <span className="zone-header__icon" aria-hidden="true">
           {config.icon}
@@ -117,7 +119,7 @@ function ZoneSection({ zoneKey, doses, expanded, onToggle, config, children }) {
         >
           ▾
         </span>
-      </div>
+      </button>
 
       <AnimatePresence>
         {expanded && (

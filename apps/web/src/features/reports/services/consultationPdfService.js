@@ -5,7 +5,7 @@
  */
 
 import { buildConsultationPdfData } from './consultationPdfDataBuilder.js'
-import { getNow } from '@utils/adherenceLogic'
+import { getNow } from '@utils/dateUtils'
 
 /**
  * Paleta do PDF.

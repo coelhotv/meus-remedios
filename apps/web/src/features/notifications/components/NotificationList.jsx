@@ -10,8 +10,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Bell } from 'lucide-react'
 import { NOTIFICATION_TYPES, DOSE_RELATED_NOTIFICATION_TYPES } from '@schemas'
-import { getNow, getTodayLocal, parseISO, daysDifference } from '@utils/adherenceLogic'
-import { formatLocalDate, addDays, parseLocalDate } from '@utils/dateUtils'
+import { formatLocalDate, addDays, parseLocalDate, getNow, getTodayLocal, parseISO, daysDifference } from '@utils/dateUtils'
 import NotificationCard from './NotificationCard'
 import './NotificationList.css'
 
@@ -81,7 +80,7 @@ function calcWasTaken(notification, doseLogs) {
 const GROUP_HEADER_STYLE = {
   fontSize: 12,
   fontWeight: 600,
-  color: '#6b7280',
+  color: 'var(--color-gray-500)',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
   padding: '12px 0 6px',
