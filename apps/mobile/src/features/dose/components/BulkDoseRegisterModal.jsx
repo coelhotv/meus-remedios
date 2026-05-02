@@ -12,6 +12,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native'
+import { CheckCircle, Circle } from 'lucide-react-native'
 import { usePlanProtocols } from '@dose/hooks/usePlanProtocols'
 import { registerDoseMany } from '../services/doseService'
 import { getNow } from '@dosiq/core'
@@ -45,6 +46,10 @@ export default function BulkDoseRegisterModal({
   const [selected, setSelected] = useState({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  
+  // Trackers para ajuste de estado no render
+  const [prevProtocols, setPrevProtocols] = useState([])
+  const [prevVisible, setPrevVisible] = useState(false)
 
   const { protocols, loading: protocolsLoading, error: protocolsError } = usePlanProtocols({
     mode,
@@ -54,22 +59,21 @@ export default function BulkDoseRegisterModal({
     userId,
   })
 
-  // Pré-marcar todos quando protocolos carregam
-  useEffect(() => {
-    if (protocols.length === 0) return
-    const initial = {}
-    protocols.forEach(p => { initial[p.id] = true })
-    setSelected(initial)
-  }, [protocols])
+  // Ajuste de Estado no Render (R-010 + React 19)
+  if (protocols !== prevProtocols || visible !== prevVisible) {
+    setPrevProtocols(protocols)
+    setPrevVisible(visible)
 
-  // Limpar estado ao fechar
-  useEffect(() => {
     if (!visible) {
       setSelected({})
       setError(null)
       setLoading(false)
+    } else if (protocols.length > 0 && protocols !== prevProtocols) {
+      const initial = {}
+      protocols.forEach(p => { initial[p.id] = true })
+      setSelected(initial)
     }
-  }, [visible])
+  }
 
   function toggleProtocol(id) {
     setSelected(prev => ({ ...prev, [id]: !prev[id] }))

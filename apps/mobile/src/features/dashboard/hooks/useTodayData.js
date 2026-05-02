@@ -24,6 +24,7 @@ import {
   getMedicinesData,
   getUserSettings,
 } from '../services/dashboardService'
+import { debugLog } from '@shared/utils/debugLog'
 
 const TODAY_CACHE_KEY = '@dosiq/today-snapshot'
 
@@ -55,7 +56,7 @@ export function useTodayData() {
     setError(null)
 
     try {
-      if (__DEV__) console.log('[useTodayData] fetch start')
+      debugLog('[useTodayData] fetch start')
       
       const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
       
@@ -124,7 +125,7 @@ export function useTodayData() {
             
             // Regra H5.8: Se dia diferente (comparação local-local), limpar logs
             if (snapshotDay && snapshotDay !== today) {
-              if (__DEV__) console.log('[useTodayData] Day mismatch, segregating logs')
+              debugLog('[useTodayData] Day mismatch, segregating logs')
               parsed.logs = Array.isArray(parsed.logs) ? [] : []
               setIsDaySegregated(true)
             } else {
@@ -150,7 +151,7 @@ export function useTodayData() {
         } else {
           throw err // Re-throw original se não houver cache
         }
-      } catch (cacheErr) {
+      } catch {
         setError(err.message ?? 'Erro ao carregar dados.')
       }
     } finally {
@@ -177,7 +178,7 @@ export function useTodayData() {
       
       clearTimeout(midnightTimer)
       midnightTimer = setTimeout(() => {
-        if (__DEV__) console.log('[useTodayData] Meia-noite detectada: Refreshing...')
+        debugLog('[useTodayData] Meia-noite detectada: Refreshing...')
         load()
         scheduleMidnightRefresh() // Agendar próxima
       }, msUntilMidnight + 1000) // +1s para garantir que passou o boundary
@@ -191,7 +192,7 @@ export function useTodayData() {
         const today = getTodayLocal()
         // Se mudou o dia enquanto estava em background, forçar reload
         if (dataRef.current?.localDay && dataRef.current.localDay !== today) {
-          if (__DEV__) console.log('[useTodayData] Dia alterado via background: Refreshing...')
+          debugLog('[useTodayData] Dia alterado via background: Refreshing...')
           load()
         }
       }

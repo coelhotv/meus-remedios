@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getTodayLocal, isProtocolActiveOnDate, getNow, addDays, parseISO } from '@dosiq/core'
 import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
 import { getActiveTreatments } from '../services/treatmentsService'
+import { debugLog } from '../../../shared/utils/debugLog'
 
 const TREATMENTS_CACHE_KEY = '@dosiq/treatments-snapshot'
 
@@ -70,7 +71,7 @@ export function useTreatments() {
         } else {
           throw err
         }
-      } catch (cacheErr) {
+      } catch {
         setError(err.message ?? 'Erro ao carregar tratamentos.')
       }
     } finally {
@@ -95,7 +96,7 @@ export function useTreatments() {
       
       clearTimeout(midnightTimer)
       midnightTimer = setTimeout(() => {
-        if (__DEV__) console.log('[useTreatments] Meia-noite detectada: Refreshing...')
+        debugLog('useTreatments', 'Meia-noite detectada: Refreshing...')
         load()
         scheduleMidnightRefresh()
       }, msUntilMidnight + 1000)
@@ -107,7 +108,7 @@ export function useTreatments() {
       if (nextState === 'active') {
         const today = getTodayLocal()
         if (dataRef.current?.localDay && dataRef.current.localDay !== today) {
-          if (__DEV__) console.log('[useTreatments] Dia alterado via background: Refreshing...')
+          debugLog('useTreatments', 'Dia alterado via background: Refreshing...')
           load()
         }
       }

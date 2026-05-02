@@ -5,6 +5,7 @@
  */
 
 import { parseLocalDate, formatLocalDate, addDays, getNow } from '@utils/dateUtils.js'
+import { debugLog, errorLog } from '@shared/utils/logger'
 
 /**
  * Dimensões da página A4 em milímetros.
@@ -105,14 +106,11 @@ function calculateDaysRemaining(stockSummary, protocol) {
  * @private
  */
 function logPDF(level, message, data = {}) {
-  const logEntry = {
-    timestamp: getNow().toISOString(),
-    service: 'pdfGeneratorService',
-    level,
-    message,
-    ...data,
+  if (level === 'error') {
+    errorLog('pdfGeneratorService', message, data)
+  } else {
+    debugLog('pdfGeneratorService', message, data)
   }
-  console.log(JSON.stringify(logEntry))
 }
 
 /**

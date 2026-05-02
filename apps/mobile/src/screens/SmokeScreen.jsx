@@ -9,10 +9,7 @@ import { medicineSchema } from '@dosiq/core/schemas'
 import { ROUTES } from '../navigation/routes'
 
 export default function SmokeScreen({ navigation }) {
-  const [result, setResult] = useState('carregando...')
-  const [details, setDetails] = useState(null)
-
-  useEffect(() => {
+  const { result, details } = useMemo(() => {
     // Valida um medicamento de teste usando o schema compartilhado
     const parsed = medicineSchema.safeParse({
       name: 'Losartana',
@@ -22,11 +19,14 @@ export default function SmokeScreen({ navigation }) {
     })
 
     if (parsed.success) {
-      setResult('SUCCESS')
-      setDetails('@dosiq/core resolvido pelo Metro ✓')
-    } else {
-      setResult('ERROR')
-      setDetails(JSON.stringify(parsed.error.issues, null, 2))
+      return {
+        result: 'SUCCESS',
+        details: '@dosiq/core resolvido pelo Metro ✓'
+      }
+    }
+    return {
+      result: 'ERROR',
+      details: JSON.stringify(parsed.error.issues, null, 2)
     }
   }, [])
 

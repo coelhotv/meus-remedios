@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getTodayLocal, isProtocolActiveOnDate, getNow, parseISO, addDays } from '@dosiq/core'
 import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
 import { getStockData } from '../services/stockService'
+import { debugLog } from '../../../shared/utils/debugLog'
 
 const STOCK_CACHE_KEY = '@dosiq/stock-snapshot'
 
@@ -148,7 +149,7 @@ export function useStock() {
         } else {
           throw err
         }
-      } catch (cacheErr) {
+      } catch {
         setState(prev => ({
           ...prev,
           loading: false,
@@ -176,7 +177,7 @@ export function useStock() {
       
       clearTimeout(midnightTimer)
       midnightTimer = setTimeout(() => {
-        if (__DEV__) console.log('[useStock] Meia-noite detectada: Refreshing...')
+        debugLog('useStock', 'Meia-noite detectada: Refreshing...')
         loadStock()
         scheduleMidnightRefresh()
       }, msUntilMidnight + 1000)
@@ -188,7 +189,7 @@ export function useStock() {
       if (nextState === 'active') {
         const today = getTodayLocal()
         if (dataRef.current?.localDay && dataRef.current.localDay !== today) {
-          if (__DEV__) console.log('[useStock] Dia alterado via background: Refreshing...')
+          debugLog('useStock', 'Dia alterado via background: Refreshing...')
           loadStock()
         }
       }

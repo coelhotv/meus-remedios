@@ -1,6 +1,7 @@
 import { supabase, getUserId } from '@shared/utils/supabase'
 import { validateEmergencyCard } from '@schemas/emergencyCardSchema'
 import { getServerTimestamp } from '@utils/dateUtils'
+import { debugLog, errorLog } from '@shared/utils/logger'
 
 /**
  * Emergency Card Service - Gerenciamento do cartão de emergência
@@ -28,17 +29,11 @@ const STORAGE_KEY = 'mr_emergency_card'
  * @param {Object} data - Dados adicionais para contexto
  */
 function log(level, message, data = {}) {
-  const logEntry = {
-    timestamp: getServerTimestamp(),
-    service: 'emergencyCardService',
-    level,
-    message,
-    ...data,
-  }
 
-  // Em produção, isso seria enviado para um serviço de logging
-  if (process.env.NODE_ENV === 'development' || level === 'error') {
-    console.log(JSON.stringify(logEntry))
+  if (level === 'error') {
+    errorLog('emergencyCardService', message, data)
+  } else {
+    debugLog('emergencyCardService', message, data)
   }
 }
 

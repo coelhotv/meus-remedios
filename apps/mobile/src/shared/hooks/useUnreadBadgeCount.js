@@ -48,7 +48,12 @@ export function useUnreadBadgeCount(userId) {
   )
 
   useEffect(() => {
-    refreshBadge()
+    let isMounted = true
+    const update = async () => {
+      await refreshBadge()
+    }
+    update()
+    return () => { isMounted = false }
   }, [refreshBadge])
 
   return { unreadCount, refreshBadge }

@@ -12,6 +12,7 @@ import { getTodayLocal, getNow, parseISO, addDays } from '@dosiq/core'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createNotificationLogRepository } from '@dosiq/shared-data'
 import { supabase } from '@platform/supabase/nativeSupabaseClient'
+import { debugLog } from '@shared/utils/debugLog'
 
 /**
  * Gera chave de cache dinâmica por usuário para evitar vazamento de dados (Security Fix)
@@ -114,7 +115,7 @@ export function useNotificationLog(options = {}) {
     setError(null)
 
     try {
-      if (__DEV__) console.log('[useNotificationLog] Fetching notifications...')
+      debugLog('[useNotificationLog] Fetching notifications...')
 
       const raw  = await repo.listByUserId(userId, { limit })
       const logs = await enrichWithDoses(raw)
@@ -148,7 +149,7 @@ export function useNotificationLog(options = {}) {
         } else if (isMounted.current) {
           setError(err.message || 'Erro ao carregar notificações.')
         }
-      } catch (cacheErr) {
+      } catch {
         if (isMounted.current) setError('Erro de conexão e cache ausente.')
       }
     } finally {
@@ -180,7 +181,7 @@ export function useNotificationLog(options = {}) {
       
       clearTimeout(midnightTimer)
       midnightTimer = setTimeout(() => {
-        if (__DEV__) console.log('[useNotificationLog] Meia-noite: Refreshing...')
+        debugLog('[useNotificationLog] Meia-noite: Refreshing...')
         load()
         scheduleMidnightRefresh()
       }, msUntilMidnight + 1000)
@@ -191,7 +192,7 @@ export function useNotificationLog(options = {}) {
     const handleStateChange = (nextState) => {
       if (nextState === 'active') {
         // Forçar um refresh leve ao voltar, opcionalmente checar se o dia mudou
-        if (__DEV__) console.log('[useNotificationLog] App active: Refreshing...')
+        debugLog('[useNotificationLog] App active: Refreshing...')
         load()
       }
     }

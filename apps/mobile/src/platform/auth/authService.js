@@ -70,7 +70,7 @@ export async function signInWithEmail(email, password) {
     }
 
     return { success: true }
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Erro inesperado ao fazer login' }
   }
 }

@@ -10,6 +10,7 @@
 
 import { supabase } from '@shared/utils/supabase'
 import { getNow } from '@utils/dateUtils'
+import { debugLog } from '@shared/utils/logger'
 
 // ============================================================================
 // CONFIGURAÇÃO
@@ -55,7 +56,7 @@ function log(level, message, data = {}) {
   } else if (level === LOG_LEVELS.WARN) {
     console.warn(formattedMessage, logEntry)
   } else {
-    console.log(formattedMessage, logEntry)
+    debugLog('shareService', message, logEntry)
   }
 }
 

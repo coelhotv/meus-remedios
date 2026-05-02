@@ -55,7 +55,6 @@ export default function TodayScreen({ route, navigation }) {
     return Object.keys(medicines).length > 3
   }, [medicines, data?.user?.complexity_override])
 
-  // Agrupamento da Timeline por Turnos (Epic 2) - Memoized
   const { groupedTimeline, shifts, countsByShift } = useMemo(() => {
     const counts = {}
     const grouped = timeline.reduce((acc, dose) => {
@@ -81,6 +80,25 @@ export default function TodayScreen({ route, navigation }) {
     
     return { groupedTimeline: grouped, shifts: activeShifts, countsByShift: counts }
   }, [timeline, isComplex])
+
+  // Heurística de Expansão Inicial - Ajuste de Estado no Render (React 19 Pattern)
+  const currentDay = data?.localDay
+  if (currentDay && currentDay !== lastHeuristicDay) {
+    const now = getNow()
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+    const currentShift = getPeriodFromTime(timeStr)
+
+    const initial = {}
+    shifts.forEach(shift => {
+      const doses = groupedTimeline[shift] || []
+      const isCurrent = shift === currentShift
+      const hasUrgent = doses.some(d => d.timelineStatus === 'ATRASADA' || d.timelineStatus === 'PROXIMA')
+      initial[shift] = isCurrent || hasUrgent
+    })
+    
+    setExpandedShifts(initial)
+    setLastHeuristicDay(currentDay)
+  }
 
   // 2. Deeplink params de push notification (N1.4 → N1.5)
   // Abre BulkDoseRegisterModal automaticamente quando a tela é navegada via push tap
@@ -109,34 +127,8 @@ export default function TodayScreen({ route, navigation }) {
     }
     // Limpar params após consumo para evitar re-abertura em back-navigate
     navigation?.setParams({ screen: undefined, planId: undefined, protocolIds: undefined })
-  }, [route?.params])
+  }, [route?.params, navigation, protocols])
 
-  // 3. Heurística de Expansão Inicial
-  useEffect(() => {
-    const currentDay = data?.localDay
-    const dayChanged = lastHeuristicDay && currentDay && lastHeuristicDay !== currentDay
-    const isFirstLoad = Object.keys(expandedShifts).length === 0
-
-    if (shifts.length > 0 && (isFirstLoad || dayChanged)) {
-      const now = getNow()
-      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-      const currentShift = getPeriodFromTime(timeStr)
-
-      const initial = {}
-      shifts.forEach(shift => {
-        const doses = groupedTimeline[shift] || []
-        // Regra 1: Expandir se for o turno atual
-        const isCurrent = shift === currentShift
-        // Regra 2: Expandir se tiver dose urgente (Atrasada/Próxima)
-        const hasUrgent = doses.some(d => d.timelineStatus === 'ATRASADA' || d.timelineStatus === 'PROXIMA')
-        
-        initial[shift] = isCurrent || hasUrgent
-      })
-      
-      setExpandedShifts(initial)
-      setLastHeuristicDay(currentDay)
-    }
-  }, [shifts, groupedTimeline, data?.localDay, lastHeuristicDay])
 
   const toggleShift = useCallback((shift) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -293,7 +285,6 @@ export default function TodayScreen({ route, navigation }) {
         onSuccess={({ successCount }) => {
           setBulkModal(null)
           refresh()
-          if (__DEV__) console.log('[TodayScreen] BulkDoseRegisterModal — sucesso:', successCount)
         }}
       />
     </ScreenContainer>

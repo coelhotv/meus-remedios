@@ -1,5 +1,6 @@
 import { AnalyzeReminderTimingInputSchema } from '@schemas/reminderOptimizerSchema'
 import { getNow, parseISO } from '@utils/dateUtils'
+import { debugLog } from '@shared/utils/logger'
 
 /**
  * Analisa delta entre horário programado e horário real de tomada.
@@ -187,7 +188,7 @@ export function dismissSuggestion(protocolId, permanent = false) {
 
   try {
     localStorage.setItem(key, value)
-    console.log('[reminderOptimizerService] Suggestion dismissed:', {
+    debugLog('reminderOptimizerService', 'Suggestion dismissed:', {
       protocolId,
       key,
       permanent,

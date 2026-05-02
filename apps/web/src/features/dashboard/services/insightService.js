@@ -13,6 +13,7 @@
 
 import { analyticsService } from './analyticsService'
 import { getNow, addDays, parseISO } from '@utils/dateUtils.js'
+import { debugLog } from '@shared/utils/logger'
 
 // Constantes para configuração do serviço
 const STORAGE_KEY = 'mr_insight_history'
@@ -589,7 +590,7 @@ export function saveInsightToHistory(insightId) {
 
     const trimmedHistory = history.slice(0, MAX_HISTORY)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmedHistory))
-    console.log('[InsightService] Insight salvo no histórico:', insightId)
+    debugLog('InsightService', 'Insight salvo no histórico:', insightId)
   } catch {
     console.warn('[InsightService] Erro ao salvar histórico de insights')
   }
@@ -610,7 +611,7 @@ export function clearInsightHistory() {
  * Compartilha conquista (placeholder para Web Share API)
  */
 function shareAchievement() {
-  console.log('[InsightService] Compartilhar conquista - funcionalidade não implementada')
+  debugLog('InsightService', 'Compartilhar conquista - funcionalidade não implementada')
 }
 
 export default {
