@@ -81,6 +81,8 @@ run/
 # AI tool configs — agent-specific, not shared
 CLAUDE.md
 GEMINI.md
+AGENTS.md
+
 .claude/settings.local.json
 .kilocode
 .kilocodemodes

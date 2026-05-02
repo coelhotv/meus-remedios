@@ -921,11 +921,6 @@ O projeto passou por uma evolucao de UX (navegacao por entidade -> navegacao por
 
 ---
 
-*Última atualização: 2026-04-08*
-*Versão do projeto: 4.0.0*
-*Status: Redesign Waves 1-15 ✅ + DEVFLOW migração completa ✅ + Smart Insights ✅*
-*Processo: DEVFLOW v1.0.0 — skill `/devflow` oficial. Memória em `.agent/memory/`. `.memory/` aposentado.*
-
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
 
