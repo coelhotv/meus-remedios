@@ -154,7 +154,7 @@ export function useNotificationLog(options = {}) {
     } finally {
       if (isMounted.current) setLoading(false)
     }
-  }, [userId, limit, offset, enabled])
+  }, [userId, limit, enabled])
 
   useEffect(() => {
     isMounted.current = true
