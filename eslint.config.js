@@ -20,7 +20,8 @@ export default [
     '**/.expo/**',
     '**/.vercel/**',
     '**/scripts/**',
-    '**/scratches/**'
+    '**/scratches/**',
+    '**/__tests__/**'    
   ] },
   {
     files: ['**/*.{js,jsx}'],
