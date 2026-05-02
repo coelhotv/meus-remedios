@@ -13,7 +13,6 @@ import './Dashboard.css'
 import DashboardColumnLeft from './DashboardColumnLeft'
 import DashboardColumnRight from './DashboardColumnRight'
 import SmartAlertsRedesign from '@dashboard/components/SmartAlertsRedesign'
-import { dismissSuggestion } from '@features/protocols/services/reminderOptimizerService'
 import { useSmartAlerts } from '@dashboard/hooks/useSmartAlerts'
 import { useReminderSuggestion } from '@dashboard/hooks/useReminderSuggestion'
 import { useDashboardHandlers } from '@dashboard/hooks/useDashboardHandlers'
@@ -183,14 +182,7 @@ export default function Dashboard({ onNavigate }) {
   // ── Loading state ──
   if (isLoading || contextLoading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '50vh',
-        }}
-      >
+      <div className="dashboard-loading-wrap">
         <Loading text="Carregando..." />
       </div>
     )
@@ -206,13 +198,12 @@ export default function Dashboard({ onNavigate }) {
 
   return (
     <div
-      className="page-container"
-      style={{ paddingTop: '1.5rem', paddingBottom: '2rem' }}
+      className="page-container dashboard-container"
       aria-label="Dashboard — Dosiq"
     >
       {/* ─── Smart Alerts (substitui StockAlertInline no topo) ─── */}
       {smartAlerts.length > 0 && (
-        <section style={{ marginBottom: '1.25rem' }} aria-label="Alertas inteligentes">
+        <section className="dashboard-alerts-section" aria-label="Alertas inteligentes">
           <SmartAlertsRedesign
             alerts={smartAlerts}
             onAction={(alert, action) => {

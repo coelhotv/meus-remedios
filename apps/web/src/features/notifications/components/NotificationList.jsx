@@ -10,7 +10,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Bell } from 'lucide-react'
 import { NOTIFICATION_TYPES, DOSE_RELATED_NOTIFICATION_TYPES } from '@schemas'
-import { formatLocalDate, addDays, parseLocalDate, getNow, getTodayLocal, parseISO, daysDifference } from '@utils/dateUtils'
+import { addDays, parseLocalDate, getNow, getTodayLocal, parseISO, daysDifference } from '@utils/dateUtils'
 import NotificationCard from './NotificationCard'
 import './NotificationList.css'
 

@@ -13,39 +13,15 @@ export default function DashboardColumnRight({
   criticalStockItems
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.5rem',
-      }}
-    >
+    <div className="dashboard-column-right">
       {/* Cronograma do Dia */}
       {scheduleAllDoses.length > 0 && (
         <section aria-label="Cronograma de hoje">
-          <div style={{ marginBottom: '1rem' }}>
-            <h2
-              style={{
-                margin: 0,
-                fontFamily: 'var(--font-display, Public Sans, sans-serif)',
-                fontSize: 'var(--text-title-lg, 1.125rem)',
-                fontWeight: '600',
-                color: 'var(--color-on-surface)',
-              }}
-            >
+          <div className="dashboard-section-header">
+            <h2 className="dashboard-section-title">
               Cronograma de Hoje
             </h2>
-            <p
-              style={{
-                margin: '0.25rem 0 0',
-                fontFamily: 'var(--font-body, Lexend, sans-serif)',
-                fontSize: 'var(--text-label-md, 0.75rem)',
-                color: 'var(--color-outline)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                fontWeight: '600',
-              }}
-            >
+            <p className="dashboard-section-subtitle">
               {today}
             </p>
           </div>
@@ -67,7 +43,7 @@ export default function DashboardColumnRight({
 
       {/* Stock Alert (Simple Mode: Bottom) */}
       {complexityMode !== 'complex' && criticalStockItems.length > 0 && (
-        <section style={{ marginTop: 'auto' }} aria-label="Alertas de estoque">
+        <section className="dashboard-footer-section" aria-label="Alertas de estoque">
           <StockAlertInline
             criticalItems={criticalStockItems}
             onNavigateToStock={() => onNavigate?.('stock')}

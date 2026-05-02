@@ -179,7 +179,6 @@ export function DashboardProvider({ children }) {
     const logs = logsResult.data
     if (!protocols || !logs) return []
 
-    const todayStr = getTodayLocal()
     const days = 7
     const now = getNow()
 

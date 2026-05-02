@@ -138,7 +138,8 @@ export default function TitrationTimeline({ protocol, compact = false, onStepCli
               daysRemaining={step.status === 'current' ? daysUntilNext : 0}
             />
           </Tag>
-        ))}
+        )
+      })}
       </div>
 
       <div className="timeline-footer">

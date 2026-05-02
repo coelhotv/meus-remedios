@@ -15,6 +15,7 @@ const isDev = typeof window !== 'undefined' && process.env.NODE_ENV === 'develop
  */
 export function debugLog(tag, message, ...args) {
   if (isDev) {
+    // eslint-disable-next-line no-console
     console.log(`[${tag}] ${message}`, ...args)
   }
 }

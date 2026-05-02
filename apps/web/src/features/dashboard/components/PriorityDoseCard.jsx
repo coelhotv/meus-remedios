@@ -1,5 +1,6 @@
 import { Clock } from 'lucide-react'
 import { getNow } from '@utils/dateUtils'
+import './PriorityDoseCard.css'
 
 /**
  * PriorityDoseCard — Destaque visual para doses urgentes (late + now).
@@ -42,111 +43,36 @@ export default function PriorityDoseCard({ doses = [], onRegister, onRegisterAll
 
   // ═══ PRIORITY CARD ═══
   return (
-    <div
-      role="region"
-      aria-label="Dose prioritária"
-      style={{
-        background:
-          'linear-gradient(135deg, var(--color-secondary), var(--color-secondary-container))',
-        borderRadius: 'var(--radius-card, 2rem)',
-        padding: '1.5rem',
-        color: 'var(--color-white)',
-        boxShadow: 'var(--shadow-lg)',
-      }}
-    >
+    <div className="priority-dose-card" role="region" aria-label="Dose prioritária">
+      {/* Elemento decorativo para sensação "premium" */}
+      <div className="priority-dose-card__decoration" aria-hidden="true" />
+
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '0.5rem',
-        }}
-      >
-        <span
-          style={{
-            background: 'var(--color-white-20)',
-            borderRadius: 'var(--radius-full, 9999px)',
-            padding: '0.25rem 0.75rem',
-            fontSize: 'var(--text-label-sm, 0.625rem)',
-            fontWeight: 'var(--font-weight-bold, 700)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          ● Prioridade Máxima
-        </span>
-        <span
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.25rem',
-            fontSize: 'var(--text-title-lg, 1.125rem)',
-            fontWeight: 'var(--font-weight-bold, 700)',
-            fontFamily: 'var(--font-display, Public Sans, sans-serif)',
-          }}
-        >
+      <div className="priority-dose-card__header">
+        <span className="priority-dose-card__badge">● Prioridade Máxima</span>
+        <span className="priority-dose-card__time-wrap">
           <Clock size={16} aria-hidden="true" />
           {nextTime}
         </span>
       </div>
 
       {/* Tempo relativo */}
-      <p
-        style={{
-          margin: '0 0 1rem',
-          fontSize: 'var(--text-body-lg, 1rem)',
-          opacity: 0.85,
-          fontFamily: 'var(--font-body, Lexend, sans-serif)',
-        }}
-      >
-        {timeLabel}
-      </p>
+      <p className="priority-dose-card__relative-time">{timeLabel}</p>
 
       {/* Lista de medicamentos — exibe até 3, com linha de overflow */}
-      <ul
-        style={{
-          listStyle: 'none',
-          padding: 0,
-          margin: '0 0 1.25rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-        }}
-      >
+      <ul className="priority-dose-card__list">
         {visibleDoses.map((dose) => (
           <li
             key={`${dose.protocolId}-${dose.scheduledTime}`}
-            style={{
-              fontSize: 'var(--text-body-lg, 1rem)',
-              opacity: 0.9,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
+            className="priority-dose-card__item"
           >
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: 'var(--color-white-70)',
-                flexShrink: 0,
-              }}
-              aria-hidden="true"
-            />
+            <span className="priority-dose-card__bullet" aria-hidden="true" />
             <strong>{dose.medicineName}</strong>
             &nbsp;·&nbsp;{dose.dosagePerIntake} comprimido{dose.dosagePerIntake !== 1 ? 's' : ''}
           </li>
         ))}
         {overflowCount > 0 && (
-          <li
-            style={{
-              fontSize: 'var(--text-body-md, 0.875rem)',
-              opacity: 0.7,
-              paddingLeft: '0.875rem',
-            }}
-          >
+          <li className="priority-dose-card__overflow">
             + {overflowCount} medicamento{overflowCount !== 1 ? 's' : ''}
           </li>
         )}
@@ -154,25 +80,9 @@ export default function PriorityDoseCard({ doses = [], onRegister, onRegisterAll
 
       {/* CTA — registra TODOS os doses (não só os visíveis) */}
       <button
+        className="priority-dose-card__cta"
         onClick={handleCTA}
         aria-label={`Confirmar ${doses.length} dose${doses.length !== 1 ? 's' : ''}`}
-        style={{
-          width: '100%',
-          padding: '1rem',
-          minHeight: '56px',
-          background: 'var(--color-white-95)',
-          color: 'var(--color-secondary)',
-          border: 'none',
-          borderRadius: 'var(--radius-button, 1.25rem)',
-          fontFamily: 'var(--font-body, Lexend, sans-serif)',
-          fontSize: 'var(--text-title-lg, 1.125rem)',
-          fontWeight: 'var(--font-weight-bold, 700)',
-          cursor: 'pointer',
-          transition: 'all 200ms ease-out',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
       >
         Confirmar Agora
       </button>

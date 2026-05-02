@@ -19,14 +19,7 @@ export default function DashboardColumnLeft({
   setDismissedSuggestionId
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.5rem',
-        alignItems: 'center',
-      }}
-    >
+    <div className="dashboard-column-left">
       {/* Header + Ring de Adesão */}
       <DashboardHeader
         userName={userName}
@@ -38,7 +31,7 @@ export default function DashboardColumnLeft({
 
       {/* Priority Dose Card — 1-Click Registration */}
       {urgentDoses.length > 0 && (
-        <div style={{ width: '100%' }}>
+        <div className="dashboard-widget-wrapper">
           <PriorityDoseCard
             doses={urgentDoses}
             onRegister={(dose) =>
@@ -52,7 +45,7 @@ export default function DashboardColumnLeft({
 
       {/* Insight Card */}
       {currentInsight && (
-        <div style={{ width: '100%' }}>
+        <div className="dashboard-widget-wrapper">
           <InsightCardRedesign
             insight={currentInsight}
             onAction={(insight) => {
@@ -65,7 +58,7 @@ export default function DashboardColumnLeft({
 
       {/* Reminder Suggestion */}
       {reminderSuggestionData && (
-        <div style={{ width: '100%' }}>
+        <div className="dashboard-widget-wrapper">
           <ReminderSuggestionRedesign
             suggestion={reminderSuggestionData.suggestion}
             protocolId={reminderSuggestionData.protocolId}
