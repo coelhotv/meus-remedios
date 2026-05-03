@@ -250,7 +250,7 @@ describe('consultationPdfDataBuilder', () => {
             id: 'log-1',
             protocol_id: 'prot-3',
             medicine_id: 'med-1',
-            taken_at: new Date(`${today}T08:10:00`).toISOString(),
+            taken_at: new Date(`${today}T08:10:00-03:00`).toISOString(),
             quantity_taken: 2,
           },
         ],
