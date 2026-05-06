@@ -217,7 +217,7 @@ Guard clauses + early return. Extrair validações para funções nomeadas inlin
 
 ---
 
-## Wave 2: Core Business Logic
+## [x] Wave 2: Core Business Logic - **COMPLETED**
 
 **Branch:** `refactor/wave-2-core-services`  
 **Risco:** 🔴 Alto (adherence logic = coração do produto)
@@ -267,7 +267,7 @@ Extrair métodos internos: `_buildCacheKey`, `_handleExpiry`, `_normalizeOptions
 
 ---
 
-## Wave 3: Hooks React
+## [x] Wave 3: Hooks React - **COMPLETED**
 
 **Branch:** `refactor/wave-3-hooks`  
 **Risco:** 🟡 Médio
@@ -437,8 +437,8 @@ npm run validate:agent  # 0 regressões
 ```
 Wave 0: Calibração ESLint   → 1 arquivo  | ~1h  | ✅ CONCLUÍDO
 Wave 1: Server/Bot          → ~8 arquivos | ~4h  | ✅ CONCLUÍDO
-Wave 2: Core Services       → ~6 arquivos | ~4h  | Gate → PR → Aprovação → Merge
-Wave 3: Hooks               → ~5 arquivos | ~3h  | Gate → PR → Aprovação → Merge
+Wave 2: Core Services       → ~6 arquivos | ~4h  | ✅ CONCLUÍDO
+Wave 3: Hooks               → ~5 arquivos | ~3h  | ✅ CONCLUÍDO
 Wave 4: Formulários (RISCO) → ~6 comps   | ~6h  | Gate → PR → Aprovação → Merge
 Wave 5: Views + Componentes → ~15 arqs   | ~5h  | Gate → PR → Aprovação → Merge
 ─────────────────────────────────────────────────────────────────────────────
