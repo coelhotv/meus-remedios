@@ -16,8 +16,8 @@ Ao abrir o app mobile:
 2. Enquanto a verificacao esta pendente, manter estado de loading atual.
 3. Se houver sessao ativa, entrar direto no shell autenticado (`ROUTES.TABS`).
 4. Se nao houver sessao ativa, exibir a nova landing page in-app.
-5. Na landing, CTA `Entrar` leva para a view de autenticacao existente.
-6. CTA `Criar Conta` fica como placeholder ate fluxo de cadastro existir.
+5. Na landing, CTA `Já tenho conta` leva para a view de autenticacao existente.
+6. CTA `Criar conta` (sentence case) fica como placeholder ate fluxo de cadastro existir.
 
 Regra de produto:
 
@@ -78,8 +78,8 @@ Fluxo sem sessao:
 ```txt
 session === undefined -> loading atual
 session === null      -> Landing
-Landing.Entrar       -> Login
-Landing.CriarConta   -> placeholder sem cadastro real
+Landing.JáTenhoConta  -> Login
+Landing.CriarConta    -> placeholder sem cadastro real
 session object        -> Tabs
 ```
 
@@ -93,13 +93,13 @@ Stack sem sessao esperado:
 </>
 ```
 
-Acao `Entrar`:
+Acao `Já tenho conta`:
 
 ```js
 navigation.navigate(ROUTES.LOGIN)
 ```
 
-Acao `Criar Conta`:
+Acao `Criar conta`:
 
 - manter botao visualmente ativo conforme mock.
 - nao criar conta.
@@ -118,27 +118,30 @@ Basear implementacao no mock hi-fi anexo.
 
 Tela deve ter:
 
-1. Topo com marca `dosiq`.
-2. Hero mock de produto com cards empilhados:
-   - card de adesao `80%`, texto `Hoje`, `Adesao excelente!`
-   - card de proxima dose com `PROXIMA DOSE`, horario `08:00 AM`, medicamento `Atorvastatina`, detalhe `10mg • 1 Comprimido`
+1. Topo com marca `dosiq`: **Composto pelo ícone de checkmark verde (52px para maior peso visual) seguido pelo wordmark escrito em texto ("dosiq") utilizando a fonte `Comfortaa`, exatamente como implementado na `LoginScreen.jsx` (`fontFamily: typography.fontFamily.brand`)**.
+2. Hero mock de produto com cards empilhados **(dentro de um container com fundo cinza claro e bordas arredondadas)**:
+   - card de adesao `91%`: **Reutilizar o componente `AdherenceRing` da view autenticada**, com diâmetro de `85px` para melhor equilíbrio visual, texto `Hoje`, `Adesao excelente!`
+   - card de proxima dose com `PROXIMA DOSE`, horario `08:00`, medicamento `Atorvastatina`, detalhe `40mg • 1 Comprimido`. **O ícone de medicamento (`Sun` da Lucide, 32px) deve ter um container com fundo branco sólido.**
 3. Headline:
    - `Sua saude sob`
    - `controle, sem`
    - `complicacoes.`
-4. Destaque em verde apenas na palavra `controle`.
+4. Destaque na palavra `controle`: A palavra deve estar na cor verde (`tokens.brand.primary`). **Nota: o sublinhado (underline) foi removido para limpeza visual**.
 5. Copy:
-   - `O dosiq ajuda voce a gerenciar seus medicamentos, estoque e adesao em um so lugar. Gratuito e portatil.`
+   - `Gratuito e portátil. O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar. **Dosiq** — Inteligência em Doses.`
 6. Faixa de beneficios:
-   - `100%` / `SEGURO`
-   - `Offline` / `ACESSO`
-   - `Gratis` / `PARA SEMPRE`
+   - **Layout**: Em linha (`flexDirection: 'row'`), `justifyContent: 'space-between'`.
+   - O texto superior (`100%`, `Offline`, `Gratis`) deve ser maior e em negrito (bold).
+   - O texto inferior (`SEGURO`, `ACESSO`, `PARA SEMPRE`) deve ser menor e em uppercase.
 7. Espaco patrocinado:
+   - **Suprimido temporariamente** (mantido apenas como código comentado/previsto).
+   - **Layout**: O container deve ter uma borda cinza fina (`borderWidth: 1`, `borderColor: tokens.border.default`).
    - label `ESPACO PATROCINADO`
-   - marcas placeholder `BIO-HEALTH` e `PHARMA-CORE`
+   - marcas placeholder `BIO-HEALTH` e `PHARMA-CORE`.
 8. Barra inferior fixa com CTAs:
-   - primario `Criar Conta`
-   - secundario `Entrar`
+   - **Layout**: CTAs devem ficar lado a lado (`flexDirection: 'row'`), dividindo a largura.
+   - primario `Criar conta` (sentence case, fundo preenchido).
+   - secundario `Já tenho conta` com estilo ghost (sem fundo, apenas texto e ícone em azul).
 
 ### 4.2. Layout
 
@@ -177,19 +180,19 @@ Se tokens atuais nao cobrirem a landing, criar apenas constantes locais na tela 
 
 Cores alvo do mock:
 
-| Uso | Valor aproximado |
-|-----|------------------|
-| Brand green | `#008775` ou token equivalente |
-| Text primary | `#161A1D` |
-| Text secondary | `#4F5A57` |
-| Muted text | `#8B928F` |
-| Background | `#F7F9FA` |
-| Card | `#FFFFFF` |
-| Secondary CTA blue | `#006EDB` |
+| Uso | Valor aproximado / Token sugerido |
+|-----|-----------------------------------|
+| Brand green | `tokens.brand.primary` (`#006A5E`) |
+| Text primary | `tokens.text.primary` (`#1a1c1e`) |
+| Text secondary | `tokens.text.secondary` (`#44474e`) |
+| Muted text | `tokens.text.muted` (`#8e9199`) |
+| Background | `tokens.bg.screen` (`#f8fafb`) |
+| Card | `tokens.bg.card` (`#ffffff`) |
+| Secondary CTA blue | `tokens.colors.primary[600]` (`#005db6`) |
 
 Tipografia:
 
-- preservar fonte de marca carregada no app (`Comfortaa`) para logo/textos de marca se aplicavel.
+- **Obrigatório:** O wordmark "dosiq" no topo deve ser renderizado como `<Text>` utilizando a fonte `Comfortaa` (`typography.fontFamily.brand`), seguindo exatamente o mesmo estilo e padrão já estabelecido na `LoginScreen.jsx`.
 - headline pode usar peso alto com `System`/token bold caso Comfortaa prejudique leitura.
 - evitar letter spacing negativo.
 - texto deve caber em portugues sem truncamento.
@@ -198,8 +201,9 @@ Icones:
 
 - usar `Ionicons` ja presente no mobile.
 - `Criar Conta`: icone `person-add-outline` ou equivalente.
-- `Entrar`: icone `log-in-outline`.
-- card dose: icone medico/remedio disponivel em `Ionicons` ou composicao simples.
+- `Já tenho conta`: icone `log-in-outline` ou similar.
+- Card dose: icone medico/remedio disponivel em `Ionicons` (ex: `medical-outline`).
+- Espaço Patrocinado: ícones `shield-checkmark-outline` e `medkit-outline` ou equivalentes.
 
 ---
 
@@ -210,22 +214,22 @@ Textos finais desta etapa:
 ```txt
 dosiq
 Sua saude sob controle, sem complicacoes.
-O dosiq ajuda voce a gerenciar seus medicamentos, estoque e adesao em um so lugar. Gratuito e portatil.
+Gratuito e portátil. O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar. Dosiq — Inteligência em Doses.
 100% SEGURO
 Offline ACESSO
 Gratis PARA SEMPRE
 ESPACO PATROCINADO
 BIO-HEALTH
 PHARMA-CORE
-Criar Conta
-Entrar
+Criar conta
+Já tenho conta
 ```
 
 Acessibilidade obrigatoria:
 
 - CTAs com `accessibilityRole="button"`.
 - `Criar Conta` com label explicito informando indisponibilidade temporaria se usar Alert.
-- `Entrar` com label `Entrar na conta`.
+- `Já tenho conta` com label `Já tenho conta`.
 - cards decorativos do hero devem ser legiveis por screen reader ou marcados como nao acessiveis se duplicarem texto informativo.
 - contraste minimo AA para texto principal e botoes.
 - nao depender apenas de cor para comunicar acao.
