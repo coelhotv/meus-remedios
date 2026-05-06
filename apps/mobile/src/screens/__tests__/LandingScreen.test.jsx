@@ -67,21 +67,21 @@ describe('LandingScreen', () => {
     expect(getByText('91%')).toBeTruthy();
     expect(getByText('40mg • 1 Comprimido')).toBeTruthy();
     expect(getByText('08:00')).toBeTruthy();
-    expect(getByText('Criar Conta')).toBeTruthy();
-    expect(getByText('Entrar')).toBeTruthy();
+    expect(getByText('Criar conta')).toBeTruthy();
+    expect(getByText('Já tenho conta')).toBeTruthy();
   });
 
-  it('navigates to Login when "Entrar" is pressed', () => {
+  it('navigates to Login when "Já tenho conta" is pressed', () => {
     const { getByText } = render(<LandingScreen navigation={mockNavigation} />);
     
-    fireEvent.press(getByText('Entrar'));
+    fireEvent.press(getByText('Já tenho conta'));
     expect(mockNavigation.navigate).toHaveBeenCalledWith(ROUTES.LOGIN);
   });
 
-  it('shows Alert when "Criar Conta" is pressed', () => {
+  it('shows Alert when "Criar conta" is pressed', () => {
     const { getByText } = render(<LandingScreen navigation={mockNavigation} />);
     
-    fireEvent.press(getByText('Criar Conta'));
+    fireEvent.press(getByText('Criar conta'));
     expect(Alert.alert).toHaveBeenCalledWith(
       'Em breve',
       'Cadastro pelo app ainda não está disponível.'

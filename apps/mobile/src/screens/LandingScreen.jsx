@@ -131,20 +131,20 @@ export default function LandingScreen({ navigation }) {
           style={styles.createAccountBtn} 
           onPress={handleCreateAccount}
           accessibilityRole="button"
-          accessibilityLabel="Criar Conta"
+          accessibilityLabel="Criar conta"
         >
           <Ionicons name="person-add-outline" size={20} color="#fff" />
-          <Text style={styles.createAccountText}>Criar Conta</Text>
+          <Text style={styles.createAccountText}>Criar conta</Text>
         </Pressable>
         
         <Pressable 
           style={styles.loginBtn} 
           onPress={handleLogin}
           accessibilityRole="button"
-          accessibilityLabel="Entrar na conta"
+          accessibilityLabel="Já tenho conta"
         >
           <Ionicons name="log-in-outline" size={24} color={colors.primary[600]} />
-          <Text style={styles.loginBtnText}>Entrar</Text>
+          <Text style={styles.loginBtnText}>Já tenho conta</Text>
         </Pressable>
       </View>
     </SafeAreaView>
