@@ -12,6 +12,12 @@ const mockNavigation = {
 // Mock Alert
 jest.spyOn(Alert, 'alert');
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  SafeAreaView: ({ children, edges }) => <>{children}</>,
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
 // Mock react-native-svg
 jest.mock('react-native-svg', () => {
   const React = require('react');

@@ -10,7 +10,7 @@ import {
   Platform,
   Image
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { colors, spacing, typography, borderRadius, shadows } from '../shared/styles/tokens';
@@ -19,6 +19,8 @@ import { ROUTES } from '../navigation/routes';
 const { width } = Dimensions.get('window');
 
 export default function LandingScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
+
   const handleCreateAccount = () => {
     Alert.alert('Em breve', 'Cadastro pelo app ainda não está disponível.');
   };
@@ -28,7 +30,7 @@ export default function LandingScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -143,7 +145,10 @@ export default function LandingScreen({ navigation }) {
       </ScrollView>
 
       {/* 6. Action Bar (Fixed at bottom) */}
-      <View style={styles.actionBar}>
+      <View style={[
+        styles.actionBar, 
+        { paddingBottom: Math.max(insets.bottom, spacing[6]) }
+      ]}>
         <Pressable 
           style={styles.createAccountBtn} 
           onPress={handleCreateAccount}
@@ -406,7 +411,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: spacing[6],
     paddingTop: spacing[4],
-    paddingBottom: Platform.OS === 'ios' ? 34 : spacing[6], // Handle home indicator
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
     gap: spacing[3],
