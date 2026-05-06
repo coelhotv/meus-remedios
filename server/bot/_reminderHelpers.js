@@ -103,7 +103,7 @@ export async function checkRemindersViaDispatcher(dispatcher, correlationId) {
     const userIdsByHHMM = {};
     
     for (const user of realtimeUsers) {
-      const currentHHMM = getCurrentTime().replace(/[^\d:]/g, ''); 
+      const currentHHMM = getCurrentTime().substring(0, 5);
       userTimes.set(user.user_id, currentHHMM);
       
       if (!userIdsByHHMM[currentHHMM]) userIdsByHHMM[currentHHMM] = [];

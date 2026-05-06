@@ -12,7 +12,7 @@ async function _getEligibleUsersForAdherence(users, correlationId) {
   for (const user of users) {
     try {
       const timezone = user.timezone || 'America/Sao_Paulo';
-      const currentHHMM = getCurrentTimeInTimezone(timezone).replace(/[^\d:]/g, ''); 
+      const currentHHMM = getCurrentTimeInTimezone(timezone).substring(0, 5);
       
       // Relatório de adesão é fixo às 23:00 (ADHERENCE_REPORT_TIME)
       if (currentHHMM !== ADHERENCE_REPORT_TIME) continue;
