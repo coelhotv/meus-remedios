@@ -25,6 +25,14 @@ export const getInitialFormData = (protocol, initialValues, preselectedMedicine,
   end_date: protocol?.end_date || initialValues?.end_date || '',
 })
 
+export const getTitrationInitialDosage = (formData) => {
+  if (formData.titration_schedule?.length > 0) {
+    const firstStage = formData.titration_schedule[0]
+    if (firstStage.dosage) return firstStage.dosage
+  }
+  return ''
+}
+
 // eslint-disable-next-line complexity
 export const validateProtocolForm = (formData, setErrors, setShakeFields) => {
   const newErrors = {}

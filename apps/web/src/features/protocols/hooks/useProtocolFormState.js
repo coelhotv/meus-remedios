@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import {
   getInitialFormData,
   validateProtocolForm,
   handleAddTime,
   handleRemoveTime,
+  getTitrationInitialDosage,
 } from './protocolFormUtils'
 import { submitProtocolForm } from './_protocolFormSubmit'
 
@@ -16,9 +17,14 @@ export function useProtocolFormState({
   onSuccess,
   autoAdvance,
 }) {
-  const [formData, setFormData] = useState(() =>
-    getInitialFormData(protocol, initialValues, preselectedMedicine, isSimpleMode)
-  )
+  const [formData, setFormData] = useState(() => {
+    const data = getInitialFormData(protocol, initialValues, preselectedMedicine, isSimpleMode)
+    const isTitrating = protocol?.titration_schedule?.length > 0 || protocol?.titration_status === 'titulando'
+    if (!protocol && isTitrating && !data.dosage_per_intake) {
+      data.dosage_per_intake = getTitrationInitialDosage(data)
+    }
+    return data
+  })
 
   const [enableTitration, setEnableTitration] = useState(
     protocol?.titration_schedule?.length > 0 || protocol?.titration_status === 'titulando'
@@ -30,19 +36,7 @@ export function useProtocolFormState({
   const [shakeFields, setShakeFields] = useState({})
   const [saveSuccess, setSaveSuccess] = useState(false)
 
-  // Sync initial dosage with first stage if titration is enabled for new protocols
-  useEffect(() => {
-    if (!protocol && enableTitration && formData.titration_schedule?.length > 0) {
-      const firstStage = formData.titration_schedule[0]
-      if (firstStage.dosage && !formData.dosage_per_intake) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFormData((prev) => {
-          if (prev.dosage_per_intake === firstStage.dosage) return prev
-          return { ...prev, dosage_per_intake: firstStage.dosage }
-        })
-      }
-    }
-  }, [enableTitration, formData.titration_schedule, protocol, formData.dosage_per_intake])
+
 
   const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target
@@ -98,11 +92,19 @@ export function useProtocolFormState({
 
   const handleTitrationEnable = useCallback((enabled) => {
     setEnableTitration(enabled)
-    setFormData((prev) => ({
-      ...prev,
-      titration_status: enabled ? 'titulando' : 'estável',
-    }))
-  }, [])
+    setFormData((prev) => {
+      const titration_status = enabled ? 'titulando' : 'estável'
+      const dosage_per_intake = (!protocol && enabled && !prev.dosage_per_intake)
+        ? getTitrationInitialDosage(prev)
+        : prev.dosage_per_intake
+
+      return {
+        ...prev,
+        titration_status,
+        dosage_per_intake,
+      }
+    })
+  }, [protocol])
 
   const setTitrationSchedule = useCallback((newSchedule) => {
     setFormData((prev) => ({ ...prev, titration_schedule: newSchedule }))
