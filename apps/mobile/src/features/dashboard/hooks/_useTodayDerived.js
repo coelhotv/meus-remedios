@@ -8,7 +8,8 @@ import {
   calculateAdherenceStats,
   parseLocalDate,
   getNow,
-  evaluateDoseTimelineState
+  evaluateDoseTimelineState,
+  getSaoPauloTime
 } from '@dosiq/core'
 
 /**
@@ -48,7 +49,14 @@ export function useTodayDerived(data) {
 
     // Helper de ordenação
     const sortByTime = (a, b) => {
-      const formatTime = (d) => d.scheduledTime || (d.taken_at ? formatLocalDate(parseISO(d.taken_at), true).split(' ')[1].substring(0, 5) : '00:00')
+      const formatTime = (d) => {
+        if (d.scheduledTime) return d.scheduledTime
+        if (!d.taken_at) return '00:00'
+        const date = getSaoPauloTime(parseISO(d.taken_at))
+        const h = String(date.getHours()).padStart(2, '0')
+        const m = String(date.getMinutes()).padStart(2, '0')
+        return `${h}:${m}`
+      }
       return formatTime(a).localeCompare(formatTime(b))
     }
 

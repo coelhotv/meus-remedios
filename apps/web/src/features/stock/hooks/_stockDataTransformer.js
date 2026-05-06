@@ -7,7 +7,9 @@ import { parseLocalDate } from '@utils/dateUtils'
 export function transformStockItems(medicines, protocols, stockMap, purchaseHistoryMap, getStockStatus, getBarPercentage) {
   if (medicines.length === 0) return []
 
-  const activeMedicineIds = new Set(protocols.map((p) => p.medicine_id))
+  const activeMedicineIds = new Set(
+    protocols.filter((p) => p.active !== false).map((p) => p.medicine_id)
+  )
 
   // Mapa: medicineId → protocolo primário (primeiro ativo)
   const primaryProtocolMap = {}

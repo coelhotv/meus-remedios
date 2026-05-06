@@ -24,6 +24,7 @@ export function useTodayData() {
   const [stale, setStale] = useState(false)
   const [isDaySegregated, setIsDaySegregated] = useState(false)
   const dataRef = useRef(null)
+  const enhancedData = useTodayDerived(data)
 
   const handleOnlineSuccess = useCallback(async (user, protocols, logs, medicines, userSettings, today) => {
     const enrichedProtocols = protocols.map(p => ({ ...p, medicine: medicines[p.medicine_id] || null }))
@@ -116,8 +117,6 @@ export function useTodayData() {
     const subscription = AppState.addEventListener('change', handleStateChange)
     return () => subscription.remove()
   }, [load])
-
-  const enhancedData = useTodayDerived(data)
 
   return { data: enhancedData, loading, error, stale, isDaySegregated, refresh: load }
 }

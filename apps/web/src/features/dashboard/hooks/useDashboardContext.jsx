@@ -51,6 +51,15 @@ export function DashboardProvider({ children }) {
   )
 
   const { results, isLoading, isFetching, hasError, refetchAll } = useCachedQueries(queries)
+  const [medicinesResult, protocolsResult, logsResult] = results
+
+  // Lógica de derivação extraída para hook privado (Lint Compliance)
+  const { stockSummary, stats, protocolsWithNextDose, dailyAdherence } = useDashboardDerived(
+    medicinesResult,
+    protocolsResult,
+    logsResult
+  )
+
 
   // Assina eventos de autenticação — invalida cache imediatamente no SIGNED_IN/SIGNED_OUT
   useEffect(() => {
@@ -67,14 +76,6 @@ export function DashboardProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [refetchAll])
 
-  const [medicinesResult, protocolsResult, logsResult] = results
-
-  // Lógica de derivação extraída para hook privado (Lint Compliance)
-  const { stockSummary, stats, protocolsWithNextDose, dailyAdherence } = useDashboardDerived(
-    medicinesResult,
-    protocolsResult,
-    logsResult
-  )
 
   const value = useMemo(
     () => ({

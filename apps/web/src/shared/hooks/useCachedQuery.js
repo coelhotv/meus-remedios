@@ -10,7 +10,7 @@
  * @module useCachedQuery
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { webQueryCache } from '@shared/platform/query-cache/webQueryCache'
 import { debugLog } from '@shared/utils/logger'
 
@@ -171,25 +171,14 @@ export function useCachedQueries(queries) {
 
   const isMounted = useRef(true)
 
+  const isLoading = useMemo(() => results.some((r) => r.isLoading), [results])
+  const isFetching = useMemo(() => results.some((r) => r.isFetching), [results])
+  const hasError = useMemo(() => results.some((r) => r.error), [results])
+  const errors = useMemo(() => results.map((r) => r.error).filter(Boolean), [results])
+
   // Note: Using [queriesKey] instead of [queries] to prevent infinite render loops.
   // We manually update queriesRef.current inside effect to access fresh query values.
   // This is intentional — queriesKey is a stable string derived from query keys.
-  const updateResults = useCallback((settled) => {
-    if (isMounted.current) {
-      setResults((prev) => {
-        const next = [...prev]
-        settled.forEach(({ index, data, error }) => {
-          next[index] = {
-            data,
-            error,
-            isLoading: false,
-            isFetching: false,
-          }
-        })
-        return next
-      })
-    }
-  }, [])
 
   useEffect(() => {
     isMounted.current = true
@@ -207,12 +196,25 @@ export function useCachedQueries(queries) {
       isMounted.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queriesKey, updateResults])
+  }, [queriesKey])
 
-  const isLoading = results.some((r) => r.isLoading)
-  const isFetching = results.some((r) => r.isFetching)
-  const hasError = results.some((r) => r.error)
-  const errors = results.map((r) => r.error).filter(Boolean)
+
+  const updateResults = useCallback((settled) => {
+    if (isMounted.current) {
+      setResults((prev) => {
+        const next = [...prev]
+        settled.forEach(({ index, data, error }) => {
+          next[index] = {
+            data,
+            error,
+            isLoading: false,
+            isFetching: false,
+          }
+        })
+        return next
+      })
+    }
+  }, [])
 
   const refetchAll = useCallback(async () => {
     queriesRef.current.forEach((query) => {

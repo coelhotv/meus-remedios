@@ -12,6 +12,14 @@ export function useTreatmentList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const activeItems = useMemo(() => items.filter((i) => i.tabStatus === 'ativo'), [items])
+  const pausedItems = useMemo(() => items.filter((i) => i.tabStatus === 'pausado'), [items])
+  const finishedItems = useMemo(() => items.filter((i) => i.tabStatus === 'finalizado'), [items])
+
+  const activeGroups = useMemo(() => computeGroups(activeItems), [activeItems])
+  const pausedGroups = useMemo(() => computeGroups(pausedItems), [pausedItems])
+  const finishedGroups = useMemo(() => computeGroups(finishedItems), [finishedItems])
+
   const fetchAll = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -51,13 +59,6 @@ export function useTreatmentList() {
     fetchAll()
   }, [fetchAll])
 
-  const activeItems = useMemo(() => items.filter((i) => i.tabStatus === 'ativo'), [items])
-  const pausedItems = useMemo(() => items.filter((i) => i.tabStatus === 'pausado'), [items])
-  const finishedItems = useMemo(() => items.filter((i) => i.tabStatus === 'finalizado'), [items])
-
-  const activeGroups = useMemo(() => computeGroups(activeItems), [activeItems])
-  const pausedGroups = useMemo(() => computeGroups(pausedItems), [pausedItems])
-  const finishedGroups = useMemo(() => computeGroups(finishedItems), [finishedItems])
 
   return {
     items,
