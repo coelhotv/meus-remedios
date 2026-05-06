@@ -52,7 +52,7 @@ export default function LandingScreen({ navigation }) {
           <View style={[styles.card, styles.adherenceCard]}>
             <View style={styles.adherenceContent}>
               <View style={styles.circularProgressContainer}>
-                <AdherenceRing score={90} size={90} strokeWidth={8} />
+                <AdherenceRing score={85} size={85} strokeWidth={8} />
               </View>
               <View style={styles.adherenceInfo}>
                 <Text style={styles.adherenceLabel}>Hoje</Text>
@@ -209,8 +209,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   circularProgressContainer: {
-    width: 90,
-    height: 90,
+    width: 85,
+    height: 85,
     marginRight: spacing[4],
     justifyContent: 'center',
     alignItems: 'center',
