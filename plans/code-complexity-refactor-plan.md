@@ -69,13 +69,13 @@ Adicionar dois overrides ao final do array de configurações:
 | `apps/web/src/features/protocols/components/ProtocolForm.jsx` | 532 | **110** |
 | `apps/web/src/features/protocols/components/TreatmentWizard.jsx` | 626 | **51** |
 | `apps/web/src/shared/components/log/LogForm.jsx` | 323 | **45** |
-| `server/notifications/payloads/buildNotificationPayload.js` | 264 | **45** |
+| `server/notifications/payloads/buildNotificationPayload.js` | 264 | **Status:** ✅ Completed (Wave 1) |
 | `apps/web/src/features/reports/services/consultationPdfDataBuilder.js` | 204 | **76** |
-| `server/notifications/dispatcher/dispatchNotification.js` | 148 | **31+45** |
+| `server/notifications/dispatcher/dispatchNotification.js` | 148 | **Status:** ✅ Completed (Wave 1) |
 | `apps/web/src/features/medications/components/MedicineForm.jsx` | 316 | **50** |
 | `apps/web/src/views/admin/DLQAdmin.jsx` | 436 | 23 |
 | `apps/web/src/views/Landing.jsx` | 393 | — |
-| `server/bot/tasks.js` | multi | 28/31/20/18 |
+| `server/bot/tasks.js` | multi | **Status:** ✅ Completed (Wave 1) |
 
 ### 🟡 ALTO (complexity 16–30 OU lines 150–300)
 
@@ -439,7 +439,7 @@ npm run validate:agent  # 0 regressões
 
 ```
 Wave 0: Calibração ESLint   → 1 arquivo  | ~1h  | ✅ CONCLUÍDO
-Wave 1: Server/Bot          → ~8 arquivos | ~4h  | Gate → PR → Aprovação → Merge
+Wave 1: Server/Bot          → ~8 arquivos | ~4h  | ✅ CONCLUÍDO
 Wave 2: Core Services       → ~6 arquivos | ~4h  | Gate → PR → Aprovação → Merge
 Wave 3: Hooks               → ~5 arquivos | ~3h  | Gate → PR → Aprovação → Merge
 Wave 4: Formulários (RISCO) → ~6 comps   | ~6h  | Gate → PR → Aprovação → Merge
