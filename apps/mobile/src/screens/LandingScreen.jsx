@@ -91,10 +91,7 @@ export default function LandingScreen({ navigation }) {
           </View>
 
           <Text style={styles.descriptionText}>
-            Gratuito e portátil. O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar.
-          </Text>
-          <Text style={styles.descriptionText}>
-            Dosiq — Inteligência em Doses.
+            Gratuito e portátil. O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar. <Text style={styles.boldText}>Dosiq</Text> — Inteligência em Doses.
           </Text>
 
         </View>
@@ -254,7 +251,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#F0FDFB', // Light blue/transparent
+    backgroundColor: '#FFFFFF', // white
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing[4],
@@ -325,6 +322,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: colors.text.secondary,
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: colors.text.primary,
   },
   benefitsBar: {
     flexDirection: 'row',
