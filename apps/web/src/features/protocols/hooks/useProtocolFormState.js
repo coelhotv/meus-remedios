@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   getInitialFormData,
   validateProtocolForm,
-  prepareDataToSave,
   handleAddTime,
   handleRemoveTime,
 } from './protocolFormUtils'
@@ -36,7 +35,11 @@ export function useProtocolFormState({
     if (!protocol && enableTitration && formData.titration_schedule?.length > 0) {
       const firstStage = formData.titration_schedule[0]
       if (firstStage.dosage && !formData.dosage_per_intake) {
-        setFormData((prev) => ({ ...prev, dosage_per_intake: firstStage.dosage }))
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFormData((prev) => {
+          if (prev.dosage_per_intake === firstStage.dosage) return prev
+          return { ...prev, dosage_per_intake: firstStage.dosage }
+        })
       }
     }
   }, [enableTitration, formData.titration_schedule, protocol, formData.dosage_per_intake])
@@ -86,7 +89,7 @@ export function useProtocolFormState({
           setErrors,
           setSaveSuccess,
         })
-      } catch (error) {
+      } catch {
         // Error already handled in submitProtocolForm
       }
     },
