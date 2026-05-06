@@ -52,7 +52,7 @@ export default function LandingScreen({ navigation }) {
           <View style={[styles.card, styles.adherenceCard]}>
             <View style={styles.adherenceContent}>
               <View style={styles.circularProgressContainer}>
-                <AdherenceRing score={85} size={85} strokeWidth={8} />
+                <AdherenceRing score={91} size={85} strokeWidth={8} />
               </View>
               <View style={styles.adherenceInfo}>
                 <Text style={styles.adherenceLabel}>Hoje</Text>
@@ -64,7 +64,7 @@ export default function LandingScreen({ navigation }) {
           {/* Next Dose Card */}
           <View style={[styles.card, styles.doseCard]}>
             <View style={styles.doseIconContainer}>
-              <Sun size={24} color="#f9a825" />
+              <Sun size={32} color="#f9a825" />
             </View>
             <View style={styles.doseInfo}>
               <Text style={styles.doseLabel}>PRÓXIMA DOSE</Text>
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   doseLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     color: colors.text.muted,
     letterSpacing: 1,
@@ -271,18 +271,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   doseTimeText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.text.primary,
   },
   medicationName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: colors.text.primary,
     marginBottom: 2,
   },
   medicationDetails: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.text.secondary,
   },
   textSection: {
