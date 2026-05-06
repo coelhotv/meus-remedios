@@ -16,8 +16,8 @@ Ao abrir o app mobile:
 2. Enquanto a verificacao esta pendente, manter estado de loading atual.
 3. Se houver sessao ativa, entrar direto no shell autenticado (`ROUTES.TABS`).
 4. Se nao houver sessao ativa, exibir a nova landing page in-app.
-5. Na landing, CTA `Entrar` leva para a view de autenticacao existente.
-6. CTA `Criar Conta` fica como placeholder ate fluxo de cadastro existir.
+5. Na landing, CTA `Já tenho conta` leva para a view de autenticacao existente.
+6. CTA `Criar conta` (sentence case) fica como placeholder ate fluxo de cadastro existir.
 
 Regra de produto:
 
@@ -78,8 +78,8 @@ Fluxo sem sessao:
 ```txt
 session === undefined -> loading atual
 session === null      -> Landing
-Landing.Entrar       -> Login
-Landing.CriarConta   -> placeholder sem cadastro real
+Landing.JáTenhoConta  -> Login
+Landing.CriarConta    -> placeholder sem cadastro real
 session object        -> Tabs
 ```
 
@@ -93,13 +93,13 @@ Stack sem sessao esperado:
 </>
 ```
 
-Acao `Entrar`:
+Acao `Já tenho conta`:
 
 ```js
 navigation.navigate(ROUTES.LOGIN)
 ```
 
-Acao `Criar Conta`:
+Acao `Criar conta`:
 
 - manter botao visualmente ativo conforme mock.
 - nao criar conta.
@@ -118,29 +118,30 @@ Basear implementacao no mock hi-fi anexo.
 
 Tela deve ter:
 
-1. Topo com marca `dosiq`: **Composto pelo ícone de checkmark verde (extrair do `apps/web/public/dosiq-logo-verde.svg` ou das variações em `apps/web/public/app-icons`) seguido pelo wordmark escrito em texto ("dosiq") utilizando a fonte `Comfortaa`, exatamente como implementado na `LoginScreen.jsx` (`fontFamily: typography.fontFamily.brand`)**.
+1. Topo com marca `dosiq`: **Composto pelo ícone de checkmark verde (52px para maior peso visual) seguido pelo wordmark escrito em texto ("dosiq") utilizando a fonte `Comfortaa`, exatamente como implementado na `LoginScreen.jsx` (`fontFamily: typography.fontFamily.brand`)**.
 2. Hero mock de produto com cards empilhados **(dentro de um container com fundo cinza claro e bordas arredondadas)**:
-   - card de adesao `80%`: **Implementar um indicador circular simples (pode ser via `react-native-svg` ou `<View>` estilizada com bordas)** para o gráfico, texto `Hoje`, `Adesao excelente!`
-   - card de proxima dose com `PROXIMA DOSE`, horario `08:00 AM`, medicamento `Atorvastatina`, detalhe `10mg • 1 Comprimido`. **O ícone de medicamento deve ter um container com fundo azul claro/translúcido.**
+   - card de adesao `91%`: **Reutilizar o componente `AdherenceRing` da view autenticada**, com diâmetro de `85px` para melhor equilíbrio visual, texto `Hoje`, `Adesao excelente!`
+   - card de proxima dose com `PROXIMA DOSE`, horario `08:00`, medicamento `Atorvastatina`, detalhe `40mg • 1 Comprimido`. **O ícone de medicamento (`Sun` da Lucide, 32px) deve ter um container com fundo branco sólido.**
 3. Headline:
    - `Sua saude sob`
    - `controle, sem`
    - `complicacoes.`
-4. Destaque na palavra `controle`: A palavra deve estar na cor verde (`tokens.brand.primary`) **E com um sublinhado espesso (underline)**. Pode ser implementado via `textDecorationLine` ou uma `<View>` posicionada absolutamente abaixo do texto.
+4. Destaque na palavra `controle`: A palavra deve estar na cor verde (`tokens.brand.primary`). **Nota: o sublinhado (underline) foi removido para limpeza visual**.
 5. Copy:
-   - `O dosiq ajuda voce a gerenciar seus medicamentos, estoque e adesao em um so lugar. Gratuito e portatil.`
+   - `Gratuito e portátil. O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar. **Dosiq** — Inteligência em Doses.`
 6. Faixa de beneficios:
    - **Layout**: Em linha (`flexDirection: 'row'`), `justifyContent: 'space-between'`.
    - O texto superior (`100%`, `Offline`, `Gratis`) deve ser maior e em negrito (bold).
    - O texto inferior (`SEGURO`, `ACESSO`, `PARA SEMPRE`) deve ser menor e em uppercase.
 7. Espaco patrocinado:
+   - **Suprimido temporariamente** (mantido apenas como código comentado/previsto).
    - **Layout**: O container deve ter uma borda cinza fina (`borderWidth: 1`, `borderColor: tokens.border.default`).
    - label `ESPACO PATROCINADO`
-   - marcas placeholder `BIO-HEALTH` e `PHARMA-CORE`. **Devem ter ícones ao lado (ex: escudo e maleta médica do `Ionicons`).**
+   - marcas placeholder `BIO-HEALTH` e `PHARMA-CORE`.
 8. Barra inferior fixa com CTAs:
    - **Layout**: CTAs devem ficar lado a lado (`flexDirection: 'row'`), dividindo a largura.
-   - primario `Criar Conta` (fundo preenchido).
-   - secundario `Entrar` com estilo ghost (sem fundo, apenas texto e ícone em azul).
+   - primario `Criar conta` (sentence case, fundo preenchido).
+   - secundario `Já tenho conta` com estilo ghost (sem fundo, apenas texto e ícone em azul).
 
 ### 4.2. Layout
 
@@ -200,7 +201,7 @@ Icones:
 
 - usar `Ionicons` ja presente no mobile.
 - `Criar Conta`: icone `person-add-outline` ou equivalente.
-- `Entrar`: icone `log-in-outline` ou similar.
+- `Já tenho conta`: icone `log-in-outline` ou similar.
 - Card dose: icone medico/remedio disponivel em `Ionicons` (ex: `medical-outline`).
 - Espaço Patrocinado: ícones `shield-checkmark-outline` e `medkit-outline` ou equivalentes.
 
@@ -213,22 +214,22 @@ Textos finais desta etapa:
 ```txt
 dosiq
 Sua saude sob controle, sem complicacoes.
-O dosiq ajuda voce a gerenciar seus medicamentos, estoque e adesao em um so lugar. Gratuito e portatil.
+Gratuito e portátil. O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar. Dosiq — Inteligência em Doses.
 100% SEGURO
 Offline ACESSO
 Gratis PARA SEMPRE
 ESPACO PATROCINADO
 BIO-HEALTH
 PHARMA-CORE
-Criar Conta
-Entrar
+Criar conta
+Já tenho conta
 ```
 
 Acessibilidade obrigatoria:
 
 - CTAs com `accessibilityRole="button"`.
 - `Criar Conta` com label explicito informando indisponibilidade temporaria se usar Alert.
-- `Entrar` com label `Entrar na conta`.
+- `Já tenho conta` com label `Já tenho conta`.
 - cards decorativos do hero devem ser legiveis por screen reader ou marcados como nao acessiveis se duplicarem texto informativo.
 - contraste minimo AA para texto principal e botoes.
 - nao depender apenas de cor para comunicar acao.
