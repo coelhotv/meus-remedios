@@ -12,20 +12,45 @@ const mockNavigation = {
 // Mock Alert
 jest.spyOn(Alert, 'alert');
 
+// Mock react-native-svg
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const Svg = ({ children }) => <React.Fragment>{children}</React.Fragment>;
+  const Circle = () => <React.Fragment />;
+  return {
+    __esModule: true,
+    default: Svg,
+    Circle: Circle,
+    Svg: Svg
+  };
+});
+
+// Mock Ionicons
+jest.mock('@expo/vector-icons', () => {
+  const React = require('react');
+  return {
+    Ionicons: () => <React.Fragment />,
+  };
+});
+
 describe('LandingScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders correctly', () => {
     const { getByText } = render(<LandingScreen navigation={mockNavigation} />);
     
     expect(getByText('dosiq')).toBeTruthy();
-    expect(getByText(/Tome seus remédios sob/)).toBeTruthy();
+    expect(getByText(/Sua saúde sob/)).toBeTruthy();
     expect(getByText('Criar Conta')).toBeTruthy();
-    expect(getByText('Já tenho uma conta')).toBeTruthy();
+    expect(getByText('Entrar')).toBeTruthy();
   });
 
-  it('navigates to Login when "Já tenho uma conta" is pressed', () => {
+  it('navigates to Login when "Entrar" is pressed', () => {
     const { getByText } = render(<LandingScreen navigation={mockNavigation} />);
     
-    fireEvent.press(getByText('Já tenho uma conta'));
+    fireEvent.press(getByText('Entrar'));
     expect(mockNavigation.navigate).toHaveBeenCalledWith(ROUTES.LOGIN);
   });
 
@@ -34,8 +59,8 @@ describe('LandingScreen', () => {
     
     fireEvent.press(getByText('Criar Conta'));
     expect(Alert.alert).toHaveBeenCalledWith(
-      'Funcionalidade em breve',
-      'O fluxo de cadastro nativo será implementado na próxima Wave.'
+      'Em breve',
+      'Cadastro pelo app ainda não está disponível.'
     );
   });
 });
