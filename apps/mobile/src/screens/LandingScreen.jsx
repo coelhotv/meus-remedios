@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   doseTimeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   doseTimeText: {
     fontSize: 20,
