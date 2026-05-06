@@ -6,18 +6,15 @@ import {
   ScrollView, 
   Pressable, 
   Alert,
-  Dimensions,
   Platform,
   Image
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Sun } from 'lucide-react-native';
-import { colors, spacing, typography, borderRadius, shadows } from '@shared/styles/tokens';
+import { colors, spacing, typography, shadows } from '@shared/styles/tokens';
 import { ROUTES } from '@navigation/routes';
 import AdherenceRing from '@features/dashboard/components/AdherenceRing';
-
-const { width } = Dimensions.get('window');
 
 export default function LandingScreen({ navigation }) {
   const insets = useSafeAreaInsets();
