@@ -91,9 +91,12 @@ export default function LandingScreen({ navigation }) {
           </View>
 
           <Text style={styles.descriptionText}>
-            Gratuito e portátil. 
-            O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar. dosiq — inteligência em doses.
+            Gratuito e portátil. O app que ajuda você a gerenciar seus remédios, estoque e adesão em um só lugar.
           </Text>
+          <Text style={styles.descriptionText}>
+            Dosiq — Inteligência em Doses.
+          </Text>
+
         </View>
 
         {/* 4. Benefits Bar */}
