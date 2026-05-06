@@ -118,27 +118,29 @@ Basear implementacao no mock hi-fi anexo.
 
 Tela deve ter:
 
-1. Topo com marca `dosiq`.
-2. Hero mock de produto com cards empilhados:
-   - card de adesao `80%`, texto `Hoje`, `Adesao excelente!`
-   - card de proxima dose com `PROXIMA DOSE`, horario `08:00 AM`, medicamento `Atorvastatina`, detalhe `10mg • 1 Comprimido`
+1. Topo com marca `dosiq`: **Composto pelo ícone de checkmark verde (extrair do `apps/web/public/dosiq-logo-verde.svg` ou das variações em `apps/web/public/app-icons`) seguido pelo wordmark escrito em texto ("dosiq") utilizando a fonte `Comfortaa`, exatamente como implementado na `LoginScreen.jsx` (`fontFamily: typography.fontFamily.brand`)**.
+2. Hero mock de produto com cards empilhados **(dentro de um container com fundo cinza claro e bordas arredondadas)**:
+   - card de adesao `80%`: **Implementar um indicador circular simples (pode ser via `react-native-svg` ou `<View>` estilizada com bordas)** para o gráfico, texto `Hoje`, `Adesao excelente!`
+   - card de proxima dose com `PROXIMA DOSE`, horario `08:00 AM`, medicamento `Atorvastatina`, detalhe `10mg • 1 Comprimido`. **O ícone de medicamento deve ter um container com fundo azul claro/translúcido.**
 3. Headline:
    - `Sua saude sob`
    - `controle, sem`
    - `complicacoes.`
-4. Destaque em verde apenas na palavra `controle`.
+4. Destaque na palavra `controle`: A palavra deve estar na cor verde (`tokens.brand.primary`) **E com um sublinhado espesso (underline)**. Pode ser implementado via `textDecorationLine` ou uma `<View>` posicionada absolutamente abaixo do texto.
 5. Copy:
    - `O dosiq ajuda voce a gerenciar seus medicamentos, estoque e adesao em um so lugar. Gratuito e portatil.`
 6. Faixa de beneficios:
-   - `100%` / `SEGURO`
-   - `Offline` / `ACESSO`
-   - `Gratis` / `PARA SEMPRE`
+   - **Layout**: Em linha (`flexDirection: 'row'`), `justifyContent: 'space-between'`.
+   - O texto superior (`100%`, `Offline`, `Gratis`) deve ser maior e em negrito (bold).
+   - O texto inferior (`SEGURO`, `ACESSO`, `PARA SEMPRE`) deve ser menor e em uppercase.
 7. Espaco patrocinado:
+   - **Layout**: O container deve ter uma borda cinza fina (`borderWidth: 1`, `borderColor: tokens.border.default`).
    - label `ESPACO PATROCINADO`
-   - marcas placeholder `BIO-HEALTH` e `PHARMA-CORE`
+   - marcas placeholder `BIO-HEALTH` e `PHARMA-CORE`. **Devem ter ícones ao lado (ex: escudo e maleta médica do `Ionicons`).**
 8. Barra inferior fixa com CTAs:
-   - primario `Criar Conta`
-   - secundario `Entrar`
+   - **Layout**: CTAs devem ficar lado a lado (`flexDirection: 'row'`), dividindo a largura.
+   - primario `Criar Conta` (fundo preenchido).
+   - secundario `Entrar` com estilo ghost (sem fundo, apenas texto e ícone em azul).
 
 ### 4.2. Layout
 
@@ -177,19 +179,19 @@ Se tokens atuais nao cobrirem a landing, criar apenas constantes locais na tela 
 
 Cores alvo do mock:
 
-| Uso | Valor aproximado |
-|-----|------------------|
-| Brand green | `#008775` ou token equivalente |
-| Text primary | `#161A1D` |
-| Text secondary | `#4F5A57` |
-| Muted text | `#8B928F` |
-| Background | `#F7F9FA` |
-| Card | `#FFFFFF` |
-| Secondary CTA blue | `#006EDB` |
+| Uso | Valor aproximado / Token sugerido |
+|-----|-----------------------------------|
+| Brand green | `tokens.brand.primary` (`#006A5E`) |
+| Text primary | `tokens.text.primary` (`#1a1c1e`) |
+| Text secondary | `tokens.text.secondary` (`#44474e`) |
+| Muted text | `tokens.text.muted` (`#8e9199`) |
+| Background | `tokens.bg.screen` (`#f8fafb`) |
+| Card | `tokens.bg.card` (`#ffffff`) |
+| Secondary CTA blue | `tokens.colors.primary[600]` (`#005db6`) |
 
 Tipografia:
 
-- preservar fonte de marca carregada no app (`Comfortaa`) para logo/textos de marca se aplicavel.
+- **Obrigatório:** O wordmark "dosiq" no topo deve ser renderizado como `<Text>` utilizando a fonte `Comfortaa` (`typography.fontFamily.brand`), seguindo exatamente o mesmo estilo e padrão já estabelecido na `LoginScreen.jsx`.
 - headline pode usar peso alto com `System`/token bold caso Comfortaa prejudique leitura.
 - evitar letter spacing negativo.
 - texto deve caber em portugues sem truncamento.
@@ -198,8 +200,9 @@ Icones:
 
 - usar `Ionicons` ja presente no mobile.
 - `Criar Conta`: icone `person-add-outline` ou equivalente.
-- `Entrar`: icone `log-in-outline`.
-- card dose: icone medico/remedio disponivel em `Ionicons` ou composicao simples.
+- `Entrar`: icone `log-in-outline` ou similar.
+- Card dose: icone medico/remedio disponivel em `Ionicons` (ex: `medical-outline`).
+- Espaço Patrocinado: ícones `shield-checkmark-outline` e `medkit-outline` ou equivalentes.
 
 ---
 
