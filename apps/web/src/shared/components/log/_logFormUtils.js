@@ -47,8 +47,12 @@ export const getInitialFormData = (initialValues = {}, protocols = []) => {
 export const validateLogForm = (formData, selectedPlanProtocols, setErrors) => {
   const newErrors = {}
 
-  if (formData.type === 'protocol' && !formData.protocol_id) {
-    newErrors.protocol_id = 'Selecione um protocolo'
+  if (formData.type === 'protocol') {
+    if (!formData.protocol_id) {
+      newErrors.protocol_id = 'Selecione um protocolo'
+    } else if (parseFloat(String(formData.quantity_taken).replace(',', '.')) > 100) {
+      newErrors.quantity_taken = 'A quantidade não pode exceder 100 unidades'
+    }
   }
 
   if (formData.type === 'plan') {
@@ -73,7 +77,7 @@ export const buildLogPayloads = (formData, protocols, treatmentPlans, selectedPl
     const dataToSave = {
       protocol_id: formData.protocol_id,
       medicine_id: protocol.medicine_id,
-      quantity_taken: formData.quantity_taken
+      quantity_taken: (formData.quantity_taken ?? '') !== ''
         ? parseFloat(String(formData.quantity_taken).replace(',', '.'))
         : protocol.dosage_per_intake,
       taken_at: parseLocalDatetime(formData.taken_at).toISOString(),

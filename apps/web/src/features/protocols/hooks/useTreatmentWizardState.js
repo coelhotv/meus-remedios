@@ -66,7 +66,7 @@ export function useTreatmentWizardState({
   )
 
   const isMedicineValid = med.medicineMode === 'existing' ? !!med.selectedExistingMedicine : med.medicineData.name.length >= 2 && med.medicineData.dosage_per_pill > 0
-  const isProtocolValid = prot.protocolData.time_schedule.length > 0 && prot.protocolData.dosage_per_intake > 0
+  const isProtocolValid = prot.protocolData.time_schedule.length > 0 && prot.protocolData.dosage_per_intake > 0 && prot.protocolData.dosage_per_intake <= 100
 
   const resetWizard = useCallback(() => {
     nav.setStep(1)

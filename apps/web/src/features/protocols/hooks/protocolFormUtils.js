@@ -10,8 +10,8 @@ export const getInitialFormData = (protocol, initialValues, preselectedMedicine,
     (isSimpleMode && preselectedMedicine ? `${preselectedMedicine.name} - Tratamento` : ''),
   frequency: protocol?.frequency || initialValues?.frequency || 'diário',
   time_schedule: protocol?.time_schedule || initialValues?.time_schedule || [],
-  dosage_per_intake: protocol?.dosage_per_intake || initialValues?.dosage_per_intake || '',
-  target_dosage: protocol?.target_dosage || initialValues?.target_dosage || '',
+  dosage_per_intake: protocol?.dosage_per_intake ?? initialValues?.dosage_per_intake ?? '',
+  target_dosage: protocol?.target_dosage ?? initialValues?.target_dosage ?? '',
   titration_status: protocol?.titration_status || initialValues?.titration_status || 'estável',
   titration_schedule: protocol?.titration_schedule || initialValues?.titration_schedule || [],
   notes: protocol?.notes || initialValues?.notes || '',
@@ -33,8 +33,8 @@ export const validateProtocolForm = (formData, setErrors, setShakeFields) => {
   if (!formData.name.trim()) newErrors.name = 'Nome do tratamento é obrigatório'
   if (!formData.frequency.trim()) newErrors.frequency = 'Frequência é obrigatória'
   if (formData.time_schedule.length === 0) newErrors.time_schedule = 'Adicione pelo menos um horário'
-  if (!formData.dosage_per_intake || formData.dosage_per_intake <= 0) {
-    newErrors.dosage_per_intake = 'Dosagem deve ser maior que zero'
+  if (!formData.dosage_per_intake || formData.dosage_per_intake <= 0 || formData.dosage_per_intake > 100) {
+    newErrors.dosage_per_intake = 'Dosagem deve estar entre 0.1 e 100'
   }
   if (formData.target_dosage && isNaN(formData.target_dosage)) {
     newErrors.target_dosage = 'Deve ser um número'
@@ -61,7 +61,7 @@ export const prepareDataToSave = (formData, enableTitration) => {
     frequency: formData.frequency.trim(),
     time_schedule: formData.time_schedule,
     dosage_per_intake: parseFloat(formData.dosage_per_intake),
-    target_dosage: formData.target_dosage ? parseFloat(formData.target_dosage) : null,
+    target_dosage: (formData.target_dosage ?? '') !== '' ? parseFloat(formData.target_dosage) : null,
     titration_status: isTitrating ? 'titulando' : formData.titration_status,
     titration_schedule: isTitrating ? formData.titration_schedule : [],
     notes: formData.notes.trim() || null,

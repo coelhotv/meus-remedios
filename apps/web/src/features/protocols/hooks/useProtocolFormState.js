@@ -6,8 +6,8 @@ import {
   handleAddTime,
   handleRemoveTime,
 } from './protocolFormUtils'
+import { submitProtocolForm } from './_protocolFormSubmit'
 
-// eslint-disable-next-line max-lines-per-function
 export function useProtocolFormState({
   protocol,
   initialValues,
@@ -72,27 +72,22 @@ export function useProtocolFormState({
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault()
-
       if (!validate()) return
 
-      setIsSubmitting(true)
-
       try {
-        const dataToSave = prepareDataToSave(formData, enableTitration)
-
-        const savedProtocol = await onSave(dataToSave)
-
-        if (isSimpleMode) setSaveSuccess(true)
-
-        if (autoAdvance && onSuccess) {
-          setTimeout(() => onSuccess(savedProtocol), 800)
-        }
+        await submitProtocolForm({
+          formData,
+          enableTitration,
+          onSave,
+          onSuccess,
+          isSimpleMode,
+          autoAdvance,
+          setIsSubmitting,
+          setErrors,
+          setSaveSuccess,
+        })
       } catch (error) {
-        console.error('Erro ao salvar protocolo:', error)
-        const errorMessage = error?.message || 'Erro desconhecido ao salvar tratamento'
-        setErrors({ submit: errorMessage })
-      } finally {
-        setIsSubmitting(false)
+        // Error already handled in submitProtocolForm
       }
     },
     [formData, enableTitration, isSimpleMode, autoAdvance, onSave, onSuccess, validate]
