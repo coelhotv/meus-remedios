@@ -39,6 +39,21 @@ jest.mock('@expo/vector-icons', () => {
   };
 });
 
+// Mock Lucide
+jest.mock('lucide-react-native', () => {
+  const React = require('react');
+  return {
+    Sun: () => <React.Fragment />,
+  };
+});
+
+// Mock AdherenceRing
+jest.mock('@features/dashboard/components/AdherenceRing', () => {
+  const React = require('react');
+  const { Text } = require('react-native');
+  return ({ score }) => <Text>{score}%</Text>;
+});
+
 describe('LandingScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -49,6 +64,9 @@ describe('LandingScreen', () => {
     
     expect(getByText('dosiq')).toBeTruthy();
     expect(getByText(/Sua saúde sob/)).toBeTruthy();
+    expect(getByText('95%')).toBeTruthy();
+    expect(getByText('40mg • 1 Comprimido')).toBeTruthy();
+    expect(getByText('08:00')).toBeTruthy();
     expect(getByText('Criar Conta')).toBeTruthy();
     expect(getByText('Entrar')).toBeTruthy();
   });

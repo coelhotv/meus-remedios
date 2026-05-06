@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Circle } from 'react-native-svg';
-import { colors, spacing, typography, borderRadius, shadows } from '../shared/styles/tokens';
-import { ROUTES } from '../navigation/routes';
+import { Sun } from 'lucide-react-native';
+import { colors, spacing, typography, borderRadius, shadows } from '@shared/styles/tokens';
+import { ROUTES } from '@navigation/routes';
+import AdherenceRing from '@features/dashboard/components/AdherenceRing';
 
 const { width } = Dimensions.get('window');
 
@@ -51,30 +52,7 @@ export default function LandingScreen({ navigation }) {
           <View style={[styles.card, styles.adherenceCard]}>
             <View style={styles.adherenceContent}>
               <View style={styles.circularProgressContainer}>
-                <Svg width="60" height="60" viewBox="0 0 40 40">
-                  <Circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    stroke="#E1E3E8"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <Circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    stroke={colors.brand.primary}
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray="80 100"
-                    strokeLinecap="round"
-                    transform="rotate(-90 20 20)"
-                  />
-                  <View style={styles.progressTextContainer}>
-                    <Text style={styles.progressPercent}>80%</Text>
-                  </View>
-                </Svg>
+                <AdherenceRing score={95} size={70} strokeWidth={8} />
               </View>
               <View style={styles.adherenceInfo}>
                 <Text style={styles.adherenceLabel}>Hoje</Text>
@@ -86,15 +64,15 @@ export default function LandingScreen({ navigation }) {
           {/* Next Dose Card */}
           <View style={[styles.card, styles.doseCard]}>
             <View style={styles.doseIconContainer}>
-              <Ionicons name="medical-outline" size={24} color={colors.brand.primary} />
+              <Sun size={24} color="#f9a825" />
             </View>
             <View style={styles.doseInfo}>
               <Text style={styles.doseLabel}>PRÓXIMA DOSE</Text>
               <View style={styles.doseTimeRow}>
-                <Text style={styles.doseTimeText}>08:00 AM</Text>
+                <Text style={styles.doseTimeText}>08:00</Text>
               </View>
               <Text style={styles.medicationName}>Atorvastatina</Text>
-              <Text style={styles.medicationDetails}>10mg • 1 Comprimido</Text>
+              <Text style={styles.medicationDetails}>40mg • 1 Comprimido</Text>
             </View>
           </View>
         </View>
@@ -106,7 +84,6 @@ export default function LandingScreen({ navigation }) {
             <View style={styles.highlightRow}>
               <View style={styles.highlightWrapper}>
                 <Text style={[styles.headlineText, styles.highlightText]}>controle</Text>
-                <View style={styles.thickUnderline} />
               </View>
               <Text style={styles.headlineText}>, sem</Text>
             </View>
@@ -198,16 +175,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing[6],
   },
   logo: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     marginRight: spacing[2],
   },
   brandName: {
-    fontSize: 28,
+    fontSize: 36,
     fontFamily: typography.fontFamily.brand,
     color: colors.text.brand,
     includeFontPadding: false,
-    letterSpacing: -1,
+    letterSpacing: -1.5,
   },
   heroContainer: {
     backgroundColor: '#f1f3f4',
@@ -232,8 +209,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   circularProgressContainer: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
     marginRight: spacing[4],
     justifyContent: 'center',
     alignItems: 'center',
@@ -327,7 +304,6 @@ const styles = StyleSheet.create({
   },
   highlightWrapper: {
     position: 'relative',
-    paddingBottom: 4,
   },
   highlightText: {
     color: colors.brand.primary,
