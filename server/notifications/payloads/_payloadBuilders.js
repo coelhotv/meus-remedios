@@ -33,8 +33,9 @@ export function buildDailyDigestPayload(data) {
     plainMsg += `Não se esqueça de registrar no app!`;
   } else {
     const success = `Você está em dia com todos os seus medicamentos de hoje\\! 🎉`;
+    const plainSuccess = `Você está em dia com todos os seus medicamentos de hoje! 🎉`;
     richMsg += success;
-    plainMsg += success.replace(/\\/g, '');
+    plainMsg += plainSuccess;
   }
   
   return { title, body: richMsg, pushBody: plainMsg };
@@ -114,8 +115,9 @@ export function buildStockAlertPayload(data) {
   }
   
   const footer = `Recomendamos a reposição em breve\\.`;
+  const plainFooter = `Recomendamos a reposição em breve.`;
   richMsg += footer;
-  plainMsg += footer.replace(/\\\\/g, '');
+  plainMsg += plainFooter;
   
   return { title, body: richMsg, pushBody: plainMsg };
 }
@@ -163,12 +165,13 @@ export function buildMonthlyReportPayload(data) {
   plainMsg += `📝 Doses esperadas: ${total}\n\n`;
   
   let nudge = '';
-  if (percentage >= 90) nudge = `🚀 *Desempenho excepcional\\.!* Continue assim\\.`;
-  else if (percentage >= 70) nudge = `💪 *Bom trabalho\\.!* Vamos buscar os 100% no próximo mês?`;
-  else nudge = `💡 *Lembrete:* Manter a constância é fundamental para o sucesso do tratamento\\.`;
+  let plainNudge = '';
+  if (percentage >= 90) { nudge = `🚀 *Desempenho excepcional\\.!* Continue assim\\.`; plainNudge = `🚀 Desempenho excepcional! Continue assim.`; }
+  else if (percentage >= 70) { nudge = `💪 *Bom trabalho\\.!* Vamos buscar os 100% no próximo mês?`; plainNudge = `💪 Bom trabalho! Vamos buscar os 100% no próximo mês?`; }
+  else { nudge = `💡 *Lembrete:* Manter a constância é fundamental para o sucesso do tratamento\\.`; plainNudge = `💡 Lembrete: Manter a constância é fundamental para o sucesso do tratamento.`; }
   
   richMsg += nudge;
-  plainMsg += nudge.replace(/[\\.\\.]/g, '').replace(/\\./g, '');
+  plainMsg += plainNudge;
   
   return { title, body: richMsg, pushBody: plainMsg };
 }
@@ -196,14 +199,17 @@ export function buildPrescriptionAlertPayload(data) {
   plainMsg += info;
 
   let footer = '';
+  let plainFooter = '';
   if (daysRemaining <= 7) {
     footer = `🚨 *Atenção\\.!* Renove sua prescrição o quanto antes para evitar interrupção no tratamento\\.`;
+    plainFooter = `🚨 Atenção! Renove sua prescrição o quanto antes para evitar interrupção no tratamento.`;
   } else {
     footer = `💡 É um bom momento para agendar sua consulta de acompanhamento para renovação\\.`;
+    plainFooter = `💡 É um bom momento para agendar sua consulta de acompanhamento para renovação.`;
   }
   
   richMsg += footer;
-  plainMsg += footer.replace(/[\\.\\.]/g, '').replace(/\\./g, '');
+  plainMsg += plainFooter;
 
   return { title, body: richMsg, pushBody: plainMsg };
 }
