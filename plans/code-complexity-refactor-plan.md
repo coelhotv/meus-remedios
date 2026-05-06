@@ -167,11 +167,8 @@ npm run validate:agent                                  # 0 falhas
 
 Após rodar os comandos, emitir Gate Report (R-REF-007) com os números reais e **aguardar aprovação textual** antes de abrir PR.
 
----
-
-## Wave 1: Server / Bot / Node.js
-
-**Branch:** `refactor/wave-1-server-complexity`  
+--- [x] Wave 1: Server Side (Bot & Notifications) - **COMPLETED**
+ `refactor/wave-1-server-complexity`  
 **Risco:** 🟡 Médio (código de produção — notificações e cron)  
 **Estratégia:** Extrair funções helpers nomeadas para `_helpers.js` adjacentes
 
