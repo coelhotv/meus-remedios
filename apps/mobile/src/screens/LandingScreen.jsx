@@ -276,13 +276,13 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
   },
   medicationName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text.primary,
     marginBottom: 2,
   },
   medicationDetails: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.text.secondary,
   },
   textSection: {
