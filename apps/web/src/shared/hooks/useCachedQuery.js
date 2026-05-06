@@ -43,49 +43,47 @@ export function useCachedQuery(key, fetcher, options = {}) {
   const isMounted = useRef(true)
   const fetchCount = useRef(0)
 
-  // Função principal de fetch
+  const handleFetchSuccess = useCallback((result, fetchId) => {
+    if (isMounted.current && fetchId === fetchCount.current) {
+      setData(result)
+      setIsLoading(false)
+      setIsFetching(false)
+      onSuccess?.(result)
+    }
+  }, [onSuccess])
+
+  const handleFetchError = useCallback((err, fetchId) => {
+    if (isMounted.current && fetchId === fetchCount.current) {
+      setError(err)
+      setIsLoading(false)
+      setIsFetching(false)
+      onError?.(err)
+    }
+  }, [onError])
+
   const executeQuery = useCallback(
     async (options = {}) => {
       const { force = false, background = false } = options
-
       if (!key || !enabled || !fetcher) return
 
       const currentFetch = ++fetchCount.current
 
       try {
-        if (!background) {
-          setIsLoading(true)
-        }
+        if (!background) setIsLoading(true)
         setIsFetching(true)
         setError(null)
 
-        // Se force=true, invalida o cache primeiro
-        if (force) {
-          invalidateCache(key)
-        }
+        if (force) invalidateCache(key)
 
         const result = await cachedQuery(key, fetcher, { staleTime })
-
-        // Só atualiza se for a fetch mais recente e componente montado
-        if (isMounted.current && currentFetch === fetchCount.current) {
-          setData(result)
-          setIsLoading(false)
-          setIsFetching(false)
-          onSuccess?.(result)
-        }
-
+        handleFetchSuccess(result, currentFetch)
         return result
       } catch (err) {
-        if (isMounted.current && currentFetch === fetchCount.current) {
-          setError(err)
-          setIsLoading(false)
-          setIsFetching(false)
-          onError?.(err)
-        }
+        handleFetchError(err, currentFetch)
         throw err
       }
     },
-    [key, fetcher, enabled, staleTime, onSuccess, onError]
+    [key, fetcher, enabled, staleTime, handleFetchSuccess, handleFetchError]
   )
 
   // Fetch inicial
@@ -176,56 +174,7 @@ export function useCachedQueries(queries) {
   // Note: Using [queriesKey] instead of [queries] to prevent infinite render loops.
   // We manually update queriesRef.current inside effect to access fresh query values.
   // This is intentional — queriesKey is a stable string derived from query keys.
-  useEffect(() => {
-    isMounted.current = true
-    queriesRef.current = queries // Update ref inside effect (safe)
-
-    const fetchAll = async () => {
-      setResults((prev) => prev.map((r) => ({ ...r, isLoading: true })))
-
-      const settled = await executeParallelQueries(queriesRef.current)
-
-      if (isMounted.current) {
-        setResults((prev) => {
-          const next = [...prev]
-          settled.forEach(({ index, data, error }) => {
-            next[index] = {
-              data,
-              error,
-              isLoading: false,
-              isFetching: false,
-            }
-          })
-          return next
-        })
-      }
-    }
-
-    fetchAll()
-
-    return () => {
-      isMounted.current = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queriesKey]) // Estável: só muda quando as query keys mudam
-
-  // Estados combinados
-  const isLoading = results.some((r) => r.isLoading)
-  const isFetching = results.some((r) => r.isFetching)
-  const hasError = results.some((r) => r.error)
-  const errors = results.map((r) => r.error).filter(Boolean)
-
-  // Refetch todas as queries com invalidação
-  const refetchAll = useCallback(async () => {
-    queriesRef.current.forEach((query) => {
-      const { key } = query
-      if (key) invalidateCache(key)
-    })
-
-    setResults((prev) => prev.map((r) => ({ ...r, isLoading: true })))
-
-    const settled = await executeParallelQueries(queriesRef.current)
-
+  const updateResults = useCallback((settled) => {
     if (isMounted.current) {
       setResults((prev) => {
         const next = [...prev]
@@ -240,7 +189,41 @@ export function useCachedQueries(queries) {
         return next
       })
     }
-  }, []) // Sem dependências: sempre usa queriesRef.current (stale-safe)
+  }, [])
+
+  useEffect(() => {
+    isMounted.current = true
+    queriesRef.current = queries
+
+    const fetchAll = async () => {
+      setResults((prev) => prev.map((r) => ({ ...r, isLoading: true })))
+      const settled = await executeParallelQueries(queriesRef.current)
+      updateResults(settled)
+    }
+
+    fetchAll()
+
+    return () => {
+      isMounted.current = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queriesKey, updateResults])
+
+  const isLoading = results.some((r) => r.isLoading)
+  const isFetching = results.some((r) => r.isFetching)
+  const hasError = results.some((r) => r.error)
+  const errors = results.map((r) => r.error).filter(Boolean)
+
+  const refetchAll = useCallback(async () => {
+    queriesRef.current.forEach((query) => {
+      const { key } = query
+      if (key) invalidateCache(key)
+    })
+
+    setResults((prev) => prev.map((r) => ({ ...r, isLoading: true })))
+    const settled = await executeParallelQueries(queriesRef.current)
+    updateResults(settled)
+  }, [updateResults])
 
   return {
     results,
