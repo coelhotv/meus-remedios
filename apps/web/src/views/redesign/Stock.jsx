@@ -156,7 +156,7 @@ export default function Stock({ initialParams, onClearParams }) {
       >
         <StockForm
           medicines={medicines}
-          initialValues={selectedMedicineId ? { medicine_id: selectedMedicineId } : initialParams || null}
+          initialValues={selectedMedicineId ? { medicine_id: selectedMedicineId } : (initialParams || {})}
           onSave={handleSaveStock}
           onCancel={() => {
             setIsModalOpen(false)
