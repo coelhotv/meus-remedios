@@ -111,9 +111,8 @@ function getDaysOfWeekForProtocol(frequency) {
  * @param {number} occurrences - Ocorrências do dia nos logs
  * @returns {number|null}
  */
-function _calcCellAdherence(taken, totalExpected, expectedPerDay, occurrences) {
+function _calcCellAdherence(taken, totalExpected) {
   if (totalExpected > 0) return Math.min(100, Math.round((taken / totalExpected) * 100))
-  if (expectedPerDay === 0 || occurrences === 0) return null
   return null
 }
 
@@ -225,7 +224,7 @@ export function analyzeAdherencePatterns({ logs, protocols }) {
       const totalExpected = expectedPerDay * occurrences
       const taken = grid[dayIndex][periodIndex].taken
       grid[dayIndex][periodIndex].expected = expectedPerDay
-      grid[dayIndex][periodIndex].adherence = _calcCellAdherence(taken, totalExpected, expectedPerDay, occurrences)
+      grid[dayIndex][periodIndex].adherence = _calcCellAdherence(taken, totalExpected)
     }
   }
 
