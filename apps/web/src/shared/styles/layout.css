@@ -556,9 +556,7 @@
   opacity: 0.65;
 }
 
-.cronograma-dose-card--pending {
-  /* herda base .cronograma-dose-card */
-}
+
 
 /* Tag "Perdida" */
 .cronograma-dose-card__missed-tag {
