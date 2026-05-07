@@ -38,7 +38,7 @@ export default function NotificationSection({
         isTelegramConnected={isTelegramConnected}
       />
 
-      <div className="sr-section__card" style={{ marginTop: '1rem' }}>
+      <div className="sr-section__card mt-4">
         <h4 className="sr-section__card-header">Modo de notificação</h4>
         {[
           { value: 'realtime', label: 'Tempo real', desc: 'Receba cada lembrete no momento certo' },
@@ -74,7 +74,7 @@ export default function NotificationSection({
       />
 
       {notificationMode === 'digest_morning' && (
-        <div className="sr-section__card" style={{ marginTop: '1rem' }}>
+        <div className="sr-section__card mt-4">
           <h4 className="sr-section__card-header">Hora do resumo</h4>
           <div className="settings-time-row">
             <label className="settings-time-label">

@@ -9,7 +9,7 @@ export default function SettingsQuietHours({
   savingQuietHours,
 }) {
   return (
-    <div className="sr-section__card" style={{ marginTop: '1rem' }}>
+    <div className="sr-section__card mt-4">
       <div className="settings-row">
         <div className="settings-row-label">
           <span className="settings-row-title">Não me incomode</span>

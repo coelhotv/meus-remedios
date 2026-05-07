@@ -25,10 +25,9 @@ export default function DoseCard({ dose, onRegisterDose, selectedDoses, onToggle
     >
       <button
         type="button"
-        className="dose-card__select-area"
+        className={`dose-card__select-area ${!done && onToggleSelection ? 'cursor-pointer' : 'cursor-default'}`}
         onClick={() => onToggleSelection?.(dose.protocolId, dose.scheduledTime)}
         disabled={done || !onToggleSelection}
-        style={!done && onToggleSelection ? { cursor: 'pointer' } : { cursor: 'default' }}
       >
         <div className="dose-card__time">{displayTime}</div>
         <div className="dose-card__info">

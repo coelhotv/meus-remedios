@@ -8,19 +8,22 @@ import { DOSE_REGISTRATION_TOLERANCE_MS } from '@dashboard/hooks/useDoseZones'
 
 const LATE_WINDOW_MINUTES = DOSE_REGISTRATION_TOLERANCE_MS / 60_000
 
-function getDoseStatus(dose, now) {
-  if (dose.isRegistered) return 'done'
-  const [h, m] = dose.scheduledTime.split(':').map(Number)
+function getMinutesDiff(scheduledTime, now) {
+  const [h, m] = scheduledTime.split(':').map(Number)
   const scheduledMinutes = h * 60 + m
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
-  return nowMinutes - scheduledMinutes > LATE_WINDOW_MINUTES ? 'missed' : 'pending'
+  return nowMinutes - scheduledMinutes
+}
+
+function getDoseStatus(dose, now) {
+  if (dose.isRegistered) return 'done'
+  const diff = getMinutesDiff(dose.scheduledTime, now)
+  return diff > LATE_WINDOW_MINUTES ? 'missed' : 'pending'
 }
 
 function isWithinActionWindow(dose, now) {
-  const [h, m] = dose.scheduledTime.split(':').map(Number)
-  const scheduledMinutes = h * 60 + m
-  const nowMinutes = now.getHours() * 60 + now.getMinutes()
-  return Math.abs(nowMinutes - scheduledMinutes) <= LATE_WINDOW_MINUTES
+  const diff = getMinutesDiff(dose.scheduledTime, now)
+  return Math.abs(diff) <= LATE_WINDOW_MINUTES
 }
 
 export default function CronogramaDoseItem({ dose, onRegister, stockDays, stockStatus, now }) {

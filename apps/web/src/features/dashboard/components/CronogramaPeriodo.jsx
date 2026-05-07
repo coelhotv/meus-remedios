@@ -78,7 +78,7 @@ export default function CronogramaPeriodo({
   }
 
   return (
-    <motion.div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }} aria-label="Cronograma de doses de hoje" variants={cascade.container} initial="hidden" animate="visible">
+    <motion.div className="cronograma-doses cronograma-doses--complex" aria-label="Cronograma de doses de hoje" variants={cascade.container} initial="hidden" animate="visible">
       {grouped.map(({ id, label, Icon, doses, isPast, isCurrent }) => {
         const isOpen = manuallyToggledZones[id] ?? autoOpenZones[id]
         const isEmpty = doses.length === 0

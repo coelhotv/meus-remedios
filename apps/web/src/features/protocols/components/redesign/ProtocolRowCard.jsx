@@ -40,7 +40,6 @@ export default function ProtocolRowCard({
         className="protocol-row__main"
         onClick={handleClick}
         aria-expanded={canExpand ? expanded : undefined}
-        style={{ minHeight: '3.5rem' }}
       >
         <div className="protocol-row__top-row">
           <div className="protocol-row__header">

@@ -49,13 +49,13 @@ export default function StockInventory({
       )}
 
       {costData && costData.items?.length > 0 && (
-        <section style={{ marginTop: '1.5rem' }} aria-label="Custo mensal dos medicamentos">
+        <section className="mt-6" aria-label="Custo mensal dos medicamentos">
           <CostSummaryRedesign costData={costData} isComplex={isComplex} />
         </section>
       )}
 
       {prescriptionTimelineData.length > 0 && (
-        <section style={{ marginTop: '1rem' }} aria-label="Vigência das prescrições">
+        <section className="mt-4" aria-label="Vigência das prescrições">
           <PrescriptionTimelineRedesign prescriptions={prescriptionTimelineData} isComplex={isComplex} />
         </section>
       )}
