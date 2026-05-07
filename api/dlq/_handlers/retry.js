@@ -17,15 +17,15 @@ const botToken = process.env.TELEGRAM_BOT_TOKEN;
 function _createRepositories(supabase) {
   const preferencesRepo = {
     async getByUserId(userId) {
-      const { data } = await supabase.from('user_settings').select('notification_preference').eq('user_id', userId).single();
+      const { data } = await supabase.from('user_settings').select('notification_preference').eq('user_id', userId).maybeSingle();
       return data?.notification_preference || 'telegram';
     },
     async hasTelegramChat(userId) {
-      const { data } = await supabase.from('user_settings').select('telegram_chat_id').eq('user_id', userId).single();
+      const { data } = await supabase.from('user_settings').select('telegram_chat_id').eq('user_id', userId).maybeSingle();
       return !!data?.telegram_chat_id;
     },
     async getSettingsByUserId(userId) {
-      const { data } = await supabase.from('user_settings').select('*').eq('user_id', userId).single();
+      const { data } = await supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle();
       return data || {};
     }
   };
@@ -122,7 +122,7 @@ export async function handleRetry(req, res) {
       .from('failed_notification_queue')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !notification) {
       return res.status(404).json({ error: 'Notification not found' });
