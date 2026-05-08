@@ -14,7 +14,7 @@ Top rules:
   react-native/no-color-literals (43x)   ← fora de escopo (mobile style)
   max-lines-per-function (43x)            ← alvo
   complexity (32x)                        ← alvo
-  react-hooks/exhaustive-deps (10x)       ← fora de escopo desta sprint
+  react-hooks/exhaustive-deps (16x)       ← Wave C2 (regrediou de 10x → 16x durante refactor)
   react-native/no-inline-styles (2x)      ← fora de escopo
 ```
 
@@ -25,7 +25,7 @@ cd /Users/coelhotv/git-icloud/dosiq && rtk lint 2>&1 | grep -E "max-lines-per-fu
 # Meta final: ambas as linhas ausentes ou (0x)
 ```
 
-**Nota sobre `exhaustive-deps` (10x):** 7 das 10 violações estão em `_useDashboardDerived.js`. Tratar nesta sprint junto com a Wave C (hook já será refatorado de qualquer forma).
+**Nota sobre `exhaustive-deps`:** Regrediu de 10x → 16x durante Wave C (sub-agentes extraíram helpers quebrando dependências silenciosamente). Tratado na Wave C2 antes de continuar.
 
 ---
 
@@ -84,15 +84,28 @@ Cada wave é executada por um sub-agente spawn via `Agent` tool. Modelo escolhid
 | A — Core/services JS | **sonnet** | lógica de negócio, risco alto |
 | B — API handlers | **haiku** | padrão mecânico (extract/rename), baixo risco |
 | C — Web hooks | **haiku** | padrão mecânico, sem render |
+| **C2 — exhaustive-deps** | **sonnet** | julgamento sobre deps de hook — haiku erra aqui |
 | D — JSX complexity | **haiku** | lookup tables + early returns, padrão repetível |
 | E — JSX lines | **sonnet** | muitos arquivos, julgamento sobre fronteiras de componente |
 | F — Mobile | **sonnet** | codebase novo, maior risco de regressão |
 
 **Prompt padrão para cada sub-agente:**
+
+> ⚠️ **Leitura obrigatória ANTES de escrever qualquer código:**
+> 1. `eslint.config.js` — regras ativas (especialmente `no-restricted-syntax`)
+> 2. `CLAUDE.md` — convenções críticas
+>
+> **Regras de lint que causam ERRO (não warning) — sub-agente deve conhecer antes de começar:**
+> - `new Date()` → usar `getNow()` ou `parseLocalDate()` de `@utils/dateUtils` (R-020)
+> - `<div onClick>` → usar `<button>` (R-204)
+> - Imports de `../components/`, `../hooks/` (caminhos relativos longos) → usar aliases
+> - `console.log` → proibido; usar `console.warn/error/info`
+> - `import dayjs/moment` → proibido; centralizar em `@utils/dateUtils`
+
 ```
 Contexto: repo em /Users/coelhotv/git-icloud/dosiq/
 Tarefa: [descrição da wave]
-Regras: [seção de regras do plano]
+Regras: [seção de regras do plano] + leitura obrigatória acima
 Instruções de cada arquivo: [seção da wave]
 Ao terminar: rodar gate e reportar resultado — NÃO abrir PR nem fazer merge
 ```
@@ -558,6 +571,66 @@ rtk proxy npx eslint \
 # → 0 (conta violações reais — rtk proxy bypassa o hook)
 rtk lint 2>&1 | grep -E "max-lines-per-function|complexity"
 # Bônus: exhaustive-deps deve cair de (10x) pois _useDashboardDerived será reescrito
+npm run validate:agent
+```
+
+---
+
+## Wave C2: exhaustive-deps — corrigir regressão introduzida pelo refactor
+
+**Branch:** mesmo da Wave C (`refactor/lint-wave-c-web-hooks`) se ainda aberta, senão `refactor/lint-wave-c2-exhaustive-deps`
+**Risco:** 🔴 Alto — errar deps de hook = stale closure silencioso (bug runtime, não compile)
+**Modelo:** **sonnet** — haiku erra nesse tipo de raciocínio
+**Meta:** `exhaustive-deps` ≤ 10x (baseline pré-refactor) — idealmente 0x
+
+### Contexto
+
+Wave C extraiu funções (`_derive*`, helpers) de dentro de hooks. Resultado:
+- Funções declaradas fora do hook não são deps estáveis por referência
+- `useEffect`/`useMemo`/`useCallback` que as chamam passaram a violar `exhaustive-deps`
+- Regressão: 10x → 16x
+
+### Técnicas permitidas (por ordem de preferência)
+
+| Técnica | Quando usar |
+|---------|-------------|
+| **Adicionar dep faltante** | Dep omitida por acidente — adicionar e verificar re-render correto |
+| **`useCallback` no helper** | Helper dentro do hook que muda referência a cada render → `useCallback` com deps corretas |
+| **Mover helper para fora** | Se helper é puro (sem acesso a state/props) → mover para fora do componente/hook (referência estável) |
+| **`// eslint-disable-next-line` com justificativa** | ÚLTIMO RECURSO — só se adicionar dep causaria loop infinito e há razão técnica documentada. Exige comentário `// R-EXH: <razão>` na linha acima |
+
+### NUNCA fazer nesta wave
+- Remover deps para "silenciar" o warning sem entender o impacto
+- Usar `useRef` para esconder dep instável sem justificar
+- Usar `eslint-disable` sem o comentário `// R-EXH:` explicando
+
+### Arquivos a verificar (todos com violations pós-Wave C)
+
+Antes de iniciar, o sub-agente deve rodar:
+```bash
+cd /Users/coelhotv/git-icloud/dosiq
+rtk proxy npx eslint \
+  apps/web/src/features/dashboard/hooks/_useDashboardDerived.js \
+  apps/web/src/features/protocols/hooks/useProtocolFormState.js \
+  apps/web/src/features/settings/hooks/useSettingsState.js \
+  apps/web/src/views/admin/useDLQState.js \
+  apps/mobile/src/features/stock/hooks/useStock.js \
+  apps/mobile/src/features/treatments/hooks/useTreatments.js \
+  2>&1 | grep "exhaustive-deps"
+```
+
+E também o scan global para capturar qualquer arquivo que tenha adquirido violação nova:
+```bash
+rtk lint 2>&1 | grep "exhaustive-deps"
+```
+
+Fixar TODOS os arquivos que aparecerem, priorizando os 6 da Wave C.
+
+### Gate Wave C2
+```bash
+cd /Users/coelhotv/git-icloud/dosiq
+rtk lint 2>&1 | grep "exhaustive-deps"
+# → ausente ou ≤ 10x (baseline). Meta: 0x.
 npm run validate:agent
 ```
 
