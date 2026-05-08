@@ -7,7 +7,7 @@ import {
   getTitrationInitialDosage,
 } from './protocolFormUtils'
 import { submitProtocolForm } from './_protocolFormSubmit'
-import { getTitrationEnabledStatus } from './_protocolFormHelpers'
+import { getTitrationEnabledStatus, buildProtocolFormInitialData } from './_protocolFormHelpers'
 
 export function useProtocolFormState({
   protocol,
@@ -18,9 +18,10 @@ export function useProtocolFormState({
   onSuccess,
   autoAdvance,
 }) {
-  const [formData, setFormData] = useState(() =>
-    getInitialFormData(protocol, initialValues, preselectedMedicine, isSimpleMode)
-  )
+  const [formData, setFormData] = useState(() => {
+    const data = getInitialFormData(protocol, initialValues, preselectedMedicine, isSimpleMode)
+    return buildProtocolFormInitialData(protocol, data, preselectedMedicine, isSimpleMode, getTitrationInitialDosage)
+  })
 
   const [enableTitration, setEnableTitration] = useState(getTitrationEnabledStatus(protocol))
 
