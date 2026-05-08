@@ -10,7 +10,7 @@ export function transformStockData(rawData) {
     )
 
     const dailyConsumption = activeProtocols.reduce((acc, p) => {
-      const intakesPerDay = (p.time_schedule || []).length || 1
+      const intakesPerDay = p.time_schedule?.length ?? 0
       return acc + (Number(p.dosage_per_intake) * intakesPerDay)
     }, 0)
 
