@@ -147,8 +147,13 @@ export function useSettingsState() {
   const generateTelegramToken = useCallback(async () => {
     const token = generateTokenString()
     setTelegramToken(token)
-    try { await saveTelegramTokenSetting(token) } catch (err) { void err }
-  }, [])
+    try {
+      await saveTelegramTokenSetting(token)
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') console.error('Erro ao salvar token Telegram:', err)
+      showMsg('error', 'Erro ao salvar token do Telegram.')
+    }
+  }, [showMsg])
 
   const handleDisconnectTelegram = useCallback(async () => {
     if (!window.confirm('Tem certeza que deseja desconectar o Telegram?')) return
