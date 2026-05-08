@@ -101,8 +101,8 @@ function _validateTimeSchedule(timeSchedule, errors) {
 }
 
 function _validateDosagePerIntake(dosage, errors) {
-  if (!dosage || dosage <= 0 || dosage > 100) {
-    errors.dosage_per_intake = 'Dosagem deve estar entre 0.1 e 100'
+  if (dosage === '' || dosage === null || dosage < 0 || dosage > 100) {
+    errors.dosage_per_intake = 'Dosagem deve estar entre 0 e 100'
   }
 }
 
@@ -115,7 +115,7 @@ function _validateTargetDosage(targetDosage, errors) {
 function _triggerShakeAnimation(newErrors, setShakeFields) {
   if (Object.keys(newErrors).length === 0) return
   const fieldsWithError = Object.keys(newErrors)
-  setShakeFields(fieldsWithError.reduce((acc, field) => ({ ...acc, [field]: true }), {}))
+  setShakeFields(Object.fromEntries(fieldsWithError.map((field) => [field, true])))
   setTimeout(() => setShakeFields({}), 500)
 }
 

@@ -63,8 +63,8 @@ export function resolveGroup(protocol) {
 }
 
 function _computeIntakeLabel(dosage) {
-  if (!dosage) return '—'
-  const n = dosage ?? 1
+  if (dosage == null) return '—'
+  const n = dosage
   return `${n} comprimido${n !== 1 ? 's' : ''}`
 }
 

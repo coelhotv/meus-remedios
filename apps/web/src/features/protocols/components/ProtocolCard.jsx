@@ -11,16 +11,11 @@ import { FREQUENCY_LABELS } from '@schemas/protocolSchema'
 
 import './ProtocolCard.css'
 
-function _formatTime(time) {
-  return time
-}
-
 function _getProtocolFlags(protocol) {
-  return {
-    hasTitration: protocol?.titration_status && protocol.titration_status !== 'estável',
-    hasSchedule: protocol?.titration_schedule?.length > 0,
-    canShowTimeline: (protocol?.titration_status && protocol.titration_status !== 'estável') && (protocol?.titration_schedule?.length > 0),
-  }
+  const titrationStatus = protocol?.titration_status?.toLowerCase()
+  const hasTitration = titrationStatus && !['estável'].includes(titrationStatus)
+  const hasSchedule = protocol?.titration_schedule?.length > 0
+  return { hasTitration, hasSchedule, canShowTimeline: hasTitration && hasSchedule }
 }
 
 function _renderProtocolStatusBadge({ active, streak }) {
@@ -143,7 +138,7 @@ export default function ProtocolCard({ protocol, onEdit, onToggleActive, onDelet
             <div className="schedule-times">
               {protocol.time_schedule.map((time) => (
                 <span key={time} className="time-badge">
-                  {_formatTime(time)}
+                  {time}
                 </span>
               ))}
             </div>

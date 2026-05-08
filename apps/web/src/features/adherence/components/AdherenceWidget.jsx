@@ -87,6 +87,12 @@ function _getScoreStatus(score) {
   return 'poor'
 }
 
+function _getScoreColorVar(score) {
+  if (score >= 80) return 'var(--color-success)'
+  if (score >= 60) return 'var(--color-warning)'
+  return 'var(--color-error)'
+}
+
 function _shouldShowStreak(data) {
   return data?.currentStreak > 0 || data?.longestStreak > 0
 }
@@ -146,12 +152,7 @@ function _renderProtocolScores(data) {
                   className="mini-progress-bar"
                   style={{
                     width: `${protocol.score}%`,
-                    backgroundColor:
-                      protocol.score >= 80
-                        ? 'var(--color-success)'
-                        : protocol.score >= 60
-                          ? 'var(--color-warning)'
-                          : 'var(--color-error)',
+                    backgroundColor: _getScoreColorVar(protocol.score),
                   }}
                 />
               </div>

@@ -129,7 +129,6 @@ export default function RingGauge({
     onClick,
     type: isClickable ? 'button' : undefined,
     tabIndex: isClickable ? 0 : undefined,
-    onKeyDown: isClickable ? (e) => e.key === 'Enter' && onClick() : undefined,
   }
 
   if (size === 'large') {
