@@ -1,4 +1,5 @@
 import { supabase } from '@shared/utils/supabase'
+import { getNow } from '@utils/dateUtils'
 
 export function getComplexityDisplayMode(complexityMode, overrideMode) {
   if (overrideMode === 'simple') return 'Ativo: Modo Padrão (simplificado)'
@@ -38,7 +39,7 @@ export function generateTokenString() {
 
 export async function saveTelegramTokenSetting(token) {
   const { data: { user } } = await supabase.auth.getUser()
-  await supabase.from('user_settings').update({ telegram_token: token, telegram_token_created_at: new Date().toISOString() }).eq('user_id', user.id)
+  await supabase.from('user_settings').update({ telegram_token: token, telegram_token_created_at: getNow().toISOString() }).eq('user_id', user.id)
 }
 
 export async function disconnectTelegramSetting() {
