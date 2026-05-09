@@ -1,0 +1,95 @@
+{
+  "project": "Notifications Architecture Consolidation",
+  "version": "1.0.0",
+  "orchestration": {
+    "strict_mode": true,
+    "require_human_approval_per_gate": true,
+    "quality_gates": {
+      "pre_coding": [
+        "check_duplicates",
+        "verify_contract_existence",
+        "validate_spec_schema"
+      ],
+      "post_coding": [
+        "npm run lint",
+        "npm run test:critical",
+        "verify_passthrough_removal",
+        "verify_no_leakage_L1_to_L3"
+      ]
+    },
+    "sub_agent_profile": {
+      "role": "specialist-coder",
+      "constraints": [
+        "R-220 (3-Layer Architecture)",
+        "R-200 (Notification Gate)",
+        "R-030 (Numeric Indices)",
+        "R-060 (No Self-Merge)"
+      ],
+      "output_format": "json_report"
+    }
+  },
+  "gates": [
+    {
+      "id": 1,
+      "name": "Schema & Contract Hardening",
+      "spec": "EXEC_SPEC_GATE_1_schema_contract.md",
+      "validation_rules": [
+        "grep -q 'metadataSchema' server/notifications/payloads/buildNotificationPayload.js",
+        "! grep -q 'passthrough()' server/notifications/payloads/buildNotificationPayload.js"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "L2 Absorption",
+      "spec": "EXEC_SPEC_GATE_2_l2_absorption.md",
+      "validation_rules": [
+        "! ls bot/utils/doseFormatters.js"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "L1 Cleanup",
+      "spec": "EXEC_SPEC_GATE_3_l1_cleanup.md",
+      "validation_rules": [
+        "! grep -q 'formatMedicineWithStrength' server/bot/tasks.js",
+        "! grep -q '📈' server/bot/tasks.js"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "L3 Cleanup",
+      "spec": "EXEC_SPEC_GATE_4_l3_cleanup.md",
+      "validation_rules": [
+        "! grep -q 'formatMessage' server/notifications/channels/telegramChannel.js",
+        "grep -q 'payload.actions' server/notifications/channels/telegramChannel.js"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Dispatcher Boundary Cleanup",
+      "spec": "EXEC_SPEC_GATE_5_dispatcher_boundary.md",
+      "validation_rules": [
+        "! grep -q 'payload || buildNotificationPayload' server/notifications/dispatcher/dispatchNotification.js",
+        "! grep -q 'isGroupedKind' server/notifications/dispatcher/dispatchNotification.js"
+      ]
+    },
+    {
+      "id": 5.5,
+      "name": "Inbox Markdown Renderer",
+      "spec": "EXEC_SPEC_GATE_5_5_inbox_renderer.md",
+      "validation_rules": [
+        "grep -q 'parseTelegramMarkdown' apps/web/src/features/notifications/components/InboxItem.js || true",
+        "npm run test:critical"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Validation & Docs",
+      "spec": "EXEC_SPEC_GATE_6_validation_docs.md",
+      "validation_rules": [
+        "ls docs/architecture/NOTIFICATIONS.md",
+        "npm run validate:agent"
+      ]
+    }
+  ]
+}

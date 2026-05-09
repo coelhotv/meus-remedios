@@ -21,6 +21,17 @@ Enforce a single, unambiguous contract at the dispatcher boundary:
 
 ---
 
+## Orchestration Verification
+
+Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 5).
+
+**Validações Obrigatórias**:
+- `! grep -q "payload || buildNotificationPayload" server/notifications/dispatcher/dispatchNotification.js`
+- `! grep -q "isGroupedKind" server/notifications/dispatcher/dispatchNotification.js`
+- `npm run test:critical` (Verificar se a DLQ e o Dispatcher continuam operando sem fallbacks)
+
+---
+
 ## Prerequisites
 
 ```bash

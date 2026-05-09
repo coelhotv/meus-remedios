@@ -20,6 +20,16 @@ Final validation gate. No architectural changes. Confirms all previous gates wor
 
 ---
 
+## Orchestration Verification
+
+Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 6).
+
+**Validações Obrigatórias**:
+- `ls docs/architecture/NOTIFICATIONS.md` (Documentação atualizada)
+- `npm run validate:agent` (Obrigatório antes do PR final)
+
+---
+
 ## Prerequisites
 
 ```bash

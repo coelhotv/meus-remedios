@@ -25,6 +25,17 @@ Changes:
 
 ---
 
+## Orchestration Verification
+
+Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 4).
+
+**Validações Obrigatórias**:
+- `! grep -q "formatMessage" server/notifications/channels/telegramChannel.js` (Method deleted)
+- `grep -q "payload.actions" server/notifications/channels/telegramChannel.js` (Generic actions usage)
+- `verify_no_leakage_L1_to_L3` (Post-coding)
+
+---
+
 ## Prerequisites
 
 ```bash

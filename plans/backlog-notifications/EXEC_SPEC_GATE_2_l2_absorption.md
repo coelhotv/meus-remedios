@@ -21,6 +21,17 @@ Move all `dose_reminder*` formatting logic from the Telegram channel (L3) into t
 
 ---
 
+## Orchestration Verification
+
+Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 2).
+
+**Validações Obrigatórias**:
+- `! ls bot/utils/doseFormatters.js` (O arquivo deve ser deletado ao final)
+- `grep -q "case 'dose_reminder_by_plan'" server/notifications/payloads/buildNotificationPayload.js`
+- `npm run test:critical` (Verificar se os novos formatadores em L2 passam nos testes de schema)
+
+---
+
 ## Prerequisites
 
 Before starting, verify GATE 1 was completed:

@@ -18,6 +18,16 @@ This gate adds a MarkdownV2 → rich text parser to the Inbox renderer on both p
 
 ---
 
+## Orchestration Verification
+
+Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 5.5).
+
+**Validações Obrigatórias**:
+- `grep -q "parseTelegramMarkdown" apps/web/src/features/notifications/components/InboxItem.js` (Ou componente equivalente identificado no Step 1)
+- `npm run test:critical` (Verificar se os testes de UI passam com o novo renderer)
+
+---
+
 ## Prerequisites
 
 ```bash

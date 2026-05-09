@@ -22,6 +22,17 @@ Specific changes:
 
 ---
 
+## Orchestration Verification
+
+Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 3).
+
+**Validações Obrigatórias**:
+- `! grep -q "formatMedicineWithStrength" server/bot/tasks.js` (Audit: should only be in L2 helpers)
+- `! grep -q "📈" server/bot/tasks.js` (No emoji leakage in business logic)
+- `verify_no_leakage_L1_to_L3` (Check if L1 sends formatted strings in metadata)
+
+---
+
 ## Prerequisites
 
 ```bash

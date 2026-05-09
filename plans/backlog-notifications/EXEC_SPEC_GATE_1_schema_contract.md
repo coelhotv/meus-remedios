@@ -20,6 +20,17 @@ Harden the L2 payload contract by:
 
 ---
 
+## Orchestration Verification
+
+Antes de iniciar, verifique se o orquestrador está configurado para este gate em `ORCHESTRATOR_CONFIG.json` (ID: 1).
+
+**Validações Obrigatórias**:
+- `check_duplicates` (L1 e L2)
+- `grep -q 'metadataSchema' server/notifications/payloads/buildNotificationPayload.js` (Post-coding)
+- `! grep -q 'passthrough()' server/notifications/payloads/buildNotificationPayload.js` (Post-coding)
+
+---
+
 ## Prerequisites
 
 Before starting, verify:

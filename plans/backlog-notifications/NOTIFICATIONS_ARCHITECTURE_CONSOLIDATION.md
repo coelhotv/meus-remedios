@@ -7,6 +7,16 @@ Sequencia o refactor de 3 camadas iniciado em `ORIGINAL_NOTIFICATONS_ARCHITECTUR
 
 ---
 
+## Orchestration & Quality Control
+
+Este projeto é governado por uma camada de orquestração autônoma definida em `ORCHESTRATOR_CONFIG.json`. 
+
+- **Quality Gates**: Cada implementação de Gate deve passar por validações `pre_coding` e `post_coding`.
+- **Strict Mode**: Violações arquiteturais (ex: `passthrough()` em schemas ou lógica de apresentação em L1) bloqueiam o progresso.
+- **Validation Authority**: O arquivo `ORCHESTRATOR_CONFIG.json` define as regras de `grep` e comandos de teste que os agentes devem executar para garantir a integridade de cada etapa.
+
+---
+
 ## Architectural Vision (Refinada)
 
 ```
