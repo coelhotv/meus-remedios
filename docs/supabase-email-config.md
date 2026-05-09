@@ -212,7 +212,6 @@ Sua senha do Dosiq foi alterada
 | Campo | Valor |
 |-------|-------|
 | Site URL | `https://dosiq.vercel.app` |
-| Additional Redirect URLs | `https://dosiq.vercel.app/auth/callback` |
 | Additional Redirect URLs | `dosiq://auth/callback` (deep link mobile) |
 
 ---
