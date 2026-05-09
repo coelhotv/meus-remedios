@@ -17,6 +17,8 @@ import { navigationRef } from './navigationRef'
 import SmokeScreen from '../screens/SmokeScreen'
 import LoginScreen from '../screens/LoginScreen'
 import LandingScreen from '../screens/LandingScreen'
+import SignupScreen from '../screens/SignupScreen'
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen'
 import RootTabs from './RootTabs'
 import { supabase } from '../platform/supabase/nativeSupabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -95,6 +97,8 @@ export default function Navigation() {
           <>
             <Stack.Screen name={ROUTES.LANDING} component={LandingScreen} />
             <Stack.Screen name={ROUTES.LOGIN} component={LoginScreen} />
+            <Stack.Screen name={ROUTES.SIGNUP} component={SignupScreen} />
+            <Stack.Screen name={ROUTES.FORGOT_PASSWORD} component={ForgotPasswordScreen} />
             <Stack.Screen
               name={ROUTES.SMOKE}
               component={SmokeScreen}

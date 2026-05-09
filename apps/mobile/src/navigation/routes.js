@@ -7,6 +7,8 @@ export const ROUTES = {
   SMOKE: 'Smoke',
   LOGIN: 'Login',
   LANDING: 'Landing',
+  SIGNUP: 'Signup',
+  FORGOT_PASSWORD: 'ForgotPassword',
 
   // Shell do produto (tab navigator)
   TABS: 'Tabs',
