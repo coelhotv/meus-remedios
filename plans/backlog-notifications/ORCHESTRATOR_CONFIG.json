@@ -26,6 +26,12 @@
         "R-060 (No Self-Merge)"
       ],
       "output_format": "json_report"
+    },
+    "process_protocol": {
+      "branching": "feat/gate-{id}-{slug}",
+      "lint_policy": "Zero new regressions. Strict complexity < 15.",
+      "pr_protocol": "Create PR using docs/standards/PULL_REQUEST_TEMPLATE.md. Wait for Human Review.",
+      "hard_stop": "Absolute halt before any git commit/push until manual validation is confirmed."
     }
   },
   "gates": [

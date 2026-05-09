@@ -1,9 +1,21 @@
 # EXEC SPEC — GATE 1: Schema & Contract Hardening
 
 > **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
-> **Branch**: `fix/wave-12/notification-architecture-consolidation`
+> **Branch**: `feat/gate-1-schema-contract`
 > **Difficulty**: Low — schema additions only, no behavioral changes
 > **Estimated time**: 1–2 hours
+
+---
+
+## 🛡️ Standard Quality Protocol (SQP)
+
+As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
+
+1. **New Feature Branch**: `git checkout -b feat/gate-1-schema-contract`.
+2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
+4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
 

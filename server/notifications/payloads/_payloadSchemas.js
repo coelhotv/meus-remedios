@@ -71,7 +71,7 @@ export const kindSchema = z.enum([
 export const actionSchema = z.object({
   id: z.enum(['take_dose', 'take_plan', 'dismiss', 'open_link']),
   label: z.string(),
-  params: z.record(z.any()).optional()
+  params: z.record(z.unknown()).optional()
 });
 
 // Metadados estritos (Gate 1 — adeus passthrough)
@@ -79,7 +79,7 @@ export const metadataSchema = z.object({
   kind: kindSchema,
   builtAt: z.string(),
   correlationId: z.string().optional(),
-  details: z.record(z.any()).optional()
+  details: z.record(z.unknown()).optional()
 }).strict();
 
 // Novas validações de dados (Gate 1)
@@ -97,7 +97,7 @@ export const doseReminderByPlanDataSchema = z.object({
   hour: z.number().min(0).max(23),
   doses: z.array(z.object({
     medicineName: z.string(),
-    dosagePerIntake: z.number(),
+    dosagePerIntake: z.number().max(100),
     dosageUnit: z.string().optional(),
     protocolId: z.string().optional()
   }))
@@ -108,7 +108,7 @@ export const doseReminderMiscDataSchema = z.object({
   hour: z.number().min(0).max(23),
   doses: z.array(z.object({
     medicineName: z.string(),
-    dosagePerIntake: z.number(),
+    dosagePerIntake: z.number().max(100),
     dosageUnit: z.string().optional(),
     protocolId: z.string().optional()
   })),
