@@ -72,6 +72,10 @@ export default function SignupScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color={colors.text.secondary} />
+        <Text style={styles.backButtonText}>Voltar</Text>
+      </Pressable>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -180,6 +184,19 @@ const styles = StyleSheet.create({
   },
   keyboardView: {
     flex: 1,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    paddingHorizontal: spacing[6],
+    paddingTop: spacing[4],
+    paddingBottom: spacing[2],
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: colors.text.secondary,
+    fontWeight: '500',
   },
   scrollContent: {
     flexGrow: 1,
