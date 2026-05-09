@@ -1,10 +1,22 @@
 # EXEC SPEC — GATE 4: L3 Cleanup — Channels Become Pure Delivery
 
 > **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
-> **Branch**: `fix/wave-12/notification-architecture-consolidation`
+> **Branch**: `feat/gate-4-l3-cleanup`
 > **Prerequisite**: GATE 3 approved and committed
 > **Difficulty**: Medium-High — must preserve callback_data wire format exactly; risk of breaking Telegram buttons
 > **Estimated time**: 2–3 hours
+
+---
+
+## 🛡️ Standard Quality Protocol (SQP)
+
+As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
+
+1. **New Feature Branch**: `git checkout -b feat/gate-4-l3-cleanup`.
+2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
+4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
 
@@ -336,7 +348,7 @@ npm run lint
 git add server/notifications/channels/telegramChannel.js \
         server/notifications/channels/expoPushChannel.js
 git commit -m "$(cat <<'EOF'
-refactor(channels): canais viram delivery puro; actions[] mapeadas para affordances nativas
+refactor(notifications): canais viram delivery puro; actions[] mapeadas para affordances nativas
 
 - telegramChannel: deleta formatMessage(), kind inference e wrapping *title*\nbody
 - telegramChannel: inline_keyboard hardcode → mapeador generico actions[]

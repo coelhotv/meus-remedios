@@ -1,10 +1,22 @@
 # EXEC SPEC — GATE 6: Validation, Frontend Sync & Documentation
 
 > **Part of**: `NOTIFICATIONS_ARCHITECTURE_CONSOLIDATION.md`
-> **Branch**: `fix/wave-12/notification-architecture-consolidation`
+> **Branch**: `feat/gate-6-validation-docs`
 > **Prerequisite**: GATE 5.5 approved and committed
 > **Difficulty**: Low — verification, small fixes, and documentation
 > **Estimated time**: 2–3 hours
+
+---
+
+## 🛡️ Standard Quality Protocol (SQP)
+
+As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
+
+1. **New Feature Branch**: `git checkout -b feat/gate-6-validation-docs`.
+2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
+4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
 
@@ -320,7 +332,7 @@ Present the following to the human for review:
 
 ```bash
 cd /Users/coelhotv/git-icloud/dosiq
-git push origin fix/wave-12/notification-architecture-consolidation
+git push origin feat/gate-6-validation-docs
 
 gh pr create \
   --title "refactor(notifications): consolidação arquitetura 3 camadas Wave 12" \
