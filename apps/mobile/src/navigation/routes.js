@@ -9,6 +9,7 @@ export const ROUTES = {
   LANDING: 'Landing',
   SIGNUP: 'Signup',
   FORGOT_PASSWORD: 'ForgotPassword',
+  RESET_PASSWORD: 'ResetPassword',
 
   // Shell do produto (tab navigator)
   TABS: 'Tabs',

@@ -129,7 +129,8 @@ export async function sendPasswordReset(email) {
 
   try {
     const { error: authError } = await supabase.auth.resetPasswordForEmail(
-      validation.data.email
+      validation.data.email,
+      { redirectTo: 'dosiq://auth/callback' }
     )
 
     if (authError) {
@@ -139,6 +140,45 @@ export async function sendPasswordReset(email) {
     return { success: true }
   } catch {
     return { success: false, error: 'Erro inesperado ao enviar email de recuperação' }
+  }
+}
+
+const updatePasswordSchema = z
+  .object({
+    password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+    confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas não coincidem',
+    path: ['confirmPassword'],
+  })
+
+/**
+ * Atualiza a senha do usuário autenticado via link de recuperação
+ */
+export async function updatePassword(newPassword, confirmPassword) {
+  const validation = updatePasswordSchema.safeParse({
+    password: newPassword,
+    confirmPassword,
+  })
+
+  if (!validation.success) {
+    const errorMessage = validation.error.issues[0]?.message || 'Dados inválidos'
+    return { success: false, error: errorMessage }
+  }
+
+  try {
+    const { error: authError } = await supabase.auth.updateUser({
+      password: validation.data.password,
+    })
+
+    if (authError) {
+      return { success: false, error: translateAuthError(authError, 'reset') }
+    }
+
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Erro inesperado ao atualizar senha' }
   }
 }
 
@@ -159,4 +199,4 @@ export async function signOut() {
   }
 }
 
-export default { signInWithEmail, signUpWithEmail, sendPasswordReset, signOut }
+export default { signInWithEmail, signUpWithEmail, sendPasswordReset, updatePassword, signOut }
