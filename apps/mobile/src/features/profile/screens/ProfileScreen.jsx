@@ -11,6 +11,7 @@ import LoadingState from '@shared/components/states/LoadingState'
 import { colors, spacing, borderRadius, shadows, typography } from '@shared/styles/tokens'
 import { ROUTES } from '@navigation/routes'
 import { useUnreadBadgeCount } from '@shared/hooks/useUnreadBadgeCount'
+import { EXTERNAL_URLS } from '../../../shared/constants'
 
 /**
  * Tela de Perfil do MVP mobile (H5.6)
@@ -23,7 +24,7 @@ export default function ProfileScreen() {
   const { unreadCount, refreshBadge } = useUnreadBadgeCount(user?.id)
 
   const handlePrivacyPolicy = async () => {
-    await WebBrowser.openBrowserAsync('https://dosiq.vercel.app/politica-de-privacidade')
+    await WebBrowser.openBrowserAsync(EXTERNAL_URLS.PRIVACY_POLICY)
   }
 
   const handleLogout = async () => {

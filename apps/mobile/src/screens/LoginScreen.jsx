@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing[4],
   },
   button: {
-    backgroundColor: '#006A5E',
+    backgroundColor: colors.brand.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

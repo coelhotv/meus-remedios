@@ -96,20 +96,6 @@ export default function Navigation() {
   }, [])
 
 
-  if (isPasswordRecovery) {
-    return (
-      <NavigationContainer ref={navigationRef}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen
-            name={ROUTES.RESET_PASSWORD}
-            component={ResetPasswordScreen}
-            initialParams={{ onComplete: () => setIsPasswordRecovery(false) }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    )
-  }
-
   // Aguarda verificação inicial — evita flash de ecrã errado
   if (session === undefined) {
     return (
@@ -127,12 +113,15 @@ export default function Navigation() {
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
       >
-        {/* Renderização condicional baseada no estado da sessão */}
-        {session ? (
-          // Utilizador autenticado → renderizar shell do produto (tabs)
+        {isPasswordRecovery ? (
+          <Stack.Screen
+            name={ROUTES.RESET_PASSWORD}
+            component={ResetPasswordScreen}
+            initialParams={{ onComplete: () => setIsPasswordRecovery(false) }}
+          />
+        ) : session ? (
           <Stack.Screen name={ROUTES.TABS} component={RootTabs} />
         ) : (
-          // Sem sessão → renderizar login e smoke (diag)
           <>
             <Stack.Screen name={ROUTES.LANDING} component={LandingScreen} />
             <Stack.Screen name={ROUTES.LOGIN} component={LoginScreen} />

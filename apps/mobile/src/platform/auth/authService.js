@@ -57,7 +57,7 @@ function translateAuthError(authError, context = 'login') {
     signup: 'Erro ao criar conta',
     reset: 'Erro ao enviar email de recuperação',
   }
-  return authError.message || fallbacks[context] || 'Erro inesperado'
+  return fallbacks[context] || authError.message || 'Erro inesperado'
 }
 
 /**
