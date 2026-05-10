@@ -176,7 +176,7 @@ export default function Auth({ onAuthSuccess, onClose }) {
           </div>
 
           {isLogin && (
-            <div style={{ textAlign: 'right', marginTop: '-8px' }}>
+            <div className="auth-forgot-password-wrapper">
               <button
                 type="button"
                 className="toggle-auth-btn"
