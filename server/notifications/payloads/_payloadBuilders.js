@@ -42,7 +42,7 @@ export function buildDailyDigestPayload(data) {
 }
 
 export function buildAdherenceReportPayload(data) {
-  const { firstName, period, percentage, taken, total, storytelling } = adherenceReportDataSchema.parse(data);
+  const { firstName, period, percentage, taken, total, comparison } = adherenceReportDataSchema.parse(data);
   const nudge = getMotivationalNudge(percentage);
   const title = '📈 Relatório diário';
   
@@ -57,9 +57,17 @@ export function buildAdherenceReportPayload(data) {
   plainMsg += `Sua adesão ${period} foi de ${percentage}% `;
   plainMsg += `✅ ${taken} de ${total} doses registradas.\n`;
   
-  if (storytelling) {
-    richMsg += `*Comparação:* ${escapeMarkdownV2(storytelling)}\n\n`;
-    plainMsg += `Comparação: \n${storytelling} `;
+  if (comparison) {
+    const { deltaPercent, trend } = comparison;
+    const trendEmoji = trend === 'up' ? '📈' : trend === 'down' ? '📉' : '➡️';
+    const trendText = trend === 'up'
+      ? `Melhora de ${deltaPercent}% vs ontem`
+      : trend === 'down'
+      ? `Queda de ${deltaPercent}% vs ontem`
+      : `Estável vs ontem`;
+
+    richMsg += `*Comparação:* ${trendEmoji} ${escapeMarkdownV2(trendText)}\n\n`;
+    plainMsg += `Comparação: ${trendEmoji} ${trendText}\n`;
   }
   
   richMsg += `_${escapeMarkdownV2(nudge)}_`;

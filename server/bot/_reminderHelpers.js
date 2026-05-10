@@ -3,7 +3,7 @@ import { createLogger } from '../bot/logger.js';
 import { shouldSendNotification, shouldSendGroupedNotification } from '../services/notificationDeduplicator.js';
 import { getCurrentTime, getCurrentTimeInTimezone, parseLocalDate, getTodayLocal } from '../utils/dateUtils.js';
 import { partitionDoses } from './utils/partitionDoses.js';
-import { formatMedicineWithStrength, formatIntakeQuantity } from './utils/notificationHelpers.js';
+// Formatting helpers removed — moved to Layer 2
 
 const logger = createLogger('ReminderHelpers');
 
@@ -64,7 +64,11 @@ async function _processUserReminderBlock(userId, currentHHMM, currentHour, block
     const dose = block.doses[0];
     kind = 'dose_reminder';
     data = {
-      medicineName: dose.medicineName, protocolId: dose.protocolId, medicineId: dose.medicineId, time: currentHHMM, dosage: dose.dosageString || dose.dosagePerIntake,
+      medicineName: dose.medicineName, 
+      protocolId: dose.protocolId, 
+      medicineId: dose.medicineId, 
+      time: currentHHMM, 
+      dosage: `${dose.dosagePerIntake} ${dose.dosageUnit}`
     };
   }
 
@@ -132,11 +136,11 @@ export async function checkRemindersViaDispatcher(dispatcher, correlationId) {
           .map(p => ({
             protocolId: p.id,
             protocolName: p.name,
-            medicineName: formatMedicineWithStrength(p.medicine?.name || p.name, p.medicine?.dosage_per_pill, p.medicine?.dosage_unit),
+            medicineName: p.medicine?.name || p.name,
             treatmentPlanId: p.treatment_plan_id ?? null,
             treatmentPlanName: p.treatment_plan?.name ?? null,
             dosagePerIntake: p.dosage_per_intake ?? 1,
-            dosageString: formatIntakeQuantity(p.dosage_per_intake || 1, p.medicine?.dosage_unit),
+            dosageUnit: p.medicine?.dosage_unit ?? 'cp',
             medicineId: p.medicine_id,
           }));
 
@@ -238,8 +242,9 @@ export async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
           (p.time_schedule || []).forEach(time => {
             todaySchedule.push({
               time,
-              medicineName: formatMedicineWithStrength(p.medicine?.name || p.name, p.medicine?.dosage_per_pill, p.medicine?.dosage_unit),
-              dosageString: formatIntakeQuantity(p.dosage_per_intake || 1, p.medicine?.dosage_unit)
+              medicineName: p.medicine?.name || p.name,
+              dosagePerIntake: p.dosage_per_intake || 1,
+              dosageUnit: p.medicine?.dosage_unit ?? 'cp'
             });
           });
         });
@@ -252,7 +257,9 @@ export async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
           hour: currentHour,
           pendingCount: todaySchedule.length,
           medicines: todaySchedule.map(s => ({
-            name: s.medicineName, time: s.time, dosage: s.dosageString
+            name: s.medicineName, 
+            time: s.time, 
+            dosage: `${s.dosagePerIntake} ${s.dosageUnit}`
           }))
         };
 

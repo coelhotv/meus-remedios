@@ -17,7 +17,11 @@ export const adherenceReportDataSchema = z.object({
   percentage: z.number().min(0).max(100),
   taken: z.number(),
   total: z.number(),
-  storytelling: z.string().optional() // Insights comparativos vindos da L1
+  comparison: z.object({
+    previousPercentage: z.number().min(0).max(100),
+    deltaPercent: z.number(),
+    trend: z.enum(['up', 'down', 'flat'])
+  }).optional()
 });
 
 export const stockAlertDataSchema = z.object({
