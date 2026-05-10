@@ -12,10 +12,10 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `git checkout -b feat/gate-3-l1-cleanup`.
-2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-3-l1-cleanup`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
-4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
@@ -48,15 +48,15 @@ Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 3).
 ## Prerequisites
 
 ```bash
-git log --oneline -5
+rtk git log --oneline -5
 # GATE 2 commit must be at the top
 
 # Confirm doseFormatters.js is gone
-ls server/bot/utils/doseFormatters.js 2>&1
+rtk ls server/bot/utils/doseFormatters.js 2>&1
 # Expected: "No such file or directory"
 
 # Confirm dose_reminder* cases use .parse() in buildNotificationPayload
-grep -n "doseReminderByPlanDataSchema.parse" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "doseReminderByPlanDataSchema.parse" server/notifications/payloads/buildNotificationPayload.js
 # Must return 1 result
 ```
 
@@ -117,7 +117,7 @@ Before making any changes, read the relevant functions:
 - Search for `formatMedicineWithStrength` to find all call sites.
 
 ```bash
-grep -n "formatMedicineWithStrength\|formatIntakeQuantity\|storytelling" server/bot/tasks.js
+rtk grep -n "formatMedicineWithStrength\|formatIntakeQuantity\|storytelling" server/bot/tasks.js
 ```
 
 ### Step 2 — Update `checkRemindersViaDispatcher`
@@ -279,7 +279,7 @@ case 'adherence_report': {
 Run the following to find any remaining presentation logic in L1:
 
 ```bash
-grep -n "escapeMarkdownV2\|MarkdownV2\|getMotivationalNudge\|getGreeting\|getTimeOfDay\|formatMedicineWithStrength\|formatIntakeQuantity\|storytelling" server/bot/tasks.js
+rtk grep -n "escapeMarkdownV2\|MarkdownV2\|getMotivationalNudge\|getGreeting\|getTimeOfDay\|formatMedicineWithStrength\|formatIntakeQuantity\|storytelling" server/bot/tasks.js
 ```
 
 For each result found:
@@ -289,7 +289,7 @@ For each result found:
 ### Step 8 — Check if `formatMedicineWithStrength`/`formatIntakeQuantity` can be removed from tasks.js
 
 ```bash
-grep -n "formatMedicineWithStrength\|formatIntakeQuantity" server/bot/tasks.js
+rtk grep -n "formatMedicineWithStrength\|formatIntakeQuantity" server/bot/tasks.js
 ```
 
 If there are zero usages remaining after Steps 2 and 3, also remove their import from `tasks.js`. If they were defined inside `tasks.js`, remove the definition. If they were imported from `notificationHelpers.js`, remove the import.
@@ -314,29 +314,29 @@ If there are zero usages remaining after Steps 2 and 3, also remove their import
 
 ```bash
 # 1. Lint
-cd /Users/coelhotv/git-icloud/dosiq && npm run lint
+cd /Users/coelhotv/git-icloud/dosiq && rtk lint
 
 # 2. Critical tests
-npm run test:critical
+rtk npm run test:critical
 
 # 3. No presentation helpers in tasks.js
-grep -n "escapeMarkdownV2\|MarkdownV2\|getMotivationalNudge\|getGreeting\|getTimeOfDay" server/bot/tasks.js
+rtk grep -n "escapeMarkdownV2\|MarkdownV2\|getMotivationalNudge\|getGreeting\|getTimeOfDay" server/bot/tasks.js
 # Expected: zero results
 
 # 4. No formatMedicineWithStrength in tasks.js
-grep -n "formatMedicineWithStrength\|formatIntakeQuantity" server/bot/tasks.js
+rtk grep -n "formatMedicineWithStrength\|formatIntakeQuantity" server/bot/tasks.js
 # Expected: zero results (or explain any remaining ones in the report)
 
 # 5. storytelling gone from tasks.js
-grep -n "storytelling" server/bot/tasks.js
+rtk grep -n "storytelling" server/bot/tasks.js
 # Expected: zero results
 
 # 6. comparison object appears in tasks.js
-grep -n "comparison" server/bot/tasks.js
+rtk grep -n "comparison" server/bot/tasks.js
 # Expected: results showing the new comparison object
 
 # 7. adherenceReportDataSchema uses comparison not storytelling
-grep -n "storytelling" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "storytelling" server/notifications/payloads/buildNotificationPayload.js
 # Expected: zero results
 ```
 
@@ -351,7 +351,7 @@ Present the following to the human for review:
 1. **Full diff** of `server/bot/tasks.js` (changed functions only, not the entire 900-line file)
 2. **Full diff** of `server/notifications/payloads/buildNotificationPayload.js` (adherenceReportDataSchema + case)
 3. **Output** of all verification commands above
-4. **Audit results** for other schedulers — list each one and whether it was OK or modified:
+4. **Audit results for other schedulers** — list each one and check if it's OK or modified:
    - `checkStockAlertsViaDispatcher`: OK / Modified (describe change)
    - `checkTitrationAlertsViaDispatcher`: OK / Modified
    - `checkPrescriptionAlertsViaDispatcher`: OK / Modified
@@ -367,9 +367,9 @@ Present the following to the human for review:
 
 ```bash
 cd /Users/coelhotv/git-icloud/dosiq
-npm run lint
-git add server/bot/tasks.js server/notifications/payloads/buildNotificationPayload.js
-git commit -m "$(cat <<'EOF'
+rtk lint
+rtk git add server/bot/tasks.js server/notifications/payloads/buildNotificationPayload.js
+rtk git commit -m "$(cat <<'EOF'
 refactor(tasks): L1 passa dados crus de domínio; L2 owna toda formatação
 
 - checkRemindersViaDispatcher: doses passadas sem formatMedicineWithStrength
@@ -380,5 +380,5 @@ refactor(tasks): L1 passa dados crus de domínio; L2 owna toda formatação
 
 EOF
 )"
-git push origin fix/wave-12/notification-architecture-consolidation
+rtk git push origin feat/gate-3-l1-cleanup
 ```
