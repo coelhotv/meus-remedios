@@ -67,7 +67,7 @@ export default function Stock({ initialParams, onClearParams }) {
       console.error('[StockRedesign] Erro ao calcular custos:', err)
       return null
     }
-  }, [medicines, items, allPurchases, dashboardData])
+  }, [medicines, items, allPurchases, dashboardData?.protocols])
 
   const prescriptionTimelineData = useMemo(() => {
     if (!dashboardData?.protocols?.length) return []
@@ -81,7 +81,7 @@ export default function Stock({ initialParams, onClearParams }) {
         endDate: p.end_date,
         status: deriveProtocolStatus(p),
       }))
-  }, [dashboardData, medicines])
+  }, [dashboardData?.protocols, medicines])
 
   // ═══ Handlers ═══
   const handleOpenModal = (medicineId = null) => {
