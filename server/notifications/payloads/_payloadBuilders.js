@@ -4,12 +4,12 @@ import {
   stockAlertDataSchema, 
   titrationAlertDataSchema, 
   prescriptionAlertDataSchema, 
-  dlqDigestDataSchema 
+  dlqDigestDataSchema,
+  doseReminderDataSchema
 } from './_payloadSchemas.js';
 import { escapeMarkdownV2 } from '../../utils/formatters.js';
 import { getGreeting, getMotivationalNudge, getTimeOfDayGreeting } from '../../bot/utils/notificationHelpers.js';
 import { getSaoPauloTime } from '../../utils/dateUtils.js';
-import { doseReminderDataSchema } from './_payloadSchemas.js';
 
 const formatDose = (qty, unit) => {
   if (!qty) return undefined;
