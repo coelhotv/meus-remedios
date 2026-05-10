@@ -69,7 +69,7 @@ export const kindSchema = z.enum([
 
 // Schemas para ações interativas (Gate 4 preliminar)
 export const actionSchema = z.object({
-  id: z.string(), // Relaxado temporariamente para debugar erro _zod no Vitest
+  id: z.enum(['take', 'snooze', 'skip', 'take_plan', 'take_misc', 'details']),
   label: z.string(),
   params: z.record(z.unknown()).optional()
 });

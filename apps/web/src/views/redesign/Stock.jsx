@@ -83,6 +83,7 @@ export default function Stock({ initialParams, onClearParams }) {
       }))
   }, [dashboardData, medicines])
 
+  // ═══ Handlers ═══
   const handleOpenModal = (medicineId = null) => {
     if (medicines.length === 0) return
     setSelectedMedicineId(typeof medicineId === 'string' ? medicineId : null)
@@ -103,6 +104,7 @@ export default function Stock({ initialParams, onClearParams }) {
     }
   }
 
+  // ═══ Effects ═══
   useEffect(() => {
     if (initialParams?.medicineId && medicines.length > 0) {
       startTransition(() => {

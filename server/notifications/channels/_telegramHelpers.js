@@ -82,6 +82,6 @@ export function buildTelegramReplyMarkup(payload) {
 
   if (keyboard.length === 0) return undefined
 
-  // Colocamos todos os botões em uma única linha por padrão
-  return { inline_keyboard: [keyboard] }
+  // Colocamos os botões empilhados (um por linha) para melhor usabilidade mobile
+  return { inline_keyboard: keyboard.map(button => [button]) }
 }

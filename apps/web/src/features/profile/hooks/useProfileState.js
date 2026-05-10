@@ -63,6 +63,14 @@ export function useProfileState() {
     setMessage(msg); setTimeout(() => setMessage(null), 3000);
   }, [])
 
+  const displayName = useMemo(() => settings?.display_name || user?.user_metadata?.name || user?.email || 'Paciente', [settings, user])
+  const initials = useMemo(() => displayName.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(''), [displayName])
+  const age = useMemo(() => calculateAge(settings?.birth_date), [settings?.birth_date])
+  const location = useMemo(() => {
+    const parts = [settings?.city, settings?.state].filter(Boolean)
+    return parts.join(', ') || null
+  }, [settings?.city, settings?.state])
+
   const loadProfile = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -95,16 +103,6 @@ export function useProfileState() {
     })
   }, [loadProfile])
 
-  const displayName = useMemo(() => settings?.display_name || user?.user_metadata?.name || user?.email || 'Paciente', [settings, user])
-  const initials = useMemo(() => displayName.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(''), [displayName])
-  
-  const age = useMemo(() => calculateAge(settings?.birth_date), [settings?.birth_date])
-
-  const location = useMemo(() => {
-    const parts = [settings?.city, settings?.state].filter(Boolean)
-    return parts.join(', ') || null
-  }, [settings?.city, settings?.state])
-
   useEffect(() => {
     if (!emergencyCard) {
       startTransition(() => {
@@ -117,9 +115,13 @@ export function useProfileState() {
         const payload = { v: '1', n: displayName, bt: emergencyCard.blood_type || '', a: emergencyCard.allergies?.join(', ') || '' }
         const qrString = btoa(encodeURIComponent(JSON.stringify(payload)).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode(parseInt(p1, 16))))
         const url = await QRCode.toDataURL(qrString, { width: 100, margin: 1, errorCorrectionLevel: 'L' })
-        setQrMiniatureUrl(url)
+        startTransition(() => {
+            setQrMiniatureUrl(url)
+        })
       } catch {
-        setQrMiniatureUrl(null)
+        startTransition(() => {
+            setQrMiniatureUrl(null)
+        })
       }
     }
     generateQR()

@@ -300,13 +300,13 @@ export default function NotificationInboxScreen({ navigation, route }) {
       return
     }
     const parsed = doseLogSchema.safeParse(rows ?? [])
-    setDoseLogs(parsed.success ? parsed.data : [])
+    startTransition(() => {
+      setDoseLogs(parsed.success ? parsed.data : [])
+    })
   }, [userId])
 
   useEffect(() => {
-    startTransition(() => {
-      loadDoseLogs()
-    })
+    loadDoseLogs()
   }, [loadDoseLogs])
 
   const refreshAll = useCallback(async () => {
@@ -317,12 +317,15 @@ export default function NotificationInboxScreen({ navigation, route }) {
   useEffect(() => {
     if (!loading && data && !hasMarkedRead.current) {
       hasMarkedRead.current = true
-      startTransition(() => {
-        markAllRead()
-        AsyncStorage.getItem(getStorageKey(userId))
-          .then((val) => setLastSeen(val))
-          .catch(() => {})
-      })
+      markAllRead()
+      
+      AsyncStorage.getItem(getStorageKey(userId))
+        .then((val) => {
+          startTransition(() => {
+            setLastSeen(val)
+          })
+        })
+        .catch(() => {})
     }
   }, [loading, data, markAllRead, userId])
 

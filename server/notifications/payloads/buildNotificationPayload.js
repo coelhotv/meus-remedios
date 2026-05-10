@@ -172,7 +172,7 @@ function formatDoseReminder(data, metadata) {
   }
 
   const actions = [
-    { id: 'take',   label: '✅ Tomar',  params: { protocolId: protocolId ?? '' } },
+    { id: 'take',   label: '✅ Tomar',  params: { protocolId: protocolId ?? '', dosage: dosage ?? 1 } },
     { id: 'snooze', label: '⏰ Adiar',  params: { protocolId: protocolId ?? '' } },
     { id: 'skip',   label: '⏭️ Pular', params: { protocolId: protocolId ?? '' } }
   ];
