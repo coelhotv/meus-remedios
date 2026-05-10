@@ -9,6 +9,16 @@ import {
 import { escapeMarkdownV2 } from '../../utils/formatters.js';
 import { getGreeting, getMotivationalNudge, getTimeOfDayGreeting } from '../../bot/utils/notificationHelpers.js';
 import { getSaoPauloTime } from '../../utils/dateUtils.js';
+import { doseReminderDataSchema } from './_payloadSchemas.js';
+
+const formatDose = (qty, unit) => {
+  if (!qty) return undefined;
+  const u = unit?.toLowerCase() || 'cp';
+  if (['mg', 'mcg', 'g', 'ml'].includes(u)) {
+    return '1 cp';
+  }
+  return `${qty} ${u}`;
+};
 
 export function buildDailyDigestPayload(data) {
   const { firstName, hour, pendingCount, medicines } = dailyDigestDataSchema.parse(data);
@@ -25,9 +35,10 @@ export function buildDailyDigestPayload(data) {
     plainMsg += `Você tem ${pendingCount} ${text} para hoje:\n`;
     
     medicines.forEach(m => {
+      const displayDosage = formatDose(m.dosagePerIntake, m.dosageUnit);
       richMsg += `💊 *${escapeMarkdownV2(m.name)}*\n`;
-      richMsg += `⏰ ${escapeMarkdownV2(m.time)}${m.dosage ? ` \\(${escapeMarkdownV2(m.dosage)}\\)` : ''}\n\n`;
-      plainMsg += `⏰ ${m.name} - ${m.time}${m.dosage ? ` (${m.dosage})` : ''}\n`;
+      richMsg += `⏰ ${escapeMarkdownV2(m.time)}${displayDosage ? ` \\(${escapeMarkdownV2(displayDosage)}\\)` : ''}\n\n`;
+      plainMsg += `⏰ ${m.name} - ${m.time}${displayDosage ? ` (${displayDosage})` : ''}\n`;
     });
     richMsg += `Não se esqueça de registrar no app\\!`;
     plainMsg += `Não se esqueça de registrar no app!`;
@@ -77,11 +88,12 @@ export function buildAdherenceReportPayload(data) {
 }
 
 export function buildDoseReminderPayload(data) {
-  const medicineName = data.medicineName || 'Medicamento';
-  const time = data.time || '';
+  const { medicineName, time, dosagePerIntake, dosageUnit } = doseReminderDataSchema.parse(data);
   const title = '💊 Hora do Medicamento';
-  const body = `Está na hora de tomar *${escapeMarkdownV2(medicineName)}* \\(${escapeMarkdownV2(time)}\\)${data.dosage ? ` — **${escapeMarkdownV2(data.dosage)}**` : ''}\\.`;
-  const pushBody = `Está na hora de tomar ${medicineName} (${time})${data.dosage ? ` — ${data.dosage}` : ''}.`;
+  const displayDosage = formatDose(dosagePerIntake, dosageUnit);
+  
+  const body = `Está na hora de tomar *${escapeMarkdownV2(medicineName)}* \\(${escapeMarkdownV2(time)}\\)${displayDosage ? ` — **${escapeMarkdownV2(displayDosage)}**` : ''}\\.`;
+  const pushBody = `Está na hora de tomar ${medicineName} (${time})${displayDosage ? ` — ${displayDosage}` : ''}.`;
   return { title, body, pushBody };
 }
 

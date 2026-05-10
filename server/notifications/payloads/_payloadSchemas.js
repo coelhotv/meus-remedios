@@ -7,7 +7,8 @@ export const dailyDigestDataSchema = z.object({
   medicines: z.array(z.object({
     name: z.string(),
     time: z.string(),
-    dosage: z.string().optional()
+    dosagePerIntake: z.number().optional(),
+    dosageUnit: z.string().optional()
   }))
 });
 
@@ -91,7 +92,8 @@ export const metadataSchema = z.object({
 export const doseReminderDataSchema = z.object({
   medicineName: z.string(),
   time: z.string(),
-  dosage: z.string().optional(),
+  dosagePerIntake: z.number().optional(),
+  dosageUnit: z.string().optional(),
   protocolId: z.string().optional(),
   hour: z.number().min(0).max(23).optional()
 });

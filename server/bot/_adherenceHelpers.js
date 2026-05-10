@@ -62,7 +62,7 @@ async function _processUserAdherence(user, protocolsByUser, dispatcher, correlat
     
     const delta = percentage - percentageYesterday;
     const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
-    const comparison = percentageYesterday !== null
+    const comparison = expectedYesterday > 0
       ? { previousPercentage: percentageYesterday, deltaPercent: Math.abs(delta), trend }
       : undefined;
 

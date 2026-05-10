@@ -68,7 +68,8 @@ async function _processUserReminderBlock(userId, currentHHMM, currentHour, block
       protocolId: dose.protocolId, 
       medicineId: dose.medicineId, 
       time: currentHHMM, 
-      dosage: `${dose.dosagePerIntake} ${dose.dosageUnit}`
+      dosagePerIntake: dose.dosagePerIntake,
+      dosageUnit: dose.dosageUnit
     };
   }
 
@@ -140,7 +141,7 @@ export async function checkRemindersViaDispatcher(dispatcher, correlationId) {
             treatmentPlanId: p.treatment_plan_id ?? null,
             treatmentPlanName: p.treatment_plan?.name ?? null,
             dosagePerIntake: p.dosage_per_intake ?? 1,
-            dosageUnit: p.medicine?.dosage_unit ?? 'cp',
+            dosageUnit: p.medicine?.dosage_unit,
             medicineId: p.medicine_id,
           }));
 
@@ -244,7 +245,7 @@ export async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
               time,
               medicineName: p.medicine?.name || p.name,
               dosagePerIntake: p.dosage_per_intake || 1,
-              dosageUnit: p.medicine?.dosage_unit ?? 'cp'
+              dosageUnit: p.medicine?.dosage_unit
             });
           });
         });
@@ -259,7 +260,8 @@ export async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
           medicines: todaySchedule.map(s => ({
             name: s.medicineName, 
             time: s.time, 
-            dosage: `${s.dosagePerIntake} ${s.dosageUnit}`
+            dosagePerIntake: s.dosagePerIntake,
+            dosageUnit: s.dosageUnit
           }))
         };
 
