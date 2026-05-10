@@ -11,10 +11,10 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `git checkout -b feat/gate-1-schema-contract`.
-2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-1-schema-contract`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
-4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
@@ -37,9 +37,9 @@ Harden the L2 payload contract by:
 Antes de iniciar, verifique se o orquestrador está configurado para este gate em `ORCHESTRATOR_CONFIG.json` (ID: 1).
 
 **Validações Obrigatórias**:
-- `check_duplicates` (L1 e L2)
-- `grep -q 'metadataSchema' server/notifications/payloads/buildNotificationPayload.js` (Post-coding)
-- `! grep -q 'passthrough()' server/notifications/payloads/buildNotificationPayload.js` (Post-coding)
+- `rtk find server/notifications/payloads/buildNotificationPayload.js`
+- `rtk grep -q 'metadataSchema' server/notifications/payloads/buildNotificationPayload.js` (Post-coding)
+- `rtk grep -v 'passthrough()' server/notifications/payloads/buildNotificationPayload.js` (Post-coding)
 
 ---
 
@@ -49,15 +49,15 @@ Before starting, verify:
 
 ```bash
 # Confirm you are on the correct branch
-git branch --show-current
-# Expected: fix/wave-12/notification-architecture-consolidation
+rtk git branch --show-current
+# Expected: feat/gate-1-schema-contract
 # If not, create it:
-git checkout -b fix/wave-12/notification-architecture-consolidation
+rtk git checkout -b feat/gate-1-schema-contract
 
 # Confirm the previous refactor plan is already merged (these files must exist)
-ls server/notifications/payloads/buildNotificationPayload.js
-ls server/notifications/channels/telegramChannel.js
-ls server/notifications/dispatcher/dispatchNotification.js
+rtk ls server/notifications/payloads/buildNotificationPayload.js
+rtk ls server/notifications/channels/telegramChannel.js
+rtk ls server/notifications/dispatcher/dispatchNotification.js
 ```
 
 ---
@@ -261,24 +261,24 @@ Run these before presenting the Gate Report:
 
 ```bash
 # 1. Lint must pass
-cd /Users/coelhotv/git-icloud/dosiq && npm run lint
+rtk lint
 
 # 2. Critical tests must pass
-npm run test:critical
+rtk npm run test:critical
 
 # 3. Confirm new schemas are exported
-grep -n "doseReminderDataSchema\|doseReminderByPlanDataSchema\|doseReminderMiscDataSchema\|actionSchema\|metadataSchema" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "doseReminderDataSchema\|doseReminderByPlanDataSchema\|doseReminderMiscDataSchema\|actionSchema\|metadataSchema" server/notifications/payloads/buildNotificationPayload.js
 
 # 4. Confirm passthrough is gone
-grep -n "passthrough" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "passthrough" server/notifications/payloads/buildNotificationPayload.js
 # Expected: zero results
 
 # 5. Confirm context param exists
-grep -n "context = {}" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "context = {}" server/notifications/payloads/buildNotificationPayload.js
 # Expected: 1 result (function signature)
 
 # 6. Confirm isRetry shim
-grep -n "context.isRetry" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "context.isRetry" server/notifications/payloads/buildNotificationPayload.js
 # Expected: 1 result
 ```
 
@@ -300,13 +300,24 @@ Present the following to the human for review:
 
 ---
 
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] `actionSchema` exportado com `z.enum`.
+- [ ] `metadataSchema` exportado e marcado como `.strict()`.
+- [ ] `notificationPayloadSchema` atualizado (sem `passthrough()`).
+- [ ] `buildNotificationPayload` aceita `context` e possui shim de `isRetry`.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
+
+---
+
 ## Commit (only after human approval)
 
 ```bash
-cd /Users/coelhotv/git-icloud/dosiq
-npm run lint
-git add server/notifications/payloads/buildNotificationPayload.js
-git commit -m "$(cat <<'EOF'
+rtk lint
+rtk git add server/notifications/payloads/buildNotificationPayload.js
+rtk git commit -m "$(cat <<'EOF'
 feat(notifications): adiciona actions[], metadata strict e schemas dose_reminder (L1→L2)
 
 - actionSchema com id enum + label + params opcionais
@@ -318,5 +329,5 @@ feat(notifications): adiciona actions[], metadata strict e schemas dose_reminder
 
 EOF
 )"
-git push origin fix/wave-12/notification-architecture-consolidation
+rtk git push origin feat/gate-1-schema-contract
 ```

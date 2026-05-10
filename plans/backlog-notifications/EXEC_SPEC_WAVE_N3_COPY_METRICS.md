@@ -46,7 +46,18 @@
 
 **Agente recomendado**: 🟡 **Rápido** (Haiku/Fast/Mini)
 
-**Justificativa**: Operação mecânica.
+**Wait for explicit human approval before proceeding.**
+
+---
+
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] Novas métricas de conversão e retenção implementadas.
+- [ ] Componentes de UI atualizados para refletir as novas métricas.
+- [ ] Lógica de cálculo de métricas validada com testes unitários.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
 
 **Entregas**:
 
@@ -210,12 +221,11 @@ Ambos tocam `tasks.js` profundamente e têm edge cases não-triviais de Markdown
 
 3. **Tests**:
    - `formatDailyDigestMessage.test.js`: fixtures de agenda completa, esparsa, sem doses, com streak.
-   - Snapshot tests com seed fixa para output determinístico dos outros formatters.
-
-**Critério de aceite**:
-- Digest agrupa corretamente por bloco e plano com copy variável.
-- Renderização válida em MarkdownV2 (sem caracteres não-escapados).
-- Output dos formatters muda entre dias para mesmo user (seed diferente por dia).
+   - Snapshot tests com seed fixa para output determinístico dos outros
+1. **New Feature Branch**: `rtk git checkout -b feat/wave-n3-copy-metrics`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
+3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 - Se N2 já estiver mergeado: `runDailyDigest` usa `formatDailyDigestMessage` enriquecido.
 - Se N2 não estiver mergeado: formatter existe em código mas ainda não é acionado (sem efeito colateral).
 
@@ -323,7 +333,19 @@ Ambos tocam `tasks.js` profundamente e têm edge cases não-triviais de Markdown
 2. **Insight card** (🟡 opcional):
    - `apps/web/src/features/dashboard/components/NotificationStatsCard.jsx` (novo) — query `notification_log` últimos 30 dias, calcula `% de logs com opened_at OR action_taken_at`, renderiza "Sua taxa de resposta a notificações: X%".
 
-3. **DEVFLOW C5**:
+3. **Check de Verificação**:
+```bash
+# 1. Lint must pass
+cd /Users/coelhotv/git-icloud/dosiq && rtk lint
+
+# 2. Critical tests must pass
+rtk npm run test:critical
+
+# 3. Confirm use of formatMetricValue in components
+rtk grep -n "formatMetricValue" apps/web/src/features/analytics/components/MetricCard.jsx
+```
+
+4. **DEVFLOW C5**:
    - R-NNN: "Tracking de notificação requer `notificationLogId` no payload, gerado em `createPending` antes do dispatch (refactor 2-fase em `dispatchNotification`)"
    - R-NNN: "Copy de notificação usa seed determinística por (userId, dia) para evitar repetição em dias consecutivos"
    - Journal entry

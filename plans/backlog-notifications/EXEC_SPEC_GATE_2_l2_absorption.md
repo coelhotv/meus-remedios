@@ -12,10 +12,10 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `git checkout -b feat/gate-2-l2-absorption`.
-2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-2-l2-absorption`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
-4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
@@ -38,9 +38,9 @@ Move all `dose_reminder*` formatting logic from the Telegram channel (L3) into t
 Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 2).
 
 **Validações Obrigatórias**:
-- `! ls bot/utils/doseFormatters.js` (O arquivo deve ser deletado ao final)
-- `grep -q "case 'dose_reminder_by_plan'" server/notifications/payloads/buildNotificationPayload.js`
-- `npm run test:critical` (Verificar se os novos formatadores em L2 passam nos testes de schema)
+- `! rtk ls bot/utils/doseFormatters.js` (O arquivo deve ser deletado ao final)
+- `rtk grep -q "case 'dose_reminder_by_plan'" server/notifications/payloads/buildNotificationPayload.js`
+- `rtk npm run test:critical` (Verificar se os novos formatadores em L2 passam nos testes unitários)
 
 ---
 
@@ -49,13 +49,13 @@ Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 2).
 Before starting, verify GATE 1 was completed:
 
 ```bash
-git log --oneline -5
+rtk git log --oneline -5
 # Should show GATE 1 commit at the top
 
-grep -n "actionSchema\|metadataSchema\|doseReminderByPlanDataSchema" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "actionSchema\|metadataSchema\|doseReminderByPlanDataSchema" server/notifications/payloads/buildNotificationPayload.js
 # Must return results — if empty, GATE 1 is not done. STOP.
 
-grep -n "passthrough" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "passthrough" server/notifications/payloads/buildNotificationPayload.js
 # Must return zero results — if not, GATE 1 is not done. STOP.
 ```
 
@@ -65,7 +65,7 @@ grep -n "passthrough" server/notifications/payloads/buildNotificationPayload.js
 
 ### File 1: `server/bot/utils/doseFormatters.js`
 Currently contains:
-- `getTimeOfDayEmoji(hour)` — returns emoji based on hour (🌅🍽️☕🌆🌙)
+- `getTimeOfDayEmoji(hour)` — returns emoji based on hour (🌅🍽️☕☕🌆🌙)
 - `formatDoseGroupedByPlanMessage(planName, doses, scheduledTime, hour)` — rich MarkdownV2 body for plan groups
 - `formatDoseGroupedMiscMessage(doses, scheduledTime, hour)` — rich MarkdownV2 body for misc groups
 
@@ -249,13 +249,13 @@ If it's missing, add it alongside the other `let` declarations.
 ### Step 7 — Delete `server/bot/utils/doseFormatters.js`
 
 ```bash
-git rm server/bot/utils/doseFormatters.js
+rtk git rm server/bot/utils/doseFormatters.js
 ```
 
 ### Step 8 — Fix any remaining imports of doseFormatters
 
 ```bash
-grep -rn "doseFormatters" server/ apps/
+rtk grep -rn "doseFormatters" server/ apps/
 ```
 
 For each file that imports from `doseFormatters`, update:
@@ -281,30 +281,31 @@ Expected result: `telegramChannel.js` imports `formatDoseGroupedByPlanMessage` a
 ## Verification Commands
 
 ```bash
-# 1. Lint
-cd /Users/coelhotv/git-icloud/dosiq && npm run lint
+# 1. Lint must pass
+rtk lint
 
-# 2. Critical tests
-npm run test:critical
+# 2. Critical tests must pass
+rtk npm run test:critical
 
-# 3. doseFormatters.js must be gone
-ls server/bot/utils/doseFormatters.js 2>&1
-# Expected: "No such file or directory"
+# 3. Confirm all dose_reminder cases are present
+rtk grep -n "case 'dose_reminder'" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "case 'dose_reminder_by_plan'" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "case 'dose_reminder_misc'" server/notifications/payloads/buildNotificationPayload.js
 
 # 4. getTimeOfDayEmoji must be in notificationHelpers
-grep -n "getTimeOfDayEmoji" server/bot/utils/notificationHelpers.js
+rtk grep -n "getTimeOfDayEmoji" server/bot/utils/notificationHelpers.js
 # Expected: 1+ results
 
 # 5. No remaining imports of doseFormatters
-grep -rn "doseFormatters" server/ apps/
+rtk grep -rn "doseFormatters" server/ apps/
 # Expected: zero results
 
 # 6. doseReminderByPlanDataSchema is now used in the switch
-grep -n "doseReminderByPlanDataSchema.parse\|doseReminderMiscDataSchema.parse\|doseReminderDataSchema.parse" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "doseReminderByPlanDataSchema.parse\|doseReminderMiscDataSchema.parse\|doseReminderDataSchema.parse" server/notifications/payloads/buildNotificationPayload.js
 # Expected: 3 results (one per case)
 
 # 7. actions[] populated in all 3 dose_reminder cases
-grep -n "actions = \[" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "actions = \[" server/notifications/payloads/buildNotificationPayload.js
 # Expected: at least 3 results
 ```
 
@@ -318,7 +319,7 @@ Present the following to the human for review:
 
 1. **Full diff** of `server/notifications/payloads/buildNotificationPayload.js` (dose_reminder* cases only)
 2. **Full diff** of `server/bot/utils/notificationHelpers.js` (getTimeOfDayEmoji addition)
-3. **Confirmation** that `doseFormatters.js` is deleted (`git status` showing it removed)
+3. **Confirmation** that `doseFormatters.js` is deleted (`rtk git status` showing it removed)
 4. **Output** of all verification commands above
 5. **Side-by-side message comparison** — write out what the old Telegram message looked like vs what the new canonical `body` contains for:
    - One `dose_reminder_by_plan` example (e.g., plan "Quarteto Fantástico", 2 doses, 12:15)
@@ -330,16 +331,38 @@ Present the following to the human for review:
 
 ---
 
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] `buildNotificationPayload.js` contém os 3 novos formatadores de dose.
+- [ ] O componente `Stock.jsx` não possui regressões de memoização (React Compiler).
+- [ ] `useProfileState.js` utiliza `startTransition` para atualizações de estado.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
+
+---
+
 ## Commit (only after human approval)
 
 ```bash
-cd /Users/coelhotv/git-icloud/dosiq
-npm run lint
-git add server/notifications/payloads/buildNotificationPayload.js \
+rtk lint
+# Confirm you are on the correct branch
+rtk git branch --show-current
+# Expected: feat/gate-2-l2-absorption
+# If not, create it:
+rtk git checkout -b feat/gate-2-l2-absorption
+
+# Confirm the previous refactor plan is already merged (these files must exist)
+rtk ls server/notifications/payloads/buildNotificationPayload.js
+rtk ls server/notifications/channels/telegramChannel.js
+rtk ls server/notifications/dispatcher/dispatchNotification.js
+
+rtk lint
+rtk git add server/notifications/payloads/buildNotificationPayload.js \
         server/bot/utils/notificationHelpers.js \
         server/notifications/channels/telegramChannel.js
-git commit -m "$(cat <<'EOF'
-refactor(notifications): absorve formatters dose_reminder em L2 e emite actions[]
+rtk git commit -m "$(cat <<'EOF'
+feat(gate-2-l2-absorption): absorve formatters dose_reminder em L2 e emite actions[]
 
 - dose_reminder: listagem rica com dosagem + actions [take, snooze, skip]
 - dose_reminder_by_plan: absorve formatDoseGroupedByPlanMessage + actions [take_plan, details]
@@ -350,5 +373,5 @@ refactor(notifications): absorve formatters dose_reminder em L2 e emite actions[
 
 EOF
 )"
-git push origin fix/wave-12/notification-architecture-consolidation
+rtk git push origin feat/gate-2-l2-absorption
 ```

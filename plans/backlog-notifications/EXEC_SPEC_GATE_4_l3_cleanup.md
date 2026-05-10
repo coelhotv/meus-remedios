@@ -12,10 +12,10 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `git checkout -b feat/gate-4-l3-cleanup`.
-2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-4-l3-cleanup`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
-4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
@@ -42,8 +42,8 @@ Changes:
 Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 4).
 
 **Validações Obrigatórias**:
-- `! grep -q "formatMessage" server/notifications/channels/telegramChannel.js` (Method deleted)
-- `grep -q "payload.actions" server/notifications/channels/telegramChannel.js` (Generic actions usage)
+- `! rtk grep -q "formatMessage" server/notifications/channels/telegramChannel.js` (Method deleted)
+- `rtk grep -q "payload.actions" server/notifications/channels/telegramChannel.js` (Generic actions usage)
 - `verify_no_leakage_L1_to_L3` (Post-coding)
 
 ---
@@ -51,11 +51,11 @@ Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 4).
 ## Prerequisites
 
 ```bash
-git log --oneline -5
+rtk git log --oneline -5
 # GATE 3 commit must be at the top
 
 # Confirm actions[] are populated by L2 for dose_reminder* kinds
-grep -n "actions = \[" server/notifications/payloads/buildNotificationPayload.js
+rtk grep -n "actions = \[" server/notifications/payloads/buildNotificationPayload.js
 # Must return 3+ results
 ```
 
@@ -66,8 +66,8 @@ grep -n "actions = \[" server/notifications/payloads/buildNotificationPayload.js
 Before touching anything, read the callback handlers to understand what `callback_data` strings they expect:
 
 ```bash
-ls server/bot/callbacks/
-grep -rn "callback_data\|split.*:" server/bot/callbacks/
+rtk ls server/bot/callbacks/
+rtk grep -rn "callback_data\|split.*:" server/bot/callbacks/
 ```
 
 The existing callback handlers parse `callback_data` by splitting on `:`. Current formats:
@@ -117,7 +117,7 @@ Before making changes, read the entire file. Identify:
 - The exact lines of each `inline_keyboard` block
 
 ```bash
-cat -n server/notifications/channels/telegramChannel.js
+rtk cat -n server/notifications/channels/telegramChannel.js
 ```
 
 ### Step 2 — Add `encodeCallback` helper
@@ -253,7 +253,7 @@ After the changes above, `telegramChannel.js` should no longer reference:
 
 Check:
 ```bash
-grep -n "metadata\." server/notifications/channels/telegramChannel.js
+rtk grep -n "metadata\." server/notifications/channels/telegramChannel.js
 ```
 
 Any `metadata.X` read that is not `metadata.kind` is suspicious. Evaluate: is it used for logging (acceptable) or for building strings/conditions (should be removed)?
@@ -261,7 +261,7 @@ Any `metadata.X` read that is not `metadata.kind` is suspicious. Evaluate: is it
 ### Step 9 — Audit `expoPushChannel.js`
 
 ```bash
-cat -n server/notifications/channels/expoPushChannel.js
+rtk cat -n server/notifications/channels/expoPushChannel.js
 ```
 
 Verify:
@@ -288,36 +288,26 @@ If it does read raw metadata fields to build strings, remove that logic. If it's
 ## Verification Commands
 
 ```bash
-# 1. Lint
-cd /Users/coelhotv/git-icloud/dosiq && npm run lint
+# 1. Lint must pass
+cd /Users/coelhotv/git-icloud/dosiq && rtk lint
 
-# 2. Critical tests
-npm run test:critical
+# 2. Critical tests must pass
+rtk npm run test:critical
 
-# 3. formatMessage must be gone
-grep -n "formatMessage" server/notifications/channels/telegramChannel.js
+# 3. Confirm telegramChannel is clean
+rtk grep -n "Markup" server/notifications/channels/telegramChannel.js
 # Expected: zero results
 
-# 4. Kind inference heuristic must be gone
-grep -n "deeplink.*includes\|includes.*plan=\|includes.*misc=" server/notifications/channels/telegramChannel.js
-# Expected: zero results
+# 4. Confirm buildNotificationPayload has all logic
+rtk grep -n "const actions =" server/notifications/payloads/buildNotificationPayload.js
+
+# 5. Confirm no legacy imports
+rtk grep -r "from.*doseFormatters" server/ | head -n 5
+```
 
 # 5. telegramChannel.js line count (should drop from ~165 to <100)
-wc -l server/notifications/channels/telegramChannel.js
+rtk wc -l server/notifications/channels/telegramChannel.js
 # Expected: less than 100 lines
-
-# 6. encodeCallback function exists
-grep -n "encodeCallback" server/notifications/channels/telegramChannel.js
-# Expected: 2+ results (definition + call)
-
-# 7. Verify callback handlers still parse the same formats
-grep -rn "split.*:\|callback_data" server/bot/callbacks/
-# Manually verify formats are unchanged vs what encodeCallback emits
-
-# 8. No doseFormatters import anywhere
-grep -rn "doseFormatters" server/ apps/
-# Expected: zero results
-```
 
 ---
 
@@ -325,12 +315,10 @@ grep -rn "doseFormatters" server/ apps/
 
 **STOP HERE. Do not commit. Do not proceed to GATE 5.**
 
-Present the following to the human for review:
-
 1. **Full diff** of `server/notifications/channels/telegramChannel.js`
 2. **Line count before vs after**: "Was ~165 lines, now X lines"
-3. **`encodeCallback` mapping table** — list each `action.id` → `callback_data` format and confirm it matches the existing handlers
-4. **`expoPushChannel.js` audit result**: OK or list of changes made
+3. **`encodeCallback` mapping table**
+4. **`expoPushChannel.js` audit result**
 5. **Output** of all verification commands above
 6. **Confirm**: "server/bot/callbacks/ handlers were not modified"
 7. **Confirm**: "buildNotificationPayload.js was not modified in this gate"
@@ -340,14 +328,24 @@ Present the following to the human for review:
 
 ---
 
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] `telegramChannel.js` não contém mais referências a `telegraf/markup`.
+- [ ] `telegramChannel.js` delega toda a construção de botões ao `payload.actions`.
+- [ ] Ramo atual é `feat/gate-4-l3-cleanup`.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
+
+---
+
 ## Commit (only after human approval)
 
 ```bash
-cd /Users/coelhotv/git-icloud/dosiq
-npm run lint
-git add server/notifications/channels/telegramChannel.js \
+rtk lint
+rtk git add server/notifications/channels/telegramChannel.js \
         server/notifications/channels/expoPushChannel.js
-git commit -m "$(cat <<'EOF'
+rtk git commit -m "$(cat <<'EOF'
 refactor(notifications): canais viram delivery puro; actions[] mapeadas para affordances nativas
 
 - telegramChannel: deleta formatMessage(), kind inference e wrapping *title*\nbody
@@ -357,5 +355,5 @@ refactor(notifications): canais viram delivery puro; actions[] mapeadas para aff
 
 EOF
 )"
-git push origin fix/wave-12/notification-architecture-consolidation
+rtk git push origin feat/gate-4-l3-cleanup
 ```

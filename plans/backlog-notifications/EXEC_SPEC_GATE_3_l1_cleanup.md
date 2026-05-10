@@ -39,8 +39,8 @@ Specific changes:
 Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 3).
 
 **Validações Obrigatórias**:
-- `! grep -q "formatMedicineWithStrength" server/bot/tasks.js` (Audit: should only be in L2 helpers)
-- `! grep -q "📈" server/bot/tasks.js` (No emoji leakage in business logic)
+- `! rtk grep -q "formatMedicineWithStrength" server/bot/tasks.js` (Audit: should only be in L2 helpers)
+- `! rtk grep -q "📈" server/bot/tasks.js` (No emoji leakage in business logic)
 - `verify_no_leakage_L1_to_L3` (Check if L1 sends formatted strings in metadata)
 
 ---
@@ -51,9 +51,16 @@ Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 3).
 rtk git log --oneline -5
 # GATE 2 commit must be at the top
 
-# Confirm doseFormatters.js is gone
-rtk ls server/bot/utils/doseFormatters.js 2>&1
-# Expected: "No such file or directory"
+# Confirm you are on the correct branch
+rtk git branch --show-current
+# Expected: feat/gate-3-l1-cleanup
+# If not, create it:
+rtk git checkout -b feat/gate-3-l1-cleanup
+
+# Confirm the previous refactor plan is already merged (these files must exist)
+rtk ls server/notifications/payloads/buildNotificationPayload.js
+rtk ls server/notifications/channels/telegramChannel.js
+rtk ls server/notifications/dispatcher/dispatchNotification.js
 
 # Confirm dose_reminder* cases use .parse() in buildNotificationPayload
 rtk grep -n "doseReminderByPlanDataSchema.parse" server/notifications/payloads/buildNotificationPayload.js
@@ -313,29 +320,36 @@ If there are zero usages remaining after Steps 2 and 3, also remove their import
 ## Verification Commands
 
 ```bash
-# 1. Lint
-cd /Users/coelhotv/git-icloud/dosiq && rtk lint
+# 1. Lint must pass
+rtk lint
 
-# 2. Critical tests
+# 2. Critical tests must pass
 rtk npm run test:critical
 
-# 3. No presentation helpers in tasks.js
-rtk grep -n "escapeMarkdownV2\|MarkdownV2\|getMotivationalNudge\|getGreeting\|getTimeOfDay" server/bot/tasks.js
-# Expected: zero results
+# 3. Confirm removal of formatting from tasks.js
+rtk grep -n "teclado" server/bot/tasks.js
+# Expected: zero results (except maybe comments/unrelated logs)
 
-# 4. No formatMedicineWithStrength in tasks.js
+# 4. Confirm logic move to buildNotificationPayload.js
+rtk grep -n "dose_reminder" server/notifications/payloads/buildNotificationPayload.js
+# Expected: switch case blocks
+
+# 5. Confirm use of dispatchNotification in tasks.js
+rtk grep -n "dispatchNotification" server/bot/tasks.js
+
+# 6. No formatting helpers in tasks.js
 rtk grep -n "formatMedicineWithStrength\|formatIntakeQuantity" server/bot/tasks.js
 # Expected: zero results (or explain any remaining ones in the report)
 
-# 5. storytelling gone from tasks.js
+# 7. storytelling gone from tasks.js
 rtk grep -n "storytelling" server/bot/tasks.js
 # Expected: zero results
 
-# 6. comparison object appears in tasks.js
+# 8. comparison object appears in tasks.js
 rtk grep -n "comparison" server/bot/tasks.js
 # Expected: results showing the new comparison object
 
-# 7. adherenceReportDataSchema uses comparison not storytelling
+# 9. adherenceReportDataSchema uses comparison not storytelling
 rtk grep -n "storytelling" server/notifications/payloads/buildNotificationPayload.js
 # Expected: zero results
 ```
@@ -363,10 +377,20 @@ Present the following to the human for review:
 
 ---
 
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] `server/bot/tasks.js` não contém mais lógica de `Markup` (inline keyboards).
+- [ ] Todos os disparos em `tasks.js` usam `dispatchNotification`.
+- [ ] `buildNotificationPayload.js` contém os mappers para os payloads removidos do L1.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
+
+---
+
 ## Commit (only after human approval)
 
 ```bash
-cd /Users/coelhotv/git-icloud/dosiq
 rtk lint
 rtk git add server/bot/tasks.js server/notifications/payloads/buildNotificationPayload.js
 rtk git commit -m "$(cat <<'EOF'

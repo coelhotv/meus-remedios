@@ -12,10 +12,10 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `git checkout -b feat/gate-5-dispatcher-boundary`.
-2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-5-dispatcher-boundary`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
-4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
@@ -38,21 +38,32 @@ Enforce a single, unambiguous contract at the dispatcher boundary:
 Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 5).
 
 **Validações Obrigatórias**:
-- `! grep -q "payload || buildNotificationPayload" server/notifications/dispatcher/dispatchNotification.js`
-- `! grep -q "isGroupedKind" server/notifications/dispatcher/dispatchNotification.js`
-- `npm run test:critical` (Verificar se a DLQ e o Dispatcher continuam operando sem fallbacks)
+- `! rtk grep -q "payload || buildNotificationPayload" server/notifications/dispatcher/dispatchNotification.js`
+- `! rtk grep -q "isGroupedKind" server/notifications/dispatcher/dispatchNotification.js`
+- `rtk npm run test:critical` (Verificar se a DLQ e o Dispatcher continuam operando sem falhas)
 
 ---
 
 ## Prerequisites
 
 ```bash
-git log --oneline -5
+rtk git log --oneline -5
 # GATE 4 commit must be at the top
 
 # Confirm actions[] work end-to-end
 grep -n "actions" server/notifications/dispatcher/dispatchNotification.js
 # If dispatcher currently strips actions[], note it for Step 3
+
+# Confirm you are on the correct branch
+rtk git branch --show-current
+# Expected: feat/gate-5-dispatcher-boundary
+# If not, create it:
+rtk git checkout -b feat/gate-5-dispatcher-boundary
+
+# Confirm the previous refactor plan is already merged (these files must exist)
+rtk ls server/notifications/payloads/buildNotificationPayload.js
+rtk ls server/notifications/channels/telegramChannel.js
+rtk ls server/notifications/dispatcher/dispatchNotification.js
 
 # Confirm no more isRetry in data from tasks.js
 grep -n "isRetry" server/bot/tasks.js
@@ -241,29 +252,35 @@ If any of the three are false: fix them (but do not add features — just remove
 ## Verification Commands
 
 ```bash
-# 1. Lint
-cd /Users/coelhotv/git-icloud/dosiq && npm run lint
+# 1. Lint must pass
+cd /Users/coelhotv/git-icloud/dosiq && rtk lint
 
-# 2. Critical tests
-npm run test:critical
+# 2. Critical tests must pass
+rtk npm run test:critical
 
-# 3. No payload fallback in dispatcher
+# 3. Confirm dispatchNotification logic
+rtk grep -n "notificationPayloadSchema.parse" server/notifications/dispatcher/dispatchNotification.js
+
+# 4. Confirm inbox insertion
+rtk grep -n "notification_inbox" server/notifications/dispatcher/dispatchNotification.js
+
+# 5. No payload fallback in dispatcher
 grep -n "payload || buildNotificationPayload\|payload ? payload" server/notifications/dispatcher/dispatchNotification.js
 # Expected: zero results
 
-# 4. No isGroupedKind string match
+# 6. No isGroupedKind string match
 grep -n "isGroupedKind\|dose_reminder_by_plan.*dose_reminder_misc" server/notifications/dispatcher/dispatchNotification.js
 # Expected: zero results
 
-# 5. data.isRetry gone from retry handler
+# 7. data.isRetry gone from retry handler
 grep -n "data.*isRetry\|isRetry.*true" api/dlq/_handlers/retry.js
 # Expected: only context.isRetry (not data.isRetry)
 
-# 6. Shim removed from builder
+# 8. Shim removed from builder
 grep -n "data.isRetry" server/notifications/payloads/buildNotificationPayload.js
 # Expected: zero results
 
-# 7. Confirm isRetry still works via context
+# 9. Confirm isRetry still works via context
 grep -n "context.isRetry\|context?.isRetry" server/notifications/payloads/buildNotificationPayload.js
 # Expected: 1 result
 ```
@@ -289,17 +306,30 @@ Present the following to the human for review:
 
 ---
 
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] `dispatchNotification.js` valida o payload contra `notificationPayloadSchema`.
+- [ ] `dispatchNotification.js` insere o payload na tabela `notification_inbox`.
+- [ ] O tratamento de erros do dispatcher não interrompe o fluxo principal de envio.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
+
+---
+
 ## Commit (only after human approval)
 
 ```bash
-cd /Users/coelhotv/git-icloud/dosiq
-npm run lint
-git add server/notifications/dispatcher/dispatchNotification.js \
+rtk lint
+rtk git add server/notifications/dispatcher/dispatchNotification.js \
         api/dlq/_handlers/retry.js \
         server/notifications/payloads/buildNotificationPayload.js
-git commit -m "$(cat <<'EOF'
-refactor(dispatcher): contrato único; isRetry em context; protocolId derivado de schema
+rtk git commit -m "$(cat <<'EOF'
+feat(notifications): dispatcher vira o centro da persistência (Inbox)
 
+- dispatchNotification valida payload contra schema L2
+- Insere mensagem formatada na tabela notification_inbox
+- Garante persistência agnóstica de canal para o Inbox do usuário
 - dispatcher: remove fallback payload||buildNotificationPayload (contrato único)
 - dispatcher: remove isGroupedKind string-match; protocolId via data?.protocolId
 - dispatcher: provider_metadata com whitelist explícita
@@ -309,5 +339,5 @@ refactor(dispatcher): contrato único; isRetry em context; protocolId derivado d
 
 EOF
 )"
-git push origin fix/wave-12/notification-architecture-consolidation
+rtk git push origin feat/gate-5-dispatcher-boundary
 ```

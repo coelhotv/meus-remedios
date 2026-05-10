@@ -12,10 +12,10 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `git checkout -b feat/gate-5-5-inbox-renderer`.
-2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-5-inbox-renderer`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
-4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
@@ -35,20 +35,20 @@ This gate adds a MarkdownV2 → rich text parser to the Inbox renderer on both p
 Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 5.5).
 
 **Validações Obrigatórias**:
-- `grep -q "parseTelegramMarkdown" apps/web/src/features/notifications/components/InboxItem.js` (Ou componente equivalente identificado no Step 1)
-- `npm run test:critical` (Verificar se os testes de UI passam com o novo renderer)
+- `rtk grep -q "parseTelegramMarkdown" apps/web/src/features/notifications/components/InboxItem.js` (Ou componente equivalente identificado no Step 1)
+- `rtk npm run test:critical` (Verificar se os testes de UI passam com o novo renderizador)
 
 ---
 
 ## Prerequisites
 
 ```bash
-git log --oneline -5
+rtk git log --oneline -5
 # GATE 5 commit must be at the top
 
 # Find inbox UI components
-find apps/web/src -iname "*inbox*" -o -iname "*notification*" | grep -v node_modules | grep -v ".test."
-find apps/mobile/src -iname "*inbox*" -o -iname "*notification*" | grep -v node_modules | grep -v ".test." 2>/dev/null
+rtk find apps/web/src -iname "*inbox*" -o -iname "*notification*" | rtk grep -v node_modules | rtk grep -v ".test."
+rtk find apps/mobile/src -iname "*inbox*" -o -iname "*notification*" | rtk grep -v node_modules | rtk grep -v ".test." 2>/dev/null
 ```
 
 Read the inbox components before making any changes. Identify:
@@ -83,9 +83,19 @@ Telegram MarkdownV2 uses these patterns that appear in stored `body` text:
 
 Identify the exact component that renders notification body text. Read it fully.
 
-On web (`apps/web/src`), look for:
-- A component rendering a list of notifications from `notification_inbox`
-- The JSX element that outputs `notification.body` or similar
+```bash
+# Confirm you are on the correct branch
+rtk git branch --show-current
+# Expected: feat/gate-5-inbox-renderer
+# If not, create it:
+rtk git checkout -b feat/gate-5-inbox-renderer
+
+# Confirm the previous refactor plan is already merged (these files must exist)
+rtk ls server/notifications/payloads/buildNotificationPayload.js
+rtk ls server/notifications/channels/telegramChannel.js
+rtk ls server/notifications/dispatcher/dispatchNotification.js
+```
+On web (`apps/web/src`), look for a component rendering a list of notifications from `notification_inbox`.
 
 On mobile (`apps/mobile/src`), look for the equivalent.
 
@@ -266,17 +276,23 @@ Expected render: "João" and "2" in bold, "Atorvastatina" in bold, parentheses a
 ## Verification Commands
 
 ```bash
-# 1. Lint
-cd /Users/coelhotv/git-icloud/dosiq && npm run lint
+# 1. Lint must pass
+cd /Users/coelhotv/git-icloud/dosiq && rtk lint
 
-# 2. Tests
-npm run test:critical
+# 2. Critical tests must pass
+rtk npm run test:critical
 
-# 3. Confirm no new heavy dependencies added
+# 3. Confirm use of NotificationActions in NotificationItem
+rtk grep -n "NotificationActions" apps/web/src/features/notifications/components/NotificationItem.jsx
+
+# 4. Confirm actionSchema mapping
+rtk grep -n "actionSchema.parse" apps/web/src/features/notifications/components/NotificationActions.jsx
+
+# 5. Confirm no new heavy dependencies added
 cat apps/web/package.json | grep -E "react-markdown|marked|showdown|remark"
 # Expected: ideally nothing new, or confirm the added lib is lightweight (<10KB)
 
-# 4. Confirm parseTelegramMarkdown is NOT applied to title
+# 6. Confirm parseTelegramMarkdown is NOT applied to title
 grep -rn "parseTelegramMarkdown" apps/web/src apps/mobile/src 2>/dev/null
 # Review each usage — should only be for `body` field, not `title`
 ```
@@ -302,14 +318,25 @@ Present the following to the human for review:
 
 ---
 
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] `NotificationItem.jsx` utiliza o componente `NotificationActions`.
+- [ ] `NotificationActions.jsx` mapeia `action.id` para links/botões da web.
+- [ ] Todos os novos arquivos (`NEW`) seguem o padrão de path alias.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
+
+---
+
 ## Commit (only after human approval)
 
 ```bash
 cd /Users/coelhotv/git-icloud/dosiq
-npm run lint
+rtk lint
 # Add all modified inbox component files and parser utility
-git add <inbox-component-files> <parser-utility-file>
-git commit -m "$(cat <<'EOF'
+rtk git add <inbox-component-files> <parser-utility-file>
+rtk git commit -m "$(cat <<'EOF'
 fix(inbox): renderiza MarkdownV2 do body para paridade visual com Telegram
 
 - parseTelegramMarkdown: parser subset de MarkdownV2 (bold, italic, unescape)
@@ -318,5 +345,5 @@ fix(inbox): renderiza MarkdownV2 do body para paridade visual com Telegram
 
 EOF
 )"
-git push origin feat/gate-5-5-inbox-renderer
+rtk git push origin feat/gate-5-inbox-renderer
 ```

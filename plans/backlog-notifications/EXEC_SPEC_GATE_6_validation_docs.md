@@ -12,10 +12,10 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `git checkout -b feat/gate-6-validation-docs`.
-2. **Zero Lint Regressions**: `npm run lint` must show zero errors. 
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-6-validation-docs`.
+2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
-4. **Hard Stop**: NO `git commit` or `git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
+4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
 5. **PR Template**: Use `docs/standards/PULL_REQUEST_TEMPLATE.md` for the final PR.
 
 ---
@@ -37,22 +37,21 @@ Final validation gate. No architectural changes. Confirms all previous gates wor
 Referência de validação: `ORCHESTRATOR_CONFIG.json` (ID: 6).
 
 **Validações Obrigatórias**:
-- `ls docs/architecture/NOTIFICATIONS.md` (Documentação atualizada)
-- `npm run validate:agent` (Obrigatório antes do PR final)
+- `rtk ls docs/architecture/NOTIFICATIONS.md` (Documentação atualizada)
+- `rtk npm run validate:agent` (Obrigatório antes do PR final)
 
 ---
 
 ## Prerequisites
 
 ```bash
-git log --oneline -10
+rtk git log --oneline -10
 # All previous gate commits must be visible
 
 # Run the full success criteria checklist from the consolidation plan
-grep -r "doseFormatters" server/ apps/ 2>/dev/null
-# Expected: zero results
-
-grep -r "data\.isRetry" server/ api/ 2>/dev/null
+# Find inbox UI components
+rtk find apps/web/src -iname "*inbox*" -o -iname "*notification*" | rtk grep -v node_modules | rtk grep -v ".test."
+rtk find apps/mobile/src -iname "*inbox*" -o -iname "*notification*" | rtk grep -v node_modules | rtk grep -v ".test." 2>/dev/null
 # Expected: zero results
 
 grep -n "passthrough" server/notifications/payloads/buildNotificationPayload.js
@@ -97,7 +96,7 @@ If any kind is missing from the frontend function, add it. If the function uses 
 
 ```bash
 cd /Users/coelhotv/git-icloud/dosiq
-npm run validate:agent
+rtk npm run validate:agent
 ```
 
 This command has a 10-minute kill switch. If it fails:
@@ -198,7 +197,7 @@ Trace through `buildNotificationPayload.js` to confirm `context.isRetry` trigger
 
 Read the current file first:
 ```bash
-cat docs/architecture/NOTIFICATIONS.md
+rtk cat docs/architecture/NOTIFICATIONS.md
 ```
 
 Update the file to reflect the post-consolidation architecture. The document should include:
@@ -264,6 +263,19 @@ Run all of these and include output in the Gate Report:
 ```bash
 cd /Users/coelhotv/git-icloud/dosiq
 
+# Confirm you are on the correct branch
+rtk git branch --show-current
+# Expected: feat/gate-6-validation-docs
+# If not, create it:
+rtk git checkout -b feat/gate-6-validation-docs
+
+# Confirm the previous refactor plan is already merged
+cd /Users/coelhotv/git-icloud/dosiq
+rtk lint
+rtk git add server/notifications/payloads/buildNotificationPayload.js
+rtk ls server/notifications/channels/telegramChannel.js
+rtk ls server/notifications/dispatcher/dispatchNotification.js
+
 # 1. No doseFormatters anywhere
 grep -r "doseFormatters" server/ apps/
 # Expected: zero results
@@ -285,14 +297,15 @@ wc -l server/notifications/payloads/buildNotificationPayload.js
 # Expected: < 700 lines (if over, flag for cosmetic split in a future wave)
 
 # 6. Full suite
-npm run validate:agent
+rtk npm run validate:agent
 # Expected: all green, no timeout
 
 # 7. kindSchema and dlqService in sync
 grep -n "dose_reminder_by_plan\|dose_reminder_misc\|dlq_digest\|titration_alert\|prescription_alert" apps/web/src/services/api/dlqService.js
 # Expected: all 5 kinds present with labels
 
-# 8. No presentation logic in L1
+# 8. Check for Markdown libs
+rtk read apps/web/package.json | rtk grep -E "react-markdown|marked|showdown|remark"
 grep -n "escapeMarkdownV2\|MarkdownV2" server/bot/tasks.js
 # Expected: zero results
 
@@ -324,14 +337,36 @@ Present the following to the human for review:
    - [ ] dose_reminder* in Inbox have visual parity with Telegram
    - [ ] `NOTIFICATIONS.md` updated with extension guides
 
-**Wait for explicit human approval before creating the PR.**
+**Wait for explicit human approval before proceeding.**
+
+---
+
+## ✅ Delivery Checklist (Pre-Commit)
+
+- [ ] `rtk lint` passes with zero errors.
+- [ ] `rtk npm run test:critical` passes 100%.
+- [ ] `docs/notifications/README.md` reflete a nova arquitetura de 3 camadas.
+- [ ] Diagramas Mermaid atualizados para incluir o fluxo do Inbox.
+- [ ] Código legado (arquivos marcados para `DELETE`) removido.
+- [ ] Gate Report apresentado e aprovado pelo Humano.
 
 ---
 
 ## PR Creation (only after human approval)
 
 ```bash
-cd /Users/coelhotv/git-icloud/dosiq
+# 1. Lint must pass
+cd /Users/coelhotv/git-icloud/dosiq && rtk lint
+
+# 2. Critical tests must pass
+rtk npm run test:critical
+
+# 3. Confirm README update
+rtk grep -n "Architecture Consolidation" docs/notifications/README.md
+
+# 4. Confirm Mermaid diagrams
+rtk grep -n "mermaid" docs/notifications/README.md
+
 git push origin feat/gate-6-validation-docs
 
 gh pr create \
@@ -357,7 +392,7 @@ gh pr create \
 - GATE 6: Validation & Docs ✅
 
 ## Test plan
-- [ ] `npm run validate:agent` passing
+- [ ] `rtk npm run validate:agent` passing
 - [ ] `dose_reminder_by_plan` delivers identical message to Telegram and Inbox
 - [ ] DLQ retry delivers message with "(Reenvio)" decoration
 - [ ] No regressions in existing notification kinds
