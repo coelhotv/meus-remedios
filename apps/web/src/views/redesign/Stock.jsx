@@ -81,7 +81,7 @@ export default function Stock({ initialParams, onClearParams }) {
         endDate: p.end_date,
         status: deriveProtocolStatus(p),
       }))
-  }, [dashboardData?.protocols, medicines])
+  }, [dashboardData, medicines])
 
   const handleOpenModal = (medicineId = null) => {
     if (medicines.length === 0) return

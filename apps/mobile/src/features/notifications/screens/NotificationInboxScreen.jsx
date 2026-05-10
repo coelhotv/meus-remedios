@@ -7,7 +7,7 @@
  * R-169: SafeAreaView obrigatório. R-180: header 28/800 padrão Santuário.
  * R-184: auto-refresh no useNotificationLog. R-187: cache key por userId.
  */
-import { useEffect, useCallback, useMemo, useState, useRef } from 'react'
+import { useEffect, useCallback, useMemo, useState, useRef, startTransition } from 'react'
 import {
   View, Text, SectionList, StyleSheet, TouchableOpacity,
   RefreshControl, ActivityIndicator, AppState, ScrollView,
@@ -267,7 +267,11 @@ export default function NotificationInboxScreen({ navigation, route }) {
   const [lastSeen, setLastSeen] = useState(null)
   useEffect(() => {
     AsyncStorage.getItem(getStorageKey(userId))
-      .then((val) => setLastSeen(val))
+      .then((val) => {
+        startTransition(() => {
+          setLastSeen(val)
+        })
+      })
       .catch((err) => {
         if (__DEV__) console.warn('[NotificationInboxScreen] lastSeen read error', err)
       })
@@ -299,7 +303,11 @@ export default function NotificationInboxScreen({ navigation, route }) {
     setDoseLogs(parsed.success ? parsed.data : [])
   }, [userId])
 
-  useEffect(() => { loadDoseLogs() }, [loadDoseLogs])
+  useEffect(() => {
+    startTransition(() => {
+      loadDoseLogs()
+    })
+  }, [loadDoseLogs])
 
   const refreshAll = useCallback(async () => {
     await Promise.all([refresh(), loadDoseLogs()])
@@ -309,10 +317,12 @@ export default function NotificationInboxScreen({ navigation, route }) {
   useEffect(() => {
     if (!loading && data && !hasMarkedRead.current) {
       hasMarkedRead.current = true
-      markAllRead()
-      AsyncStorage.getItem(getStorageKey(userId))
-        .then((val) => setLastSeen(val))
-        .catch(() => {})
+      startTransition(() => {
+        markAllRead()
+        AsyncStorage.getItem(getStorageKey(userId))
+          .then((val) => setLastSeen(val))
+          .catch(() => {})
+      })
     }
   }, [loading, data, markAllRead, userId])
 
