@@ -82,7 +82,7 @@ export default function Navigation() {
       if (!url) return
 
       // PKCE flow: dosiq://auth/callback?code=xxxxx
-      const queryString = url.split('?')[1]
+      const queryString = url.split('?')[1]?.split('#')[0]
       if (queryString) {
         const queryParams = Object.fromEntries(new URLSearchParams(queryString))
         if (queryParams.code) {
