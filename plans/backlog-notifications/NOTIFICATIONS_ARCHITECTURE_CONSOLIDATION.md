@@ -2,9 +2,6 @@
 
 Sequencia o refactor de 3 camadas iniciado em `ORIGINAL_NOTIFICATONS_ARCHITECTURE_REFACTOR.md`, fechando vazamentos residuais identificados pos-merge — principalmente o caso `dose_reminder*` que ficou de fora do plano original. Resultado: arquitetura limpa, contratos estritos, **drop-in ready** para novos canais (WhatsApp, SMS, Email) e novos formatos (HTML inbox, rich push) sem nova rodada de refactor.
 
-> Branch: `fix/wave-12/notification-architecture-consolidation`
-> Pre-requisito: refactor original (`ORIGINAL_NOTIFICATONS_ARCHITECTURE_REFACTOR.md`) ja mergeado.
-
 ---
 
 ## Orchestration & Quality Control
@@ -339,11 +336,11 @@ Decisoes conscientes documentadas em `.agent/memory/decisions/infra_and_deploy/`
 
 ## Success Criteria
 
-- [ ] `grep -r "doseFormatters" server/ apps/` retorna zero
-- [ ] `grep -r "data.isRetry" server/ api/` retorna zero
-- [ ] `grep -r "passthrough" server/notifications/payloads/` retorna zero
+- [ ] `rtk grep -r "doseFormatters" server/ apps/` retorna zero
+- [ ] `rtk grep -r "data.isRetry" server/ api/` retorna zero
+- [ ] `rtk grep -r "passthrough" server/notifications/payloads/` retorna zero
 - [ ] `telegramChannel.js` < 100 linhas (hoje ~165)
 - [ ] `buildNotificationPayload.js` ainda compreensivel (<700 linhas) — se ultrapassar, dividir builder por kind em arquivos separados (refactor cosmetico, nao parte deste plano)
-- [ ] `npm run validate:agent` passa
+- [ ] `rtk npm run validate:agent` passa
 - [ ] Mensagens `dose_reminder*` em Inbox e Push tem paridade visual com Telegram
 - [ ] Documentacao `docs/architecture/NOTIFICATIONS.md` reflete arquitetura final com guia de extensao
