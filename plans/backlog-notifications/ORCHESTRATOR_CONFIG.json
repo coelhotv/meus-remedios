@@ -62,7 +62,7 @@
         "! grep -q 'formatMedicineWithStrength' server/bot/tasks.js",
         "! grep -q '📈' server/bot/tasks.js"
       ],
-      "status": "planned"
+      "status": "merged"
     },
     {
       "id": 4,
@@ -72,7 +72,7 @@
         "! grep -q 'formatMessage' server/notifications/channels/telegramChannel.js",
         "grep -q 'payload.actions' server/notifications/channels/telegramChannel.js"
       ],
-      "status": "planned"
+      "status": "reviewing"
     },
     {
       "id": 5,
