@@ -74,20 +74,23 @@ function determineOverallStatus(isSuppressed, activeResults, validChannels) {
   return 'falhou'
 }
 
-function buildProviderMetadata(metadata, results, context) {
+function buildProviderMetadata(metadata, results = [], context = {}) {
   if (!metadata) return {}
   
   const pm = {
     kind: metadata.kind,
     builtAt: metadata.builtAt,
+    ...(metadata.details ? { details: metadata.details } : {}),
+    ...(metadata.percentage ? { percentage: metadata.percentage } : {}),
+    ...(metadata.nudge ? { nudge: metadata.nudge } : {}),
   }
 
   if (context?.isRetry) pm.isRetry = true
 
-  const telegramRes = results.find(r => r.channel === 'telegram')
+  const telegramRes = (results || []).find(r => r.channel === 'telegram')
   if (telegramRes?.messageId) pm.telegram_message_id = telegramRes.messageId
 
-  const expoRes = results.find(r => r.channel === 'mobile_push')
+  const expoRes = (results || []).find(r => r.channel === 'mobile_push')
   // expoPushChannel retorna { tickets: [{ id, status }, ...] }
   if (expoRes?.tickets?.[0]?.id) pm.expo_ticket_id = expoRes.tickets[0].id
 

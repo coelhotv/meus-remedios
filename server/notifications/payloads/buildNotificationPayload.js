@@ -47,7 +47,7 @@ export function buildNotificationPayload({ kind, data, context = {} }) {
   // 1. Validar Kind
   const validatedKind = kindSchema.parse(kind);
 
-  const metadata = buildMetadata(validatedKind, context);
+  const metadata = buildMetadata(validatedKind, context, data);
   let title, body, pushBody;
   let actions = [];
 
@@ -285,14 +285,21 @@ function applyRetryDecoration(content, context) {
 }
 
 /**
- * Constrói objeto de metadados estrito conforme contrato.
+ * Constrói objeto de metadados conforme contrato (passthrough).
  */
-function buildMetadata(kind, context) {
+function buildMetadata(kind, context, data = {}) {
   return {
     kind,
     builtAt: getServerTimestamp(),
     ...(context.correlationId ? { correlationId: context.correlationId } : {}),
-    ...(context.details ? { details: context.details } : {})
+    ...(context.details ? { details: context.details } : {}),
+    // Campos de negócio para persistência (Inbox/Logs)
+    ...(data.protocolId ? { protocolId: data.protocolId } : {}),
+    ...(data.medicineName ? { medicineName: data.medicineName } : {}),
+    ...(data.planId ? { planId: data.planId } : {}),
+    ...(data.planName ? { planName: data.planName } : {}),
+    ...(data.percentage ? { percentage: data.percentage } : {}),
+    ...(data.nudge ? { nudge: data.nudge } : {}),
   };
 }
 
