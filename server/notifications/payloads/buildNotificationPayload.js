@@ -132,8 +132,8 @@ export function buildNotificationPayload({ kind, data, context = {} }) {
   // 2. Resolver Deeplink lógico (Responsabilidade da Layer 2)
   const deeplink = resolveDeeplink(validatedKind, data);
 
-  // 3. Aplicar Decoração de Reenvio (Gate 1 — Shim de transição)
-  const decorated = applyRetryDecoration({ title, body, pushBody }, context, data);
+  // 3. Aplicar Decoração de Reenvio (Gate 1 — Shim removido, agora via context)
+  const decorated = applyRetryDecoration({ title, body, pushBody }, context);
 
   // Validação do Contrato de Saída (Gate L2 -> L3)
   return notificationPayloadSchema.parse({
@@ -272,8 +272,8 @@ function formatDoseReminderMisc(data, metadata) {
  * Aplica decoração visual de reenvio se necessário.
  * Isolado para reduzir complexidade da função principal.
  */
-function applyRetryDecoration(content, context, data) {
-  const isRetry = context.isRetry ?? data.isRetry ?? false;
+function applyRetryDecoration(content, context) {
+  const isRetry = context.isRetry ?? false;
   if (!isRetry) return content;
 
   return {
