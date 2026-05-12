@@ -82,7 +82,7 @@
         "! grep -q 'payload || buildNotificationPayload' server/notifications/dispatcher/dispatchNotification.js",
         "! grep -q 'isGroupedKind' server/notifications/dispatcher/dispatchNotification.js"
       ],
-      "status": "planned"
+      "status": "review"
     },
     {
       "id": 5.5,
