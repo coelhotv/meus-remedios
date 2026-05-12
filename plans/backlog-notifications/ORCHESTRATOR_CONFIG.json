@@ -72,7 +72,7 @@
         "! grep -q 'formatMessage' server/notifications/channels/telegramChannel.js",
         "grep -q 'payload.actions' server/notifications/channels/telegramChannel.js"
       ],
-      "status": "reviewing"
+      "status": "merged"
     },
     {
       "id": 5,
