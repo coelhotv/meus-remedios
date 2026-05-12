@@ -1,7 +1,9 @@
 import { supabase } from '../../services/supabase.js'
+import { escapeMarkdownV2 } from '../../utils/formatters.js'
 
 const SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000'
 const EMPTY_RESULT = { channel: 'telegram', success: true, attempted: 0, delivered: 0, failed: 0, deactivatedTokens: [], errors: [] }
+const TELEGRAM_CALLBACK_LIMIT = 64
 
 async function getTelegramChatId(userId) {
   if (userId === SYSTEM_USER_ID) return process.env.ADMIN_CHAT_ID
@@ -22,7 +24,9 @@ function encodeCallback(action) {
     case 'details': raw = p.kind === 'plan' ? `details:plan:${p.planIdShort}` : `details:misc:${p.hhmm}`; break
     default: return null
   }
-  return Buffer.byteLength(raw, 'utf8') <= 64 ? raw : raw.slice(0, 64)
+  // TODO: Centralize callback limit and refine truncation logic to avoid data corruption.
+  // Currently accepting truncation as technical debt due to Telegram 64-byte limit.
+  return Buffer.byteLength(raw, 'utf8') <= TELEGRAM_CALLBACK_LIMIT ? raw : raw.slice(0, TELEGRAM_CALLBACK_LIMIT)
 }
 
 export async function sendTelegramNotification({ userId, payload, context, bot }) {
@@ -50,7 +54,8 @@ export async function sendTelegramNotification({ userId, payload, context, bot }
   }
 
   try {
-    const sentMessage = await bot.sendMessage(chatId, payload.body, options)
+    const message = payload.title ? `*${escapeMarkdownV2(payload.title)}*\n${payload.body}` : payload.body
+    const sentMessage = await bot.sendMessage(chatId, message, options)
     const messageId = sentMessage?.messageId ?? sentMessage?.message_id
     
     console.info('[telegramChannel] entregue', { correlationId, userId, chatId, withButtons: !!options.reply_markup })
