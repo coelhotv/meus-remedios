@@ -108,7 +108,22 @@ function _applyFilter(sections, activeFilter, lastSeen) {
 function _buildNavParams(item) {
   const d = parseISO(item.sent_at)
   const hhmm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  const meta = item.provider_metadata ?? {}
+
+  // 1. Priorizar metadados de navegação explícitos (Gate 5.5 hardening)
+  if (meta.navigation?.screen) {
+    return {
+      screen: meta.navigation.screen,
+      ...meta.navigation.params,
+      at: meta.navigation.params?.at || hhmm
+    }
+  }
+
+  // 2. Fallback resiliente para registros legados
   const params = {}
+  const protocolIds = meta.protocolIds ?? 
+                      meta.protocol_ids ?? 
+                      (Array.isArray(item.details) ? item.details.map(d => d.protocol_id).filter(Boolean) : (item.details?.protocol_id ? [item.details.protocol_id] : []))
 
   if (item.notification_type === 'dose_reminder' && item.protocol_id) {
     params.screen = 'dose-individual'
@@ -121,7 +136,7 @@ function _buildNavParams(item) {
     params.at = hhmm
   } else if (item.notification_type === 'dose_reminder_misc') {
     params.screen = 'bulk-misc'
-    params.protocolIds = item.provider_metadata?.protocol_ids ?? []
+    params.protocolIds = protocolIds
     params.at = hhmm
   }
 
@@ -171,7 +186,11 @@ function buildWasTakenMap(notifications, doseLogs) {
       n.notification_type === 'dose_reminder_by_plan' ||
       n.notification_type === 'dose_reminder_misc'
     ) {
-      const protocolIds = n.provider_metadata?.protocol_ids ?? []
+      const meta = n.provider_metadata ?? {}
+      const protocolIds = meta.protocolIds ?? 
+                          meta.protocol_ids ?? 
+                          (Array.isArray(n.details) ? n.details.map(d => d.protocol_id).filter(Boolean) : (n.details?.protocol_id ? [n.details.protocol_id] : []))
+      
       if (!protocolIds.length) continue
       const taken = protocolIds.filter(pid =>
         doseLogs.some(

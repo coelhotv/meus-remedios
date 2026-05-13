@@ -12,7 +12,7 @@
 
 As per `ORCHESTRATOR_CONFIG.json`, this gate MUST follow these rules:
 
-1. **New Feature Branch**: `rtk git checkout -b feat/gate-5-inbox-renderer`.
+1. **New Feature Branch**: `rtk git checkout -b feat/gate-5-5-inbox-renderer`.
 2. **Zero Lint Regressions**: `rtk lint` must show zero errors. 
 3. **Complexity Limit**: Max complexity 15. If a function exceeds this, extract helpers.
 4. **Hard Stop**: NO `rtk git commit` or `rtk git push` until all verification commands pass AND the Human Reviewer gives explicit approval of the diff.
@@ -86,9 +86,9 @@ Identify the exact component that renders notification body text. Read it fully.
 ```bash
 # Confirm you are on the correct branch
 rtk git branch --show-current
-# Expected: feat/gate-5-inbox-renderer
+# Expected: feat/gate-5-5-inbox-renderer
 # If not, create it:
-rtk git checkout -b feat/gate-5-inbox-renderer
+rtk git checkout -b feat/gate-5-5-inbox-renderer
 
 # Confirm the previous refactor plan is already merged (these files must exist)
 rtk ls server/notifications/payloads/buildNotificationPayload.js
@@ -258,6 +258,89 @@ Não se esqueça de registrar no app\!
 ```
 
 Expected render: "João" and "2" in bold, "Atorvastatina" in bold, parentheses and exclamation as literal characters (not escaped).
+
+### Step 5 — Consolidate CTA logic with `NotificationActions`
+
+Create a unified component to handle CTA rendering and routing.
+
+**Web (`apps/web/src/features/notifications/components/NotificationActions.jsx`)**:
+```jsx
+import { ChevronRight } from 'lucide-react'
+import { NOTIFICATION_TYPES } from '@schemas'
+
+const CTA_MAP = {
+  [NOTIFICATION_TYPES.DOSE_REMINDER]:         { label: 'Registrar dose',    action: 'dashboard' },
+  [NOTIFICATION_TYPES.DOSE_REMINDER_BY_PLAN]: { label: 'Registrar plano',   action: 'dashboard' },
+  [NOTIFICATION_TYPES.DOSE_REMINDER_MISC]:    { label: 'Registrar doses',   action: 'dashboard' },
+  [NOTIFICATION_TYPES.STOCK_ALERT]:           { label: 'Ver estoque',        action: 'stock' },
+  [NOTIFICATION_TYPES.MISSED_DOSE]:           { label: 'Registrar atrasada', action: 'history' },
+  [NOTIFICATION_TYPES.TITRATION_UPDATE]:      { label: 'Ver tratamento',     action: 'treatment' },
+  [NOTIFICATION_TYPES.DAILY_DIGEST]:          null,
+}
+
+export default function NotificationActions({ notification, onNavigate, onOpenDoseModal, displayTitle }) {
+  const cta = CTA_MAP[notification.notification_type]
+  if (!cta || (!onNavigate && !onOpenDoseModal)) return null
+
+  const handleClick = () => {
+    const { notification_type, protocol_id, treatment_plan_id } = notification
+    if (notification_type === NOTIFICATION_TYPES.DOSE_REMINDER && onOpenDoseModal && protocol_id) {
+      onOpenDoseModal({ type: 'protocol', protocol_id })
+    } else if ([NOTIFICATION_TYPES.DOSE_REMINDER_BY_PLAN, NOTIFICATION_TYPES.DOSE_REMINDER_MISC].includes(notification_type) && onOpenDoseModal) {
+      onOpenDoseModal({
+        type: notification_type === NOTIFICATION_TYPES.DOSE_REMINDER_BY_PLAN ? 'plan' : 'protocol',
+        treatment_plan_id: treatment_plan_id ?? '',
+      })
+    } else {
+      onNavigate(cta.action)
+    }
+  }
+
+  return (
+    <button
+      className="notif-card__action"
+      onClick={handleClick}
+      aria-label={`${cta.label} — ${displayTitle}`}
+    >
+      {cta.label}
+      <ChevronRight size={13} strokeWidth={2.5} aria-hidden="true" />
+    </button>
+  )
+}
+```
+
+**Mobile (`apps/mobile/src/features/notifications/components/NotificationActions.jsx`)**:
+```jsx
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ChevronRight } from 'lucide-react-native'
+import { colors } from '../../../shared/styles/tokens'
+
+const CTA_MAP = {
+  dose_reminder:         { label: 'Registrar dose',    action: 'dashboard' },
+  dose_reminder_by_plan: { label: 'Registrar plano',   action: 'bulk-plan' },
+  dose_reminder_misc:    { label: 'Registrar doses',   action: 'bulk-misc' },
+  stock_alert:           { label: 'Ver estoque',        action: 'stock' },
+  missed_dose:           { label: 'Registrar atrasada', action: 'history' },
+  titration_update:      { label: 'Ver tratamento',     action: 'treatment' },
+}
+
+export default function NotificationActions({ notification, onNavigate, displayTitle }) {
+  const cta = CTA_MAP[notification.notification_type]
+  if (!cta || !onNavigate) return null
+
+  return (
+    <View style={styles.actionLabel}>
+      <Text style={styles.actionText}>{cta.label}</Text>
+      <ChevronRight size={13} color={colors.brand.primary} strokeWidth={2.5} />
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  actionLabel: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  actionText:  { fontSize: 13, fontWeight: '600', color: colors.brand.primary },
+})
+```
 
 ---
 
