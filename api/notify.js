@@ -285,8 +285,8 @@ async function _executeCronJobs(notificationDispatcher, bot, correlationId, spDa
     results.push('titration_alerts');
   }
 
-  // 5. Adherence Reports: Sunday (per-user timezone handles exact 23:00)
-  if (currentWeekDay === 0) {
+  // 5. Adherence Reports: Sunday 21:00-23:59 SP (window covers UTC-3 to UTC-5 at 23:00 local)
+  if (currentWeekDay === 0 && currentHour >= 21) {
     await withCorrelation(
       (context) => checkAdherenceReports(bot, { ...context, notificationDispatcher }),
       { correlationId, jobType: 'adherence_reports' }

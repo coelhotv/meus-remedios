@@ -133,16 +133,13 @@ export async function runDailyAdherenceReportViaDispatcher(dispatcher, correlati
  */
 export async function checkAdherenceReportsViaDispatcher(dispatcher, correlationId) {
   try {
-    const { data: users, error: userError } = await supabase
+    const { data: eligibleUsers, error: userError } = await supabase
       .from('user_settings')
-      .select('user_id, timezone, notification_mode, display_name');
+      .select('user_id, timezone, notification_mode, display_name')
+      .neq('notification_mode', 'silent');
 
     if (userError) throw userError;
-    if (!users || users.length === 0) return;
-
-    // WAVE 11: Respeitar o modo de notificação (Silent = nada)
-    const eligibleUsers = users.filter(u => u.notification_mode !== 'silent');
-    if (eligibleUsers.length === 0) return;
+    if (!eligibleUsers || eligibleUsers.length === 0) return;
 
     logger.info(`Iniciando relatórios semanais via Dispatcher para ${eligibleUsers.length} usuários elegíveis`, { correlationId });
 
@@ -195,14 +192,14 @@ export async function checkAdherenceReportsViaDispatcher(dispatcher, correlation
  */
 export async function checkMonthlyReportViaDispatcher(dispatcher, correlationId) {
   try {
-    const { data: users, error: userError } = await supabase
+    const { data: eligibleUsers, error: userError } = await supabase
       .from('user_settings')
-      .select('user_id, timezone, notification_mode, display_name');
+      .select('user_id, timezone, notification_mode, display_name')
+      .neq('notification_mode', 'silent');
 
     if (userError) throw userError;
-    if (!users || users.length === 0) return;
+    if (!eligibleUsers || eligibleUsers.length === 0) return;
 
-    const eligibleUsers = users.filter(u => u.notification_mode !== 'silent');
     logger.info(`Iniciando relatórios mensais via Dispatcher para ${eligibleUsers.length} usuários elegíveis`, { correlationId });
 
     for (const user of eligibleUsers) {
