@@ -92,7 +92,7 @@
         "grep -q 'parseTelegramMarkdown' apps/web/src/features/notifications/components/InboxItem.js || true",
         "npm run test:critical"
       ],
-      "status": "planned"
+      "status": "merged"
     },
     {
       "id": 6,
