@@ -40,7 +40,7 @@ describe('useTodayData', () => {
 
     const { result } = renderHook(() => useTodayData());
 
-    await waitFor(() => expect(result.current.loading).toBe(false), { timeout: 15000 });
+    await waitFor(() => expect(result.current.loading).toBe(false), { timeout: 5000 });
 
     expect(result.current.data.protocols).toHaveLength(1);
     expect(result.current.data.medicines['m1'].name).toBe('Pills');
@@ -51,7 +51,7 @@ describe('useTodayData', () => {
       '@dosiq/today-snapshot',
       expect.stringContaining('"localDay"')
     );
-  }, 20000);
+  }, 10000);
 
   it('fails online and loads from cache (stale mode)', async () => {
     supabase.auth.getSession.mockRejectedValue(new Error('Network error'));
