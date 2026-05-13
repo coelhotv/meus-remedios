@@ -27,7 +27,7 @@ function QRErrorState({ error, onRetry }) {
     <div className="emergency-qr-code error">
       <div className="qr-error-icon"><TriangleAlert size={32} /></div>
       <p>{error}</p>
-      <button className="btn btn-secondary btn-sm" onClick={onRetry}>
+      <button className="btn-emergency-outline" onClick={onRetry}>
         Tentar Novamente
       </button>
     </div>
@@ -250,10 +250,10 @@ export default function EmergencyQRCode({ cardData, medications, lastUpdated }) 
       </div>
 
       <div className="qr-actions">
-        <button className="btn btn-primary" onClick={handleDownload}>
+        <button className="btn-emergency" onClick={handleDownload}>
           <ImageDown size={16} /> Salvar Imagem
         </button>
-        <button className="btn btn-secondary" onClick={handleShare}>
+        <button className="btn-emergency-outline" onClick={handleShare}>
           <Share size={16} /> Compartilhar
         </button>
       </div>

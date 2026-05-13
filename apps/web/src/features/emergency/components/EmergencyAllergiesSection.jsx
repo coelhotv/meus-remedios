@@ -15,7 +15,7 @@ export default function EmergencyAllergiesSection({
 }) {
   return (
     <Card className="emergency-card-section" hover={false}>
-      <h3 className="section-title"><TriangleAlert size={16} /> Alergias</h3>
+      <h3 className="section-title"><TriangleAlert size={22} /> Alergias</h3>
       <p className="section-description">
         Liste suas alergias conhecidas (até 20). Isso é crucial para tratamento de emergência.
       </p>

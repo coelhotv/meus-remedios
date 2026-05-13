@@ -19,7 +19,7 @@ export default function EmergencyFormBottom({
   return (
     <>
       <Card className="emergency-card-section" hover={false}>
-        <h3 className="section-title"><Droplets size={16} /> Tipo Sanguíneo</h3>
+        <h3 className="section-title"><Droplets size={22} /> Tipo Sanguíneo</h3>
         <p className="section-description">Selecione seu tipo sanguíneo. Isso pode ser vital em uma emergência.</p>
         <div className="form-group">
           <label htmlFor="blood-type">Tipo Sanguíneo</label>
@@ -32,7 +32,7 @@ export default function EmergencyFormBottom({
       </Card>
 
       <Card className="emergency-card-section" hover={false}>
-        <h3 className="section-title"><FilePen size={16} /> Observações</h3>
+        <h3 className="section-title"><FilePen size={22} /> Observações</h3>
         <p className="section-description">Informações adicionais importantes (condições médicas, medicamentos em uso contínuo, etc.).</p>
         <div className="form-group">
           <label htmlFor="notes">Observações</label>

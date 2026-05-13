@@ -15,7 +15,7 @@ export default function EmergencyContactsSection({
 }) {
   return (
     <Card className="emergency-card-section" hover={false}>
-      <h3 className="section-title"><Phone size={16} /> Contatos de Emergência</h3>
+      <h3 className="section-title"><Phone size={22} /> Contatos de Emergência</h3>
       <p className="section-description">
         Adicione até 5 contatos que possam ser acionados em uma emergência.
       </p>
