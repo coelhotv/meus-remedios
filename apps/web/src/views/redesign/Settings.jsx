@@ -28,7 +28,7 @@ export default function SettingsRedesign({ onNavigate, mode }) {
   const handleLogout = async () => {
     if (!window.confirm('Deseja realmente sair?')) return
     Object.keys(localStorage)
-      .filter((k) => k.startsWith('sb-'))
+      .filter((k) => k.startsWith('sb-') || k.startsWith('mr_emergency_card'))
       .forEach((k) => localStorage.removeItem(k))
     window.location.reload()
   }
