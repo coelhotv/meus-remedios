@@ -104,6 +104,16 @@ function _applyFilter(sections, activeFilter, lastSeen) {
     .filter(s => s.data.length > 0)
 }
 
+// Helper para resolver lista de IDs de protocolos de forma resiliente (Gate 5.5)
+function _resolveProtocolIds(item) {
+  const meta = item.provider_metadata ?? {}
+  return meta.protocolIds ?? 
+         meta.protocol_ids ?? 
+         (Array.isArray(item.details) 
+           ? item.details.map(d => d.protocol_id || d.protocolId).filter(Boolean) 
+           : (item.details?.protocol_id || item.details?.protocolId ? [item.details.protocol_id || item.details.protocolId] : []))
+}
+
 // Resolve params de navegação a partir de um item de notificação
 function _buildNavParams(item) {
   const d = parseISO(item.sent_at)
@@ -121,9 +131,7 @@ function _buildNavParams(item) {
 
   // 2. Fallback resiliente para registros legados
   const params = {}
-  const protocolIds = meta.protocolIds ?? 
-                      meta.protocol_ids ?? 
-                      (Array.isArray(item.details) ? item.details.map(d => d.protocol_id).filter(Boolean) : (item.details?.protocol_id ? [item.details.protocol_id] : []))
+  const protocolIds = _resolveProtocolIds(item)
 
   if (item.notification_type === 'dose_reminder' && item.protocol_id) {
     params.screen = 'dose-individual'
@@ -186,10 +194,7 @@ function buildWasTakenMap(notifications, doseLogs) {
       n.notification_type === 'dose_reminder_by_plan' ||
       n.notification_type === 'dose_reminder_misc'
     ) {
-      const meta = n.provider_metadata ?? {}
-      const protocolIds = meta.protocolIds ?? 
-                          meta.protocol_ids ?? 
-                          (Array.isArray(n.details) ? n.details.map(d => d.protocol_id).filter(Boolean) : (n.details?.protocol_id ? [n.details.protocol_id] : []))
+      const protocolIds = _resolveProtocolIds(n)
       
       if (!protocolIds.length) continue
       const taken = protocolIds.filter(pid =>

@@ -47,9 +47,8 @@ export function parseTelegramMarkdown(text) {
     }
 
     return (
-      <span key={lineIndex} style={{ display: 'block' }}>
+      <span key={lineIndex} className="markdown-line">
         {parts.length > 0 ? parts : ' '}
-        {lineIndex < lines.length - 1 && <br />}
       </span>
     );
   });

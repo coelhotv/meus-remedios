@@ -29,8 +29,12 @@ export default function NotificationActions({ notification, onNavigate, onOpenDo
     const { notification_type, protocol_id, treatment_plan_id, details } = notification
     
     // Resolução resiliente de IDs (Gate 5.5 hardening)
-    const resolvedProtocolId = protocol_id || details?.find(d => d.protocol_id)?.protocol_id || ''
-    const resolvedPlanId = treatment_plan_id || ''
+    const resolvedProtocolId = protocol_id || 
+                               notification.protocolId || 
+                               details?.find(d => d.protocol_id || d.protocolId)?.protocol_id || 
+                               details?.find(d => d.protocol_id || d.protocolId)?.protocolId || 
+                               ''
+    const resolvedPlanId = treatment_plan_id || notification.treatmentPlanId || ''
 
     if (notification_type === NOTIFICATION_TYPES.DOSE_REMINDER && onOpenDoseModal) {
       onOpenDoseModal({ type: 'protocol', protocol_id: resolvedProtocolId })
