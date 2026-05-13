@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, startTransition } from 'react'
+import { TriangleAlert, PillBottle, Phone, FilePen, FilePlusCorner, QrCode, Printer, Pencil, Siren, WifiOff } from 'lucide-react'
 
 /**
  * Renderiza a seção de alergias do cartão de emergência.
@@ -6,7 +7,7 @@ import { useState, useEffect, useMemo, useCallback, startTransition } from 'reac
 function AllergiesSection({ allergies }) {
   return (
     <section className="emergency-section allergies-section">
-      <h2 className="section-label">⚠️ Alergias</h2>
+      <h2 className="section-label"><TriangleAlert size={16} /> Alergias</h2>
       {allergies && allergies.length > 0 ? (
         <ul className="allergies-list">
           {allergies.map((allergy, index) => (
@@ -26,7 +27,7 @@ function AllergiesSection({ allergies }) {
 function MedicationsSection({ activeMedications }) {
   return (
     <section className="emergency-section medications-section">
-      <h2 className="section-label">💊 Medicamentos em Uso</h2>
+      <h2 className="section-label"><PillBottle size={16} /> Medicamentos em Uso</h2>
       {activeMedications.length > 0 ? (
         <ul className="medications-list">
           {activeMedications.map((med, index) => (
@@ -51,7 +52,7 @@ function MedicationsSection({ activeMedications }) {
 function ContactsSection({ contacts }) {
   return (
     <section className="emergency-section contacts-section">
-      <h2 className="section-label">📞 Contatos de Emergência</h2>
+      <h2 className="section-label"><Phone size={16} /> Contatos de Emergência</h2>
       {contacts && contacts.length > 0 ? (
         <div className="contacts-grid">
           {contacts.map((contact, index) => (
@@ -203,7 +204,7 @@ export default function EmergencyCardView({ data, onEdit }) {
   if (!cardData) {
     return (
       <div className="emergency-card-view emergency-card-empty">
-        <div className="empty-icon">📋</div>
+        <div className="empty-icon"><FilePlusCorner size={48} /></div>
         <h2>Nenhum Cartão de Emergência</h2>
         <p>Você ainda não configurou seu cartão de emergência.</p>
         <button className="btn btn-primary" onClick={onEdit}>
@@ -218,14 +219,14 @@ export default function EmergencyCardView({ data, onEdit }) {
       {/* Indicador Offline */}
       {isOffline && (
         <div className="offline-indicator">
-          <span className="offline-icon">📡</span>
+          <WifiOff size={16} className="offline-icon" />
           <span>Modo Offline - Dados podem estar desatualizados</span>
         </div>
       )}
 
       {/* Cabeçalho do Cartão */}
       <header className="emergency-card-header">
-        <h1 className="emergency-title">🚨 CARTÃO DE EMERGÊNCIA</h1>
+        <h1 className="emergency-title"><Siren size={24} /> CARTÃO DE EMERGÊNCIA</h1>
         <p className="emergency-subtitle">Informações médicas críticas</p>
       </header>
 
@@ -244,14 +245,14 @@ export default function EmergencyCardView({ data, onEdit }) {
       {/* Observações */}
       {cardData.notes && (
         <section className="emergency-section notes-section">
-          <h2 className="section-label">📝 Observações</h2>
+          <h2 className="section-label"><FilePen size={16} /> Observações</h2>
           <p className="notes-content">{cardData.notes}</p>
         </section>
       )}
 
       {/* QR Code para Emergências */}
       <section className="emergency-section qr-section">
-        <h2 className="section-label">📱 QR Code de Emergência</h2>
+        <h2 className="section-label"><QrCode size={16} /> QR Code de Emergência</h2>
         <EmergencyQRCode
           cardData={cardData}
           medications={activeMedications}
@@ -264,11 +265,11 @@ export default function EmergencyCardView({ data, onEdit }) {
         <p className="last-updated">Última atualização: {formattedLastUpdated}</p>
         <div className="footer-actions">
           <button className="btn btn-secondary btn-sm" onClick={handlePrint}>
-            🖨️ Imprimir
+            <Printer size={14} /> Imprimir
           </button>
           {onEdit && (
             <button className="btn btn-primary btn-sm" onClick={onEdit}>
-              ✏️ Editar
+              <Pencil size={14} /> Editar
             </button>
           )}
         </div>

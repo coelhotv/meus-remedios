@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import QRCode from 'qrcode'
+import { TriangleAlert, ScanQrCode, ImageDown, Share } from 'lucide-react'
 
 /** Renderiza estado de carregamento do QR code. */
 function QRLoadingState() {
@@ -24,7 +25,7 @@ function QRLoadingState() {
 function QRErrorState({ error, onRetry }) {
   return (
     <div className="emergency-qr-code error">
-      <div className="qr-error-icon">⚠️</div>
+      <div className="qr-error-icon"><TriangleAlert size={32} /></div>
       <p>{error}</p>
       <button className="btn btn-secondary btn-sm" onClick={onRetry}>
         Tentar Novamente
@@ -245,15 +246,15 @@ export default function EmergencyQRCode({ cardData, medications, lastUpdated }) 
           width={256}
           height={256}
         />
-        <p className="qr-hint">📱 Escaneie para ver informações médicas em emergências</p>
+        <p className="qr-hint"><ScanQrCode size={16} /> Escaneie para ver informações médicas em emergências</p>
       </div>
 
       <div className="qr-actions">
         <button className="btn btn-primary" onClick={handleDownload}>
-          💾 Salvar Imagem
+          <ImageDown size={16} /> Salvar Imagem
         </button>
         <button className="btn btn-secondary" onClick={handleShare}>
-          📤 Compartilhar
+          <Share size={16} /> Compartilhar
         </button>
       </div>
 
