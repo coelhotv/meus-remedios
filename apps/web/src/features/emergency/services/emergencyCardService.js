@@ -20,7 +20,7 @@ import { debugLog, errorLog } from '@shared/utils/logger'
  * 2. Fallback para Supabase se localStorage vazio
  */
 
-const STORAGE_KEY_PREFIX = 'mr_emergency_card'
+export const STORAGE_KEY_PREFIX = 'mr_emergency_card'
 
 /**
  * Retorna a chave localStorage isolada por usuário.
@@ -136,12 +136,12 @@ function _mapFromSupabase(row) {
 
 /**
  * Salva o cartão de emergência no Supabase
+ * @param {string} userId - ID do usuário autenticado
  * @param {Object} data - Dados validados do cartão
  * @returns {Promise<{success: boolean, error?: string}>}
  */
-async function saveToSupabase(data) {
+async function saveToSupabase(userId, data) {
   try {
-    const userId = await getUserId()
     const emergencyCard = _mapToSupabase(data)
 
     // Usa upsert para criar ou atualizar
@@ -179,12 +179,11 @@ async function saveToSupabase(data) {
 
 /**
  * Recupera o cartão de emergência do Supabase
+ * @param {string} userId - ID do usuário autenticado
  * @returns {Promise<Object|null>} Dados do cartão ou null
  */
-async function getFromSupabase() {
+async function getFromSupabase(userId) {
   try {
-    const userId = await getUserId()
-
     const { data, error } = await supabase
       .from('user_settings')
       .select('emergency_card')
@@ -243,8 +242,8 @@ export const emergencyCardService = {
     const userId = await getUserId()
     saveToLocalStorage(userId, dataToSave)
 
-    // 3. Salvar no Supabase (assíncrono)
-    const supabaseResult = await saveToSupabase(dataToSave)
+    // 3. Salvar no Supabase (assíncrono) — reutiliza userId já obtido
+    const supabaseResult = await saveToSupabase(userId, dataToSave)
 
     if (!supabaseResult.success) {
       // Dados estão salvos localmente, mas falhou no Supabase
@@ -288,8 +287,8 @@ export const emergencyCardService = {
       return { success: true, data: localData, source: 'local' }
     }
 
-    // 2. Fallback para Supabase
-    const supabaseData = await getFromSupabase()
+    // 2. Fallback para Supabase — reutiliza userId já obtido
+    const supabaseData = await getFromSupabase(userId)
 
     if (supabaseData) {
       // Salva no localStorage para próximas consultas
