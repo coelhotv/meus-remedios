@@ -32,7 +32,7 @@ export async function dispatchChannel({ channel, userId, payload, context, repos
 }
 
 export function checkGatePolicy({ userId, kind, settings, currentHHMM, correlationId }) {
-  const isAlert = !['daily_digest', 'weekly_adherence', 'monthly_report', 'adherence_report'].includes(kind)
+  const isAlert = !['daily_digest', 'weekly_adherence'].includes(kind)
 
   if (!isAlert) return false
 

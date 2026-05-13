@@ -1,7 +1,7 @@
 import { supabase } from '../services/supabase.js';
 import { createLogger } from '../bot/logger.js';
 import { shouldSendNotification } from '../services/notificationDeduplicator.js';
-import { getCurrentTimeInTimezone, getTodayLocal, parseLocalDate, addDays, getNow } from '../utils/dateUtils.js';
+import { getCurrentTimeInTimezone, getCurrentDatePartsInTimezone, getTodayLocal, parseLocalDate, addDays, getNow } from '../utils/dateUtils.js';
 import { getActiveProtocols } from '../services/protocolCache.js';
 
 const logger = createLogger('AdherenceHelpers');
@@ -148,7 +148,14 @@ export async function checkAdherenceReportsViaDispatcher(dispatcher, correlation
 
     for (const user of eligibleUsers) {
       const userId = user.user_id;
-      
+
+      const timezone = user.timezone || 'America/Sao_Paulo';
+      const { hhmm, weekday } = getCurrentDatePartsInTimezone(timezone);
+      if (weekday !== 0 || hhmm !== '23:00') continue;
+
+      const shouldSend = await shouldSendNotification(userId, null, 'weekly_adherence');
+      if (!shouldSend) continue;
+
       // Cálculo de adesão (últimos 7 dias)
       const oneWeekAgo = addDays(getNow(), -7).toISOString();
       const { data: logs } = await supabase
@@ -168,10 +175,9 @@ export async function checkAdherenceReportsViaDispatcher(dispatcher, correlation
 
       await dispatcher.dispatch({
         userId,
-        kind: 'adherence_report',
+        kind: 'weekly_adherence',
         data: {
           firstName: user.display_name || 'Paciente',
-          period: 'na última semana',
           percentage,
           taken: takenDoses,
           total: expectedDoses
@@ -191,15 +197,23 @@ export async function checkMonthlyReportViaDispatcher(dispatcher, correlationId)
   try {
     const { data: users, error: userError } = await supabase
       .from('user_settings')
-      .select('user_id, timezone, display_name');
+      .select('user_id, timezone, notification_mode, display_name');
 
     if (userError) throw userError;
     if (!users || users.length === 0) return;
 
-    logger.info(`Iniciando relatórios mensais via Dispatcher para ${users.length} usuários`, { correlationId });
+    const eligibleUsers = users.filter(u => u.notification_mode !== 'silent');
+    logger.info(`Iniciando relatórios mensais via Dispatcher para ${eligibleUsers.length} usuários elegíveis`, { correlationId });
 
-    for (const user of users) {
+    for (const user of eligibleUsers) {
       const userId = user.user_id;
+
+      const timezone = user.timezone || 'America/Sao_Paulo';
+      const { hhmm, dayOfMonth } = getCurrentDatePartsInTimezone(timezone);
+      if (dayOfMonth !== 1 || hhmm !== '10:00') continue;
+
+      const shouldSend = await shouldSendNotification(userId, null, 'monthly_report');
+      if (!shouldSend) continue;
 
       const oneMonthAgo = addDays(getNow(), -30).toISOString();
       const { data: logs } = await supabase

@@ -12,6 +12,7 @@ async function _fetchProtocolsForUsers(userIdsByHHMM, correlationId) {
   for (const [hhmm, ids] of Object.entries(userIdsByHHMM)) {
     for (let i = 0; i < ids.length; i += 50) {
       const chunk = ids.slice(i, i + 50);
+      const today = getTodayLocal();
       const { data, error } = await supabase
         .from('protocols')
         .select(`
@@ -21,6 +22,8 @@ async function _fetchProtocolsForUsers(userIdsByHHMM, correlationId) {
         `)
         .in('user_id', chunk)
         .eq('active', true)
+        .lte('start_date', today)
+        .or(`end_date.is.null,end_date.gte.${today}`)
         .contains('time_schedule', JSON.stringify([hhmm])); 
 
       if (error) {
@@ -222,11 +225,14 @@ export async function runDailyDigestViaDispatcher(dispatcher, correlationId) {
     }
 
     const eligibleIds = eligibleEntries.map(e => e.userId);
+    const today = getTodayLocal();
     const { data: allProtocols } = await supabase
       .from('protocols')
       .select('*, medicine:medicines(name, dosage_unit, dosage_per_pill)')
       .in('user_id', eligibleIds)
-      .eq('active', true);
+      .eq('active', true)
+      .lte('start_date', today)
+      .or(`end_date.is.null,end_date.gte.${today}`);
 
     const protocolsByUser = {};
     for (const p of allProtocols ?? []) {
