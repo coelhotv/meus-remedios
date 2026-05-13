@@ -96,8 +96,7 @@ export async function runDailyAdherenceReportViaDispatcher(dispatcher, correlati
   try {
     const { data: users } = await supabase
       .from('user_settings')
-      .select('user_id, timezone, display_name, digest_time, notification_mode')
-      .neq('notification_mode', 'silent');
+      .select('user_id, timezone, display_name, digest_time, notification_mode');
 
     if (!users || users.length === 0) return;
 
