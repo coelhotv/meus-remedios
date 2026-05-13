@@ -135,13 +135,12 @@ export async function checkAdherenceReportsViaDispatcher(dispatcher, correlation
   try {
     const { data: eligibleUsers, error: userError } = await supabase
       .from('user_settings')
-      .select('user_id, timezone, notification_mode, display_name')
-      .neq('notification_mode', 'silent');
+      .select('user_id, timezone, notification_mode, display_name');
 
     if (userError) throw userError;
     if (!eligibleUsers || eligibleUsers.length === 0) return;
 
-    logger.info(`Iniciando relatórios semanais via Dispatcher para ${eligibleUsers.length} usuários elegíveis`, { correlationId });
+    logger.info(`Iniciando relatórios semanais via Dispatcher para ${eligibleUsers.length} usuários`, { correlationId });
 
     for (const user of eligibleUsers) {
       const userId = user.user_id;
@@ -194,13 +193,12 @@ export async function checkMonthlyReportViaDispatcher(dispatcher, correlationId)
   try {
     const { data: eligibleUsers, error: userError } = await supabase
       .from('user_settings')
-      .select('user_id, timezone, notification_mode, display_name')
-      .neq('notification_mode', 'silent');
+      .select('user_id, timezone, notification_mode, display_name');
 
     if (userError) throw userError;
     if (!eligibleUsers || eligibleUsers.length === 0) return;
 
-    logger.info(`Iniciando relatórios mensais via Dispatcher para ${eligibleUsers.length} usuários elegíveis`, { correlationId });
+    logger.info(`Iniciando relatórios mensais via Dispatcher para ${eligibleUsers.length} usuários`, { correlationId });
 
     for (const user of eligibleUsers) {
       const userId = user.user_id;
