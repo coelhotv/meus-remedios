@@ -285,7 +285,8 @@ function applyRetryDecoration(content, context) {
 }
 
 /**
- * Constrói objeto de metadados conforme contrato (passthrough).
+ * Constrói objeto de metadados conforme whitelist estrita de `metadataSchema`.
+ * Nenhum campo além dos definidos no schema é permitido (Gate 6).
  */
 function buildMetadata(kind, context, data = {}) {
   // Extrair protocolIds se for um array ou se estiver em data.doses (para grouped/misc)
