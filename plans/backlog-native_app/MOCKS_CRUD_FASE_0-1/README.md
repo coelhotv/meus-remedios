@@ -6,7 +6,7 @@ A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported t
 
 ## What you should do — IMPORTANT
 
-**Read `dosiq/project/Dosiq · Fase 1 - Medicamentos.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+**Read `plans/backlog-native_app/MOCKS_CRUD_FASE_0-1/project/Dosiq · Fase 1 - Medicamentos.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
 
 **If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
 
@@ -18,5 +18,5 @@ The design medium is **HTML/CSS/JS** — these are prototypes, not production co
 
 ## Bundle contents
 
-- `dosiq/README.md` — this file
-- `dosiq/project/` — the `Dosiq` project files (HTML prototypes, assets, components)
+- `./README.md` — this file
+- `./project/` — the `Dosiq` project files (HTML prototypes, assets, components)
