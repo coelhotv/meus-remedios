@@ -29,11 +29,11 @@ export function MedicineEmptyState() {
       </View>
 
       {/* Título */}
-      <Text style={styles.title}>Sua biblioteca está vazia</Text>
+      <Text style={styles.title}>Biblioteca vazia</Text>
 
       {/* Subtítulo */}
       <Text style={styles.subtitle}>
-        Cadastre seus medicamentos para começar a gerenciar seus tratamentos
+        Cadastre medicamentos para começar a gerenciar tratamentos
       </Text>
 
       {/* Spacer */}

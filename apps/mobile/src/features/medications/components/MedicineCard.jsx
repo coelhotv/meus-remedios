@@ -19,8 +19,6 @@ export default function MedicineCard({ medicine, onPress }) {
   const Icon = isSupplement ? PillBottle : Pill
   const iconColor = isSupplement ? colors.supplement[500] : colors.primary[500]
   const iconBg = isSupplement ? colors.supplement[50] : colors.primary[50]
-  const badgeBg = iconBg
-  const badgeColor = isSupplement ? colors.supplement[700] : colors.primary[700]
 
   const handlePress = () => {
     selectionTap()
@@ -30,8 +28,8 @@ export default function MedicineCard({ medicine, onPress }) {
   const hasDose = dosage_per_pill != null && dosage_unit
   const protocolsLabel =
     active_protocols_count > 0
-      ? `${active_protocols_count} ${active_protocols_count === 1 ? 'protocolo ativo' : 'protocolos ativos'}`
-      : 'Sem protocolos ativos'
+      ? `${active_protocols_count} ${active_protocols_count === 1 ? 'tratamento ativo' : 'tratamentos ativos'}`
+      : 'Sem tratamentos ativos'
 
   return (
     <Pressable
@@ -48,8 +46,8 @@ export default function MedicineCard({ medicine, onPress }) {
           {name}
         </Text>
         {hasDose && (
-          <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-            <Text style={[styles.badgeText, { color: badgeColor }]}>
+          <View style={styles.dosagePill}>
+            <Text style={styles.dosagePillText}>
               {dosage_per_pill}{dosage_unit}
             </Text>
           </View>
@@ -98,14 +96,18 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontFamily: typography.fontFamily.bold,
   },
-  badge: {
+  dosagePill: {
+    backgroundColor: colors.neutral[100],
     paddingHorizontal: spacing[2],
     paddingVertical: 2,
-    borderRadius: borderRadius.xs,
+    borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: colors.neutral[300],
   },
-  badgeText: {
+  dosagePillText: {
     fontSize: 12,
     fontWeight: '600',
+    color: colors.neutral[700],
   },
   meta: {
     fontSize: 13,

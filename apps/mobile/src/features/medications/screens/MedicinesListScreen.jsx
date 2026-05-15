@@ -112,7 +112,7 @@ export default function MedicinesListScreen() {
             >
               <ChevronLeft size={24} color={colors.text.primary} />
             </Pressable>
-            <Text style={styles.title}>Meus Medicamentos</Text>
+            <Text style={styles.title}>Medicamentos</Text>
             <Pressable
               onPress={toggleSearch}
               style={styles.iconButton}

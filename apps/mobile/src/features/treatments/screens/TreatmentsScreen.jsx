@@ -85,18 +85,18 @@ export default function TreatmentsScreen() {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Meus Tratamentos</Text>
-          <Text style={styles.subtitle}>Acompanhe seus tratamentos ativos</Text>
+          <Text style={styles.title}>Tratamentos</Text>
+          <Text style={styles.subtitle}>Acompanhe os tratamentos ativos</Text>
         </View>
 
         <Pressable
           onPress={goToMedicines}
           style={({ pressed }) => [styles.medicinesLink, pressed && styles.medicinesLinkPressed]}
           accessibilityRole="button"
-          accessibilityLabel="Meus Medicamentos"
+          accessibilityLabel="Medicamentos"
         >
           <Pill size={18} color={colors.primary[700]} />
-          <Text style={styles.medicinesLinkText}>Meus Medicamentos</Text>
+          <Text style={styles.medicinesLinkText}>Medicamentos</Text>
           <ChevronRight size={18} color={colors.primary[700]} />
         </Pressable>
 

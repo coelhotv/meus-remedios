@@ -246,7 +246,7 @@ export default function MedicineDetailScreen() {
           <View style={styles.sectionCard}>
             {protocols.length > 0 ? (
               protocols.map((p, idx) => {
-                const name = p?.name ?? `Protocolo #${p?.id ?? idx + 1}`
+                const name = p?.name ?? `Tratamento #${p?.id ?? idx + 1}`
                 return (
                   <View
                     key={p?.id ?? `protocol-${idx}`}
@@ -261,7 +261,7 @@ export default function MedicineDetailScreen() {
               })
             ) : (
               <Text style={styles.emptyText}>
-                Nenhum protocolo ativo usando este medicamento
+                Nenhum tratamento ativo usando este medicamento
               </Text>
             )}
           </View>
@@ -330,15 +330,17 @@ const styles = StyleSheet.create({
   },
   dosePill: {
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-    backgroundColor: colors.primary[50],
-    borderRadius: borderRadius.full,
+    backgroundColor: colors.neutral[100],
+    paddingHorizontal: spacing[2],
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: colors.neutral[300],
   },
   dosePillText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.primary[700],
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.neutral[700],
   },
   heroIngredient: {
     fontSize: 13,
