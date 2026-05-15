@@ -180,14 +180,16 @@ export default function MedicineDetailScreen() {
             )}
           </View>
           <View style={styles.heroBody}>
-            <Text style={styles.heroName} numberOfLines={2}>
-              {data.name}
-            </Text>
-            {doseLabel && (
-              <View style={styles.dosePill}>
-                <Text style={styles.dosePillText}>{doseLabel}</Text>
-              </View>
-            )}
+            <View style={styles.heroNameRow}>
+              <Text style={styles.heroName} numberOfLines={2}>
+                {data.name}
+              </Text>
+              {doseLabel && (
+                <View style={styles.dosePill}>
+                  <Text style={styles.dosePillText}>{doseLabel}</Text>
+                </View>
+              )}
+            </View>
             {data.active_ingredient && (
               <Text style={styles.heroIngredient} numberOfLines={2}>
                 {data.active_ingredient}
@@ -322,7 +324,14 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing[2],
   },
+  heroNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    flexWrap: 'wrap',
+  },
   heroName: {
+    flexShrink: 1,
     fontSize: 22,
     fontWeight: '700',
     color: colors.text.primary,
