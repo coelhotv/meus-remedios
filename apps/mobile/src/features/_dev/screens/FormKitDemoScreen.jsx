@@ -13,6 +13,7 @@ import {
   FormSection,
   FormActions,
 } from '@shared/components/form'
+import { ROUTES } from '../../../navigation/routes'
 import { colors, spacing } from '@shared/styles/tokens'
 
 const FREQUENCY_OPTIONS = [
@@ -24,6 +25,8 @@ const FREQUENCY_OPTIONS = [
 ]
 
 export default function FormKitDemoScreen({ navigation }) {
+  const [selectedAnvisa, setSelectedAnvisa] = useState(null)
+
   // Inputs interativos
   const [name, setName] = useState('')
   const [nameError, setNameError] = useState(undefined)
@@ -216,6 +219,33 @@ export default function FormKitDemoScreen({ navigation }) {
           />
         </FormSection>
 
+        {/* Seção 5 — Integração ANVISA (Sprint P.2) */}
+        <FormSection
+          title="ANVISA Search"
+          description="Abre tela de busca real (useMedicineDatabase + FormAutocomplete)"
+        >
+          <TouchableOpacity
+            onPress={() =>
+              navigation?.navigate(ROUTES.ANVISA_SEARCH, {
+                onSelect: (m) => setSelectedAnvisa(m),
+              })
+            }
+            style={styles.linkBtn}
+          >
+            <Text style={styles.linkBtnText}>Abrir busca ANVISA →</Text>
+          </TouchableOpacity>
+          {selectedAnvisa ? (
+            <View style={styles.selectedBox}>
+              <Text style={styles.selectedTitle}>
+                Selecionado: {selectedAnvisa.name}
+              </Text>
+              <Text style={styles.selectedSubtitle}>
+                {selectedAnvisa.activeIngredient} · {selectedAnvisa.laboratory}
+              </Text>
+            </View>
+          ) : null}
+        </FormSection>
+
         {/* Estado atual (debug) */}
         <FormSection
           title="Estado atual"
@@ -290,6 +320,35 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral[800],
     borderRadius: 12,
     padding: spacing[4],
+  },
+  linkBtn: {
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[4],
+    backgroundColor: colors.primary[50],
+    borderRadius: 8,
+  },
+  linkBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary[700],
+  },
+  selectedBox: {
+    marginTop: spacing[3],
+    padding: spacing[3],
+    backgroundColor: colors.bg.card,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.status.success,
+  },
+  selectedTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  selectedSubtitle: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 2,
   },
   debugText: {
     fontFamily: 'Courier',
