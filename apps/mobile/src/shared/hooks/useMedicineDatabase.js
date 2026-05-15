@@ -93,7 +93,8 @@ function shouldRefreshCache({ remoteManifest, cachedManifest, ttlMs, hasData }) 
   const cachedAtMs = cachedManifest.cachedAt
     ? parseISO(cachedManifest.cachedAt).getTime()
     : 0
-  return Date.now() - cachedAtMs > ttlMs
+  // R-020: usa getNow() em vez de Date.now() para consistência com regras gerais
+  return getNow().getTime() - cachedAtMs > ttlMs
 }
 
 // Resolve URL absoluto do medicineDatabase.json a partir do manifest remoto.
@@ -121,11 +122,30 @@ export function useMedicineDatabase({
   baseUrl = ANVISA_BASE_URL,
   ttlMs = TTL_MS,
 } = {}) {
+  // States
   const [database, setDatabase] = useState(null)
   const [manifest, setManifest] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Memos (R-010: declarados antes de Effects e Handlers)
+  // Pré-normaliza nome e princípio ativo uma única vez quando a base carrega.
+  // Evita executar normalize('NFD') + regex em ~6800 registros a cada keystroke.
+  const normalizedDatabase = useMemo(() => {
+    if (!database) return null
+    return database.map((med) => ({
+      med,
+      nName: normalizeText(med.name),
+      nIngredient: normalizeText(med.activeIngredient),
+    }))
+  }, [database])
+
+  const lastUpdated = useMemo(
+    () => (manifest?.cachedAt ? parseISO(manifest.cachedAt) : null),
+    [manifest],
+  )
+
+  // Effects
   // Carrega cache local (rápido) e dispara background sync (atualização)
   useEffect(() => {
     let canceled = false
@@ -180,44 +200,42 @@ export function useMedicineDatabase({
     }
   }, [baseUrl, ttlMs])
 
+  // Handlers
   // Busca autocomplete: word-boundary prefix em name OU activeIngredient.
   // Ranking: matches no name vêm antes dos só-em-activeIngredient.
+  // Early break: para de iterar assim que atinge o limite total.
   const search = useCallback(
     (query, limit = 10) => {
-      if (!database || !query || query.trim().length < 3) return []
+      if (!normalizedDatabase || !query || query.trim().length < 3) return []
       const q = normalizeText(query)
       const nameMatches = []
       const ingredientMatches = []
-      for (const med of database) {
-        const nameHit = matchesPrefix(normalizeText(med.name), q)
-        if (nameHit) {
-          nameMatches.push(med)
-          if (nameMatches.length >= limit) break
+      for (const entry of normalizedDatabase) {
+        if (matchesPrefix(entry.nName, q)) {
+          nameMatches.push(entry.med)
+          if (nameMatches.length + ingredientMatches.length >= limit) break
           continue
         }
-        if (matchesPrefix(normalizeText(med.activeIngredient), q)) {
-          ingredientMatches.push(med)
+        if (matchesPrefix(entry.nIngredient, q)) {
+          ingredientMatches.push(entry.med)
+          if (nameMatches.length + ingredientMatches.length >= limit) break
         }
       }
       return [...nameMatches, ...ingredientMatches].slice(0, limit)
     },
-    [database],
+    [normalizedDatabase],
   )
 
   const getByName = useCallback(
     (name) => {
-      if (!database || !name) return null
+      if (!normalizedDatabase || !name) return null
       const n = normalizeText(name)
-      const exact = database.find((med) => normalizeText(med.name) === n)
-      if (exact) return exact
-      return database.find((med) => normalizeText(med.name).includes(n)) || null
+      const exact = normalizedDatabase.find((entry) => entry.nName === n)
+      if (exact) return exact.med
+      const partial = normalizedDatabase.find((entry) => entry.nName.includes(n))
+      return partial ? partial.med : null
     },
-    [database],
-  )
-
-  const lastUpdated = useMemo(
-    () => (manifest?.cachedAt ? parseISO(manifest.cachedAt) : null),
-    [manifest],
+    [normalizedDatabase],
   )
 
   return {
