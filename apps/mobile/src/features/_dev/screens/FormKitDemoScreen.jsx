@@ -28,10 +28,17 @@ export default function FormKitDemoScreen({ navigation }) {
   const [name, setName] = useState('')
   const [nameError, setNameError] = useState(undefined)
   const [dose, setDose] = useState('500')
+  const [notes, setNotes] = useState('')
   const [frequency, setFrequency] = useState(null)
+  const [frequencyErr, setFrequencyErr] = useState(null)
   const [startDate, setStartDate] = useState(null)
   const [reminderTime, setReminderTime] = useState(null)
   const [submitLoading, setSubmitLoading] = useState(false)
+
+  // Filtra apenas dígitos (demo de uso correto com keyboardType numeric)
+  function handleDoseChange(_, v) {
+    setDose(v.replace(/[^0-9]/g, ''))
+  }
 
   function toggleNameError() {
     setNameError(nameError ? undefined : 'Nome deve ter pelo menos 2 caracteres')
@@ -91,10 +98,10 @@ export default function FormKitDemoScreen({ navigation }) {
             name="dose"
             label="Dose (mg)"
             value={dose}
-            onChange={(_, v) => setDose(v)}
+            onChange={handleDoseChange}
             keyboardType="numeric"
             placeholder="0"
-            helperText="Apenas números"
+            helperText="Apenas números (filtro no onChange)"
           />
 
           <FormInput
@@ -109,8 +116,8 @@ export default function FormKitDemoScreen({ navigation }) {
             name="notes"
             label="Observações"
             placeholder="Notas sobre o medicamento…"
-            value=""
-            onChange={() => {}}
+            value={notes}
+            onChange={(_, v) => setNotes(v)}
             multiline
             numberOfLines={4}
           />
@@ -135,9 +142,11 @@ export default function FormKitDemoScreen({ navigation }) {
             name="frequencyError"
             label="Frequência (erro)"
             placeholder="Toque para abrir"
-            value={null}
+            value={frequencyErr}
             options={FREQUENCY_OPTIONS}
-            error="Campo obrigatório"
+            onChange={(_, v) => setFrequencyErr(v)}
+            error={frequencyErr ? undefined : 'Campo obrigatório'}
+            helperText="Erro some ao selecionar"
           />
         </FormSection>
 
@@ -212,7 +221,7 @@ export default function FormKitDemoScreen({ navigation }) {
           <View style={styles.debugBox}>
             <Text style={styles.debugText}>
               {JSON.stringify(
-                { name, dose, frequency, startDate, reminderTime },
+                { name, dose, notes, frequency, frequencyErr, startDate, reminderTime },
                 null,
                 2,
               )}
