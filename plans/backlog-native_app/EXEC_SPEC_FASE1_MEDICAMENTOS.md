@@ -251,7 +251,7 @@ export function MedicineFormScreen() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const form = useFormState(
     isEditing ? medicineUpdateSchema : medicineCreateSchema,
-    { initialValues: medicine ?? { type: 'comprimido', dosage_unit: 'mg' } },
+    { initialValues: medicine ?? { type: 'medicamento', dosage_unit: 'mg' } },
   )
   const mutation = useMutation({
     onSuccess: () => {
@@ -264,8 +264,8 @@ export function MedicineFormScreen() {
 
   // Handlers
   const handleAnvisaSelect = useCallback((item) => {
+    // setValues já faz merge interno com o estado atual (apenas campos passados)
     form.setValues({
-      ...form.values,
       name: item.name,
       active_ingredient: item.activeIngredient,
       therapeutic_class: item.therapeuticClass,
@@ -286,7 +286,7 @@ export function MedicineFormScreen() {
 
   return (
     <ScreenContainer title={isEditing ? 'Editar Medicamento' : 'Novo Medicamento'}>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing[20] }}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <AnvisaBanner onPress={() => setSheetOpen(true)} />
         <FormSection title="Identificação">
           <FormInput name="name" label="Nome" required {...formProps(form, 'name')} />
@@ -322,6 +322,10 @@ export function MedicineFormScreen() {
     </ScreenContainer>
   )
 }
+
+const styles = StyleSheet.create({
+  scrollContent: { paddingBottom: spacing[20] },
+})
 ```
 
 **Validação visual**: replicar mock `mock-medicamentos-criar.png` (cores + spacing tokens, banner verde clarinho `colors.success.bg`).
