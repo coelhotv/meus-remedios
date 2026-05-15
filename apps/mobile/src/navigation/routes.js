@@ -33,11 +33,12 @@ export const ROUTES = {
   // ANVISA search (Sprint P.2)
   ANVISA_SEARCH: 'AnvisaSearch',
 
-  // Sub-rotas de Medicamentos (Fase 1 — placeholders registrados na P.3)
+  // Sub-rotas de Medicamentos (Fase 1)
+  MEDICINES_LIST: 'MedicinesList',
   MEDICINE_CREATE: 'MedicineCreate',
   MEDICINE_EDIT: 'MedicineEdit',
   MEDICINE_DETAIL: 'MedicineDetail',
 
   // Dev-only (apenas __DEV__)
-  FORM_KIT_DEMO: 'FormKitDemo',
+  MEDICINE_DEMO: 'MedicineDemo',
 }

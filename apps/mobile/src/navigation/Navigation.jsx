@@ -21,7 +21,7 @@ import SignupScreen from '../screens/SignupScreen'
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen'
 import ResetPasswordScreen from '../screens/ResetPasswordScreen'
 import RootTabs from './RootTabs'
-import FormKitDemoScreen from '../features/_dev/screens/FormKitDemoScreen'
+import MedicineDemoScreen from '../features/_dev/screens/MedicineDemoScreen'
 import AnvisaSearchScreen from '../features/medications/screens/AnvisaSearchScreen'
 import { supabase } from '../platform/supabase/nativeSupabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -160,8 +160,8 @@ export default function Navigation() {
             />
             {__DEV__ && (
               <Stack.Screen
-                name={ROUTES.FORM_KIT_DEMO}
-                component={FormKitDemoScreen}
+                name={ROUTES.MEDICINE_DEMO}
+                component={MedicineDemoScreen}
               />
             )}
           </>

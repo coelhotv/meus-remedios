@@ -13,12 +13,14 @@
 
 ## Objetivo
 
+> ⚠️ **TERMINOLOGIA OBRIGATÓRIA (PO 2026-05-15):** em toda UI/copy do app o termo `protocolo` está **proibido** — usar sempre **`tratamento`**. Justificativa: "protocolo" é jargão médico que cuidadores/familiares não usam; quebra cognição em closed alpha. Vale para títulos, labels, mensagens vazias, contadores e i18n strings. **NÃO** alterar nomes de colunas/variáveis JS (`protocols`, `treatment_plan`, `active_protocols_count` etc) — só strings exibidas. Próximas specs DEVEM herdar esta regra.
+
 Implementar CRUD completo de **Medicamentos** no mobile nativo, consumindo a fundação entregue na Fase 0:
-- Listagem com busca e contador de protocolos ativos
+- Listagem com busca e contador de tratamentos ativos
 - Empty state com CTA "Cadastrar primeiro medicamento"
 - Criação com **bottom sheet** ANVISA (não fullscreen)
 - Edição completa
-- Exclusão com verificação de dependências (protocolos ativos, estoque, doses) via `DeleteConfirmation` + `Toast`
+- Exclusão com verificação de dependências (tratamentos ativos, estoque, doses) via `DeleteConfirmation` + `Toast`
 - Detalhes completos do medicamento (badges, classe terapêutica, "Em uso")
 
 Ao final, o domínio Medicamentos percorre G1 → G2 → G3 completamente.
@@ -79,28 +81,32 @@ Esta spec **consome** o que Fase 0 entregou. Não duplicar.
 
 ### Listagem
 
-> Mock `mock-medicamentos-listagem.png`:
-> - Header "Meus Medicamentos" + ícone search (top-right) — toggle de search bar inline
-> - Search bar "Buscar nos meus medicamentos..." (client-side filter sobre `getAll`)
-> - Counter "6 MEDICAMENTOS" + sort "Mais recentes ↓"
-> - Cards: ícone medicamento + Nome (truncado) · Badge dose · Laboratório · "N protocolos ativos"
+> Mock `mock-medicamentos-listagem.png` + ajustes UX consolidados:
+> - Header: **back button (ChevronLeft) à esquerda** + título "Medicamentos" (sem possessivo "Meus") + ícone search à direita — toggle search bar inline
+> - Search bar "Buscar nos meus medicamentos..." (client-side filter sobre `getAll`, normalize NFD)
+> - Counter "N MEDICAMENTOS" + sort "Mais recentes ↓" (sort apenas visual v1)
+> - Entry point: link "Medicamentos" no topo de TreatmentsScreen (`mock-medicamentos-link-tratamentos.png`)
+> - Cards: ícone por tipo + Nome **inline com dose pill ao lado** · Laboratório · "N tratamentos ativos"
 > - FAB "+ Novo medicamento" (verde, bottom-right) — usar `lightTap` ao tocar
 > - Tab bar inferior (Hoje / Tratamentos selecionada / Estoque / Perfil)
 
 ### Empty State
 
-> Mock `mock-medicamentos-empty.png`:
+> Mock `mock-medicamentos-empty.png` + sem possessivos:
 > - Ilustração círculo verde + pílula
-> - Texto "Sua biblioteca está vazia" + subtexto
+> - Título "Biblioteca vazia" + subtexto "Cadastre medicamentos para começar a gerenciar tratamentos"
 > - CTA primário "+ Cadastrar primeiro medicamento" (verde grande)
-> - Texto secundário "Busque na base ANVISA · 6.816 registros" (link visual)
+> - Texto secundário "Buscar na base ANVISA · 10.000 medicamentos" (link visual)
 
 ### Detalhe
 
-> Mock `mock-medicamentos-detalhe.png`:
+> Mock `mock-medicamentos-detalhe.png` + correções pós-validação PO:
 > - Header: nome + ícone editar (lápis) + menu "⋯"
-> - Card hero: ícone + Nome + Badge dose + Princípio Ativo + Badges "ESTÁVEL" verde + "COMPRIMIDO" cinza
-> - Seções: Identificação (Princípio ativo / Laboratório / Classe terapêutica / Categoria) · Dosagem (Dose por unidade / Forma) · Em uso (N protocolos ativos com nomes)
+> - Card hero: **ícone dinâmico (Pill verde p/ medicamento, PillBottle laranja p/ suplemento)** + Nome + Dose pill (estilo padronizado) + Princípio Ativo + Badges "ESTÁVEL" + Tipo
+> - Seções (revisadas):
+>   - **Identificação**: Tipo · Princípio Ativo · Laboratório · Classe Terapêutica · Categoria Regulatória — **Tipo foi movido de Dosagem para Identificação** (não é atributo de dose)
+>   - **Dosagem**: apenas Dose por unidade (`{dosage_per_pill} {dosage_unit}`)
+>   - **Em uso**: lista de tratamentos ativos ou fallback "Nenhum tratamento ativo usando este medicamento"
 > - Tab bar inferior
 
 ### Criar
@@ -110,6 +116,22 @@ Esta spec **consome** o que Fase 0 entregou. Não duplicar.
 > - Banner verde clarinho "🔍 Buscar na base ANVISA / Preenche nome, princípio ativo e categoria automaticamente" → abre bottom sheet
 > - Sections: IDENTIFICAÇÃO (Nome*, Princípio ativo) · DOSAGEM (Dose por unidade*, Unidade*) · CLASSIFICAÇÃO (Tipo, Laboratório, Categoria Regulatória)
 > - Footer fixo: "Cancelar" + "Criar medicamento" (verde) — `FormActions` em sticky bottom
+
+---
+
+## Padrões UX Consolidados (Sprint M1.1 — herdar em M1.2/M1.3)
+
+Decisões PO durante a Sprint M1.1 que **toda nova tela/componente de medicamentos** deve seguir:
+
+1. **Terminologia "tratamento" vs "protocolo"** — UI usa **`tratamento`** sempre. `protocolo` é jargão médico, banido de strings exibidas. Variáveis JS (`protocols`, `active_protocols_count`, `treatment_plan`) mantêm os nomes originais.
+2. **Sem possessivos em títulos/links** — "Medicamentos", "Tratamentos", "Biblioteca vazia". Justificativa: ocupam espaço (quebram linha em telas pequenas) + uso por cuidadores/familiares (os remédios não são "deles").
+3. **Ícone por tipo** — `Pill` (verde `colors.primary[500]` sobre `colors.primary[50]`) para `type === 'medicamento'`; `PillBottle` (laranja `colors.supplement[500]` sobre `colors.supplement[50]`) para `type === 'suplemento'`. Paridade com web (`MedicineCardRedesign.jsx`). Token novo: `colors.supplement` em `tokens.js`.
+4. **Dose pill padronizado** — neutral (`bg colors.neutral[100]`, `border colors.neutral[300]`, `text colors.neutral[700]`, `borderRadius 4`, `borderWidth 0.5`). **Inline ao lado do nome**, nunca em linha separada. Replicar exatamente o estilo do `TreatmentCard.dosagePill`.
+5. **Back button explícito** — toda tela aninhada deve ter `ChevronLeft` no header (`navigation.goBack()`) — não confiar em swipe/gesture.
+6. **Entry point para Medicamentos** — link "Medicamentos" no topo de `TreatmentsScreen` (ver `mock-medicamentos-link-tratamentos.png`). Não criar tab nova.
+7. **Stack JS para sub-stacks aninhados** — `TreatmentsStack` usa `createStackNavigator` (`@react-navigation/stack`), **não** `createNativeStackNavigator`. ADR-036: rn-screens 4.11.1 crasha em Android API 24 ao navegar entre stacks aninhados (`IndexOutOfBoundsException` em `Screen.startTransitionRecursive`). Vale para qualquer novo stack aninhado até upgrade do rn-screens.
+8. **`type` enum** — `medicamento | suplemento` (schema `@dosiq/core`). CLAUDE.md tem lista legada `comprimido|capsula|...` desatualizada; ignorar.
+9. **Section card label "Tipo" pertence a Identificação**, não Dosagem.
 
 ---
 
@@ -125,7 +147,7 @@ Esta spec **consome** o que Fase 0 entregou. Não duplicar.
 | M1.2 | Adaptar imports: `nativeSupabaseClient` + `@dosiq/core` schemas | (mesmo arquivo) | 👤 Arquiteto | ⭐⭐ |
 | M1.3 | Hook `useMedicines()` (getAll + getById + invalidação via `useMutation.invalidateKeys`) | `apps/mobile/src/features/medications/hooks/useMedicines.js` | 🤖 Sonnet | ⭐⭐ |
 | M1.4 | `MedicinesListScreen` (header + search inline + lista + empty state + FAB) | `apps/mobile/src/features/medications/screens/MedicinesListScreen.jsx` | 🤖 Sonnet | ⭐⭐ |
-| M1.5 | `MedicineCard` (ícone + nome + badge dose + lab + "N protocolos ativos") | `apps/mobile/src/features/medications/components/MedicineCard.jsx` | 🤖 Sonnet | ⭐⭐ |
+| M1.5 | `MedicineCard` (ícone + nome + badge dose + lab + "N tratamentos ativos") | `apps/mobile/src/features/medications/components/MedicineCard.jsx` | 🤖 Sonnet | ⭐⭐ |
 | M1.6 | `MedicineEmptyState` (ilustração + CTA primário + link ANVISA) | `apps/mobile/src/features/medications/components/MedicineEmptyState.jsx` | 🐦 Haiku | ⭐ |
 | M1.7 | `MedicineDetailScreen` (hero + badges status + seções + Em uso) | `apps/mobile/src/features/medications/screens/MedicineDetailScreen.jsx` | 🤖 Sonnet | ⭐⭐ |
 | M1.8 | `MedicationsStack` + integração no `TreatmentsStack` (não nova tab) | `apps/mobile/src/navigation/TreatmentsStack.jsx` + `routes.js` | 👤 Arquiteto | ⭐⭐ |
@@ -395,7 +417,7 @@ export function MedicineAnvisaSheet({ open, onClose, onSelect }) {
 
 ```jsx
 // Antes de deletar, verifica:
-// 1. Protocolos ativos usando este medicamento
+// 1. Tratamentos ativos usando este medicamento (variável JS continua `protocols` — só UI muda)
 // 2. Entradas de estoque (warning, não bloqueio)
 // 3. Registros de dose históricos (warning, não bloqueio)
 //
@@ -424,7 +446,7 @@ export function useMedicineDelete(medicineId) {
     return {
       canDelete: protocols.length === 0,
       blocker: protocols.length > 0
-        ? `Existem ${protocols.length} protocolo(s) ativo(s). Desative-os antes de remover.`
+        ? `Existem ${protocols.length} tratamento(s) ativo(s). Desative-os antes de remover.`
         : null,
       warnings: [
         stockCount > 0 ? `${stockCount} entrada(s) de estoque serão preservadas` : null,
@@ -521,7 +543,7 @@ packages/shared-data/src/
 | `MedicineFormScreen` com bottom sheet ANVISA auto-fill | Demo gravada + iPhone físico |
 | Listagem com search + empty state + FAB | Demo gravada |
 | Detail com badges status/tipo + "Em uso" | Demo gravada |
-| Delete com pre-check de protocolos ativos via `DeleteConfirmation` + `Toast` | Demo + teste |
+| Delete com pre-check de tratamentos ativos via `DeleteConfirmation` + `Toast` | Demo + teste |
 | Testes unitários do service mobile equivalentes ao web | Diff comparison |
 | Integration test do form (create + edit + auto-fill ANVISA) | `npx jest` |
 | `validate:agent` web 100% green | `rtk npm run validate:agent` |
@@ -610,3 +632,4 @@ Após spawn (todos modelos): arquiteto roda `rtk lint <file>` + `rtk jest <patte
 | 2026-05-13 (original) | Spec inicial com 3 sprints (M1.1 / M1.2 / M1.3), gates G1/G2/G3 |
 | 2026-05-15 (revisão pós-Fase 0) | Reescrita consumindo Fase 0: + bottom sheet ANVISA (mock), Toast/DeleteConfirmation, `useMutation/useFormState` corrigidos (deepEqual Date, refinements), padrão serializável de retorno, lições de cavecrew (0 retrabalhos), mocks hi-fi linkados, demo screen como gate, integration test pattern, R-022 reforçado |
 | 2026-05-15 (hardening G1→G2→G3) | Adicionado: parity test factory vs web (G2), decisão pré-G3 sobre `costAnalysisService`/`avg_price` (opção B recomendada), PR G3 atômica, smoke checklist E2E PO em `docs/operations/MEDICINES_G3_SMOKE_CHECKLIST.md`. **Não adotados**: feature flag e rollback playbook (over engineering p/ closed alpha — reavaliar pré-beta externo). Distribuição Haiku/Sonnet/Opus refinada + gate de confiança Haiku em M1.10. |
+| 2026-05-15 (pós-implementação Sprint M1.1) | Consolidados padrões UX validados em dev pelo PO durante M1.1: nova seção §"Padrões UX Consolidados" com 9 regras (terminologia tratamento vs protocolo; sem possessivos; ícone por tipo Pill/PillBottle; dose pill padronizado neutral inline; back button explícito; entry point em TreatmentsScreen; stack JS para sub-stacks legacy ADR-036; type enum medicamento\|suplemento; Tipo em Identificação não Dosagem). Token novo `colors.supplement` em `apps/mobile/src/shared/styles/tokens.js`. Gate de confiança Haiku **passou 2/2** (M1.6 EmptyState + M1.10 DemoScreen) — manter Haiku para tasks ⭐ mecânicas em M1.2/M1.3. |
