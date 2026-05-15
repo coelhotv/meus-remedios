@@ -348,14 +348,14 @@ export default function MedicineCreateScreen({ navigation }) {
 
   return (
     <FormSection title="Medicamento" description="Dados básicos">
-      <FormInput name="name" label="Nome" required {...formProps(form)} />
+      <FormInput name="name" label="Nome" required {...formProps(form, 'name')} />
       <FormInput
         name="dosage_per_pill" label="mg/comprimido" keyboardType="numeric"
-        {...formProps(form)}
+        {...formProps(form, 'dosage_per_pill')}
       />
       <FormSelect
         name="frequency" label="Frequência" options={FREQUENCIES}
-        {...formProps(form)}
+        {...formProps(form, 'frequency')}
       />
       <FormActions
         primaryLabel="Salvar"
@@ -368,7 +368,7 @@ export default function MedicineCreateScreen({ navigation }) {
   )
 }
 
-function formProps(form) {
+function formProps(form, name) {
   return {
     value: form.values[name],
     error: form.touched[name] ? form.errors[name] : undefined,
