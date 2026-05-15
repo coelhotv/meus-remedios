@@ -72,12 +72,13 @@ export default function FormInput({
       <Animated.View
         style={[
           styles.inputContainer,
+          multiline && styles.inputContainerMultiline,
           disabled && styles.inputContainerDisabled,
           { borderColor },
         ]}
       >
         <TextInput
-          style={styles.input}
+          style={[styles.input, multiline && styles.inputMultiline]}
           value={value}
           placeholder={placeholder}
           placeholderTextColor={colors.text.muted}
@@ -91,6 +92,7 @@ export default function FormInput({
           secureTextEntry={secureTextEntry}
           multiline={multiline}
           numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? 'top' : 'center'}
           maxLength={maxLength}
           returnKeyType={returnKeyType}
           onSubmitEditing={onSubmitEditing}
@@ -140,6 +142,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     justifyContent: 'center',
   },
+  inputContainerMultiline: {
+    height: undefined,
+    minHeight: 96,
+    paddingVertical: 12,
+  },
   inputContainerDisabled: {
     backgroundColor: colors.neutral[50],
   },
@@ -148,6 +155,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text.primary,
     padding: 0,
+  },
+  inputMultiline: {
+    minHeight: 72,
+    textAlignVertical: 'top',
   },
   errorText: {
     fontSize: 12,
