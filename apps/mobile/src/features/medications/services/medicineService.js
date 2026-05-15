@@ -24,8 +24,7 @@ export const medicineService = {
       .from('medicines')
       .select(`
         *,
-        stock(*),
-        purchases(*)
+        protocols(id)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -41,7 +40,8 @@ export const medicineService = {
       .select(`
         *,
         stock(*),
-        purchases(*)
+        purchases(*),
+        protocols(*)
       `)
       .eq('id', id)
       .eq('user_id', userId)
