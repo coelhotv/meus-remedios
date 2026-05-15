@@ -157,13 +157,18 @@ export default function FormTimePicker({
                 </TouchableOpacity>
               </View>
 
-              {/* Picker spinner */}
+              {/* Picker spinner.
+                  textColor + themeVariant explícitos previnem texto invisível
+                  em alguns devices iOS (dark mode forçado, accessibility,
+                  iOS 14+ herdando cor do sistema). */}
               <DateTimePicker
                 mode="time"
                 display="spinner"
                 value={tempValue}
                 onChange={handleIOSChange}
                 locale="pt-BR"
+                textColor={colors.text.primary}
+                themeVariant="light"
               />
             </SafeAreaView>
           </View>

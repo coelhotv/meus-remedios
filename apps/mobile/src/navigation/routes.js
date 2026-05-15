@@ -30,6 +30,9 @@ export const ROUTES = {
   NOTIFICATION_PREFERENCES: 'NotificationPreferences',
   NOTIFICATION_INBOX: 'NotificationInbox',
 
+  // ANVISA search (Sprint P.2)
+  ANVISA_SEARCH: 'AnvisaSearch',
+
   // Dev-only (apenas __DEV__)
   FORM_KIT_DEMO: 'FormKitDemo',
 }

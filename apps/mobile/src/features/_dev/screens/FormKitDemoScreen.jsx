@@ -1,7 +1,7 @@
 // FormKitDemoScreen — playground dos primitivos do Form Kit (Sprint P.1)
 // Apenas para validação visual em ambiente DEV. Não usar em produção.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ChevronLeft } from 'lucide-react-native'
@@ -13,6 +13,7 @@ import {
   FormSection,
   FormActions,
 } from '@shared/components/form'
+import { ROUTES } from '../../../navigation/routes'
 import { colors, spacing } from '@shared/styles/tokens'
 
 const FREQUENCY_OPTIONS = [
@@ -23,7 +24,19 @@ const FREQUENCY_OPTIONS = [
   { label: 'Quando necessário', value: 'quando_necessario' },
 ]
 
-export default function FormKitDemoScreen({ navigation }) {
+export default function FormKitDemoScreen({ navigation, route }) {
+  const [selectedAnvisa, setSelectedAnvisa] = useState(null)
+
+  // Captura medicamento devolvido pela AnvisaSearchScreen via params (serializável)
+  useEffect(() => {
+    const picked = route?.params?.selectedMedicine
+    if (picked) {
+      setSelectedAnvisa(picked)
+      // Limpa o param para evitar re-aplicação em re-render
+      navigation?.setParams({ selectedMedicine: undefined })
+    }
+  }, [route?.params?.selectedMedicine, navigation])
+
   // Inputs interativos
   const [name, setName] = useState('')
   const [nameError, setNameError] = useState(undefined)
@@ -216,6 +229,33 @@ export default function FormKitDemoScreen({ navigation }) {
           />
         </FormSection>
 
+        {/* Seção 5 — Integração ANVISA (Sprint P.2) */}
+        <FormSection
+          title="ANVISA Search"
+          description="Abre tela de busca real (useMedicineDatabase + FormAutocomplete)"
+        >
+          <TouchableOpacity
+            onPress={() =>
+              navigation?.navigate(ROUTES.ANVISA_SEARCH, {
+                returnRoute: ROUTES.FORM_KIT_DEMO,
+              })
+            }
+            style={styles.linkBtn}
+          >
+            <Text style={styles.linkBtnText}>Abrir busca ANVISA →</Text>
+          </TouchableOpacity>
+          {selectedAnvisa ? (
+            <View style={styles.selectedBox}>
+              <Text style={styles.selectedTitle}>
+                Selecionado: {selectedAnvisa.name}
+              </Text>
+              <Text style={styles.selectedSubtitle}>
+                {selectedAnvisa.activeIngredient} · {selectedAnvisa.laboratory}
+              </Text>
+            </View>
+          ) : null}
+        </FormSection>
+
         {/* Estado atual (debug) */}
         <FormSection
           title="Estado atual"
@@ -290,6 +330,35 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral[800],
     borderRadius: 12,
     padding: spacing[4],
+  },
+  linkBtn: {
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[4],
+    backgroundColor: colors.primary[50],
+    borderRadius: 8,
+  },
+  linkBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary[700],
+  },
+  selectedBox: {
+    marginTop: spacing[3],
+    padding: spacing[3],
+    backgroundColor: colors.bg.card,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.status.success,
+  },
+  selectedTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  selectedSubtitle: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 2,
   },
   debugText: {
     fontFamily: 'Courier',
