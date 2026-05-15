@@ -1,13 +1,17 @@
 // TreatmentsStack.jsx — stack aninhado dentro da tab Tratamentos
 // Fase 1: inclui MedicinesList + MedicineDetail (CRUD Medicamentos — Sprint M1.1)
+//
+// ADR-036: usa `@react-navigation/stack` (JS) em vez de native-stack
+// — evita crash em Android API 24 (rn-screens IndexOutOfBoundsException)
+// reproduzido no fluxo Treatments → MedicinesList → back
 
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { createStackNavigator } from '@react-navigation/stack'
 import { ROUTES } from './routes'
 import TreatmentsScreen from '../features/treatments/screens/TreatmentsScreen'
 import MedicinesListScreen from '../features/medications/screens/MedicinesListScreen'
 import MedicineDetailScreen from '../features/medications/screens/MedicineDetailScreen'
 
-const Stack = createNativeStackNavigator()
+const Stack = createStackNavigator()
 
 export default function TreatmentsStack() {
   return (
