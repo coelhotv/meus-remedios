@@ -46,7 +46,7 @@ export function MedicineEmptyState() {
 
       {/* Link ANVISA */}
       <Pressable style={styles.anvisaLink} onPress={handleAnvisaSearch}>
-        <Text style={styles.anvisaLinkText}>Buscar na base ANVISA · 6.816 registros</Text>
+        <Text style={styles.anvisaLinkText}>Buscar na base ANVISA · 10.000 medicamentos</Text>
       </Pressable>
     </View>
   )

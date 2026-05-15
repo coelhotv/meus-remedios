@@ -96,7 +96,7 @@ Esta spec **consome** o que Fase 0 entregou. Não duplicar.
 > - Ilustração círculo verde + pílula
 > - Título "Biblioteca vazia" + subtexto "Cadastre medicamentos para começar a gerenciar tratamentos"
 > - CTA primário "+ Cadastrar primeiro medicamento" (verde grande)
-> - Texto secundário "Buscar na base ANVISA · 6.816 registros" (link visual)
+> - Texto secundário "Buscar na base ANVISA · 10.000 medicamentos" (link visual)
 
 ### Detalhe
 
