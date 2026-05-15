@@ -23,21 +23,24 @@ const MAX_RESULTS = 30
 const MIN_CHARS = 3
 
 export default function AnvisaSearchScreen({ navigation, route }) {
+  // States
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const { search, isReady, isLoading, error, lastUpdated } = useMedicineDatabase()
 
-  // Debounce do termo de busca
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS)
-    return () => clearTimeout(t)
-  }, [query])
-
+  // Memos (R-010: declarados antes de Effects)
   const trimmed = debouncedQuery.trim()
   const results = useMemo(() => {
     if (!isReady || trimmed.length < MIN_CHARS) return []
     return search(trimmed, MAX_RESULTS)
   }, [isReady, trimmed, search])
+
+  // Effects
+  // Debounce do termo de busca
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS)
+    return () => clearTimeout(t)
+  }, [query])
 
   // Retorna o medicamento via params serializáveis (React Navigation v7 best practice)
   function handleSelect(medicine) {
