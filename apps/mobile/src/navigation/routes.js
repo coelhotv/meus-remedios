@@ -40,6 +40,5 @@ export const ROUTES = {
   MEDICINE_DETAIL: 'MedicineDetail',
 
   // Dev-only (apenas __DEV__)
-  FORM_KIT_DEMO: 'FormKitDemo',
   MEDICINE_DEMO: 'MedicineDemo',
 }

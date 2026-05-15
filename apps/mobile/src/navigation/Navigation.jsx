@@ -21,7 +21,6 @@ import SignupScreen from '../screens/SignupScreen'
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen'
 import ResetPasswordScreen from '../screens/ResetPasswordScreen'
 import RootTabs from './RootTabs'
-import FormKitDemoScreen from '../features/_dev/screens/FormKitDemoScreen'
 import MedicineDemoScreen from '../features/_dev/screens/MedicineDemoScreen'
 import AnvisaSearchScreen from '../features/medications/screens/AnvisaSearchScreen'
 import { supabase } from '../platform/supabase/nativeSupabaseClient'
@@ -160,16 +159,10 @@ export default function Navigation() {
               component={AnvisaSearchScreen}
             />
             {__DEV__ && (
-              <>
-                <Stack.Screen
-                  name={ROUTES.FORM_KIT_DEMO}
-                  component={FormKitDemoScreen}
-                />
-                <Stack.Screen
-                  name={ROUTES.MEDICINE_DEMO}
-                  component={MedicineDemoScreen}
-                />
-              </>
+              <Stack.Screen
+                name={ROUTES.MEDICINE_DEMO}
+                component={MedicineDemoScreen}
+              />
             )}
           </>
         ) : (
