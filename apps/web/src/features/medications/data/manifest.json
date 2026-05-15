@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-05-15T03:36:16Z",
+  "files": {
+    "medicineDatabase": {
+      "path": "anvisa/v1/medicineDatabase.json",
+      "size": 1340397,
+      "count": 6807
+    },
+    "laboratoryDatabase": {
+      "path": "anvisa/v1/laboratoryDatabase.json",
+      "size": 14378,
+      "count": 278
+    }
+  },
+  "source": "ANVISA · base interna Dosiq",
+  "ttlDays": 7
+}
