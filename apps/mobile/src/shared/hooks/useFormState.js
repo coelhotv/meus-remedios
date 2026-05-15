@@ -12,6 +12,8 @@ const EMPTY = Object.freeze({})
 
 const deepEqual = (a, b) => {
   if (a === b) return true
+  // Date precisa de comparação por valor (getTime) — Object.keys(Date) retorna []
+  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime()
   if (a == null || b == null) return a === b
   if (typeof a !== 'object' || typeof b !== 'object') return a === b
   const ka = Object.keys(a)
@@ -30,21 +32,14 @@ const mapIssues = (issues) => {
   return out
 }
 
-// Valida campo isolado. Tenta schema.pick({[field]:true}); se Hermes não
-// suportar, faz fallback para parse completo + filtra issues do campo.
+// Valida campo isolado parseando objeto completo. Necessário para preservar
+// refinements de objeto (.refine/.superRefine) que dependem de outros campos —
+// schema.pick descarta refinements do nível do objeto.
 const validateField = (schema, field, value, allValues) => {
-  try {
-    const picked = schema.pick({ [field]: true })
-    const result = picked.safeParse({ [field]: value })
-    if (result.success) return null
-    const issue = result.error.issues.find((i) => i.path[0] === field)
-    return issue ? issue.message : null
-  } catch {
-    const result = schema.safeParse({ ...allValues, [field]: value })
-    if (result.success) return null
-    const issue = result.error.issues.find((i) => i.path[0] === field)
-    return issue ? issue.message : null
-  }
+  const result = schema.safeParse({ ...allValues, [field]: value })
+  if (result.success) return null
+  const issue = result.error.issues.find((i) => i.path[0] === field)
+  return issue ? issue.message : null
 }
 
 export function useFormState(schema, { initialValues = EMPTY } = {}) {
