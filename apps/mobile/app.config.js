@@ -84,7 +84,8 @@ module.exports = {
           "userTrackingPermission": "Seus dados nos ajudam a manter o Dosiq gratuito por meio de anúncios personalizados e melhorias no app."
         }
       ],
-      './withFirebaseFix.js'
+      './withFirebaseFix.js',
+      '@react-native-community/datetimepicker'
     ],
     extra: {
       // RE-004: variáveis públicas via EXPO_PUBLIC_*
