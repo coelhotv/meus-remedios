@@ -7,6 +7,7 @@
 > **Quality Gates**: G1 (Copy) → G2 (Extract) → G3 (Migrate) — **end-to-end antes de iniciar Fase 2**
 > **Mocks Hi-Fi**: `plans/backlog-native_app/MOCKS_APP_CRUD/export/mock-medicamentos-*.png`
 > **Protótipo HTML**: `plans/backlog-native_app/MOCKS_APP_CRUD/project/Dosiq · Fase 1 - Medicamentos.html`
+> **Versão do app**: 'v0.3.8' - ainda continua sendo um minor improvement, sem mudança de experiencia na app
 
 ---
 
