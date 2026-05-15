@@ -19,7 +19,8 @@ export default function MedicineCard({ medicine, onPress }) {
   const Icon = isSupplement ? PillBottle : Pill
   const iconColor = isSupplement ? colors.supplement[500] : colors.primary[500]
   const iconBg = isSupplement ? colors.supplement[50] : colors.primary[50]
-  const doseColor = isSupplement ? colors.supplement[700] : colors.primary[700]
+  const badgeBg = iconBg
+  const badgeColor = isSupplement ? colors.supplement[700] : colors.primary[700]
 
   const handlePress = () => {
     selectionTap()
@@ -45,12 +46,14 @@ export default function MedicineCard({ medicine, onPress }) {
         </View>
         <Text style={styles.name} numberOfLines={1}>
           {name}
-          {hasDose && (
-            <Text style={[styles.inlineDose, { color: doseColor }]}>
-              {' '}({dosage_per_pill}{dosage_unit})
-            </Text>
-          )}
         </Text>
+        {hasDose && (
+          <View style={[styles.badge, { backgroundColor: badgeBg }]}>
+            <Text style={[styles.badgeText, { color: badgeColor }]}>
+              {dosage_per_pill}{dosage_unit}
+            </Text>
+          </View>
+        )}
       </View>
 
       {laboratory ? (
@@ -89,14 +92,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   name: {
-    flex: 1,
+    flexShrink: 1,
     fontSize: 16,
     fontWeight: '700',
     color: colors.text.primary,
     fontFamily: typography.fontFamily.bold,
   },
-  inlineDose: {
-    fontSize: 14,
+  badge: {
+    paddingHorizontal: spacing[2],
+    paddingVertical: 2,
+    borderRadius: borderRadius.xs,
+  },
+  badgeText: {
+    fontSize: 12,
     fontWeight: '600',
   },
   meta: {
