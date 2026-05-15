@@ -35,9 +35,12 @@ export default function FormKitDemoScreen({ navigation }) {
   const [reminderTime, setReminderTime] = useState(null)
   const [submitLoading, setSubmitLoading] = useState(false)
 
-  // Filtra apenas dígitos (demo de uso correto com keyboardType numeric)
+  // Filtra dígitos + um único separador decimal (vírgula ou ponto)
   function handleDoseChange(_, v) {
-    setDose(v.replace(/[^0-9]/g, ''))
+    const cleaned = v.replace(/[^0-9.,]/g, '')
+    // Mantém apenas o primeiro separador decimal
+    const match = cleaned.match(/^(\d*)([.,]?)(\d*)/)
+    setDose(match ? match[1] + match[2] + match[3] : '')
   }
 
   function toggleNameError() {
