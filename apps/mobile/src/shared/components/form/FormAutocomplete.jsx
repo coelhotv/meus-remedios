@@ -172,42 +172,39 @@ export default function FormAutocomplete({
         </View>
       ) : null}
 
-      <View style={[styles.inputContainer, { borderColor }]}>
-        <Search size={18} color={colors.text.muted} strokeWidth={2} />
-        <TextInput
-          style={styles.input}
-          value={value}
-          placeholder={placeholder}
-          placeholderTextColor={colors.text.muted}
-          editable={!disabled}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onChangeText={handleChangeText}
-          autoCorrect={false}
-          autoCapitalize="words"
-          accessibilityLabel={label}
-          accessibilityHint={helperText || placeholder}
-          accessibilityState={error ? { invalid: true } : undefined}
-        />
-        {value ? (
-          <Pressable
-            onPress={handleClear}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel="Limpar"
-          >
-            <X size={18} color={colors.text.muted} strokeWidth={2} />
-          </Pressable>
-        ) : null}
-      </View>
+      {/* Wrapper relativo isolando input+overlay — overlay ancora via
+          top: '100%' do inputContainer, independente da altura do label. */}
+      <View style={styles.inputBlock}>
+        <View style={[styles.inputContainer, { borderColor }]}>
+          <Search size={18} color={colors.text.muted} strokeWidth={2} />
+          <TextInput
+            style={styles.input}
+            value={value}
+            placeholder={placeholder}
+            placeholderTextColor={colors.text.muted}
+            editable={!disabled}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onChangeText={handleChangeText}
+            autoCorrect={false}
+            autoCapitalize="words"
+            accessibilityLabel={label}
+            accessibilityHint={helperText || placeholder}
+            accessibilityState={error ? { invalid: true } : undefined}
+          />
+          {value ? (
+            <Pressable
+              onPress={handleClear}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel="Limpar"
+            >
+              <X size={18} color={colors.text.muted} strokeWidth={2} />
+            </Pressable>
+          ) : null}
+        </View>
 
-      {error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : helperText ? (
-        <Text style={styles.helperText}>{helperText}</Text>
-      ) : null}
-
-      {showOverlay && (
+        {showOverlay && (
         <View style={styles.overlay}>
           {searching ? (
             <View style={styles.statusRow}>
@@ -228,7 +225,14 @@ export default function FormAutocomplete({
             />
           )}
         </View>
-      )}
+        )}
+      </View>
+
+      {error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : helperText ? (
+        <Text style={styles.helperText}>{helperText}</Text>
+      ) : null}
     </View>
   )
 }
@@ -254,6 +258,10 @@ const styles = StyleSheet.create({
   asterisk: {
     fontSize: 13,
     color: colors.status.error,
+  },
+  inputBlock: {
+    // Wrapper relativo para ancorar o overlay (top: '100%' do input)
+    position: 'relative',
   },
   inputContainer: {
     height: 50,
@@ -282,8 +290,11 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   overlay: {
+    // Ancorado ao bottom do inputContainer via wrapper relativo inputBlock,
+    // imune a alterações na altura do label (sem magic number).
     position: 'absolute',
-    top: 78, // label (~24) + container (50) + gap (4)
+    top: '100%',
+    marginTop: 4,
     left: 0,
     right: 0,
     backgroundColor: colors.bg.card,
