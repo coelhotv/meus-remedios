@@ -48,7 +48,7 @@ const FREQUENCIES = [
 
 const medicineSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  dose: z.number().int().positive('Dose deve ser positiva'),
+  dose: z.number().int().positive('Dose deve ser positiva').max(100, 'A dose não pode ser maior que 100'),
   frequency: z.enum(['diario', 'semanal'], {
     errorMap: () => ({ message: 'Selecione uma frequência' }),
   }),
