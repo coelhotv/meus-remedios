@@ -1,7 +1,7 @@
 // FormKitDemoScreen — playground dos primitivos do Form Kit (Sprint P.1)
 // Apenas para validação visual em ambiente DEV. Não usar em produção.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ChevronLeft } from 'lucide-react-native'
@@ -24,8 +24,18 @@ const FREQUENCY_OPTIONS = [
   { label: 'Quando necessário', value: 'quando_necessario' },
 ]
 
-export default function FormKitDemoScreen({ navigation }) {
+export default function FormKitDemoScreen({ navigation, route }) {
   const [selectedAnvisa, setSelectedAnvisa] = useState(null)
+
+  // Captura medicamento devolvido pela AnvisaSearchScreen via params (serializável)
+  useEffect(() => {
+    const picked = route?.params?.selectedMedicine
+    if (picked) {
+      setSelectedAnvisa(picked)
+      // Limpa o param para evitar re-aplicação em re-render
+      navigation?.setParams({ selectedMedicine: undefined })
+    }
+  }, [route?.params?.selectedMedicine, navigation])
 
   // Inputs interativos
   const [name, setName] = useState('')
@@ -227,7 +237,7 @@ export default function FormKitDemoScreen({ navigation }) {
           <TouchableOpacity
             onPress={() =>
               navigation?.navigate(ROUTES.ANVISA_SEARCH, {
-                onSelect: (m) => setSelectedAnvisa(m),
+                returnRoute: ROUTES.FORM_KIT_DEMO,
               })
             }
             style={styles.linkBtn}

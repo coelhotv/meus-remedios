@@ -192,12 +192,12 @@ Se algo der errado:
 
 ## 7. Checklist final
 
-- [ ] Bucket `dosiq-assets` criado como **public**
-- [ ] Pasta `anvisa/v1/` criada
-- [ ] `manifest.json` gerado localmente e uploaded
-- [ ] `medicineDatabase.json` (1.34 MB) uploaded
-- [ ] `laboratoryDatabase.json` (14 KB) uploaded
-- [ ] 3 URLs públicas retornam conteúdo correto em browser anônimo
+- [x] Bucket `dosiq-assets` criado como **public**
+- [x] Pasta `anvisa/v1/` criada
+- [x] `manifest.json` gerado localmente e uploaded
+- [x] `medicineDatabase.json` (1.34 MB) uploaded
+- [x] `laboratoryDatabase.json` (14 KB) uploaded
+- [x] 3 URLs públicas retornam conteúdo correto em browser anônimo
 - [ ] (Opcional) Cache CDN configurado
 
 Quando todos os ✅ estiverem marcados, avise o time/agente para destravar P2.8 (smoke test E2E).

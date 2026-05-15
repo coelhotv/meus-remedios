@@ -35,6 +35,22 @@ function normalizeText(text) {
     .replace(/[̀-ͯ]/g, '')
 }
 
+// Match por prefixo com word-boundary: "trime" casa "Maleato de Trimebutina"
+// (após espaço) e "Trimetoprima" (início), mas NÃO "Sumatripta**" (mid-word).
+// Boundaries reconhecidos: início, espaço, hífen, ponto, parêntese, slash, vírgula.
+function matchesPrefix(normalizedText, normalizedQuery) {
+  if (!normalizedText || !normalizedQuery) return false
+  if (normalizedText.startsWith(normalizedQuery)) return true
+  // Procura ocorrências após boundary
+  const boundaryChars = ' -.,(/\\'
+  for (let i = 1; i < normalizedText.length; i += 1) {
+    if (boundaryChars.includes(normalizedText[i - 1])) {
+      if (normalizedText.startsWith(normalizedQuery, i)) return true
+    }
+  }
+  return false
+}
+
 // Fetch JSON com timeout (R-168) e tratamento de erro silencioso para o caller.
 async function fetchJson(url, timeoutMs = 30_000) {
   const controller = new AbortController()
@@ -164,21 +180,26 @@ export function useMedicineDatabase({
     }
   }, [baseUrl, ttlMs])
 
+  // Busca autocomplete: word-boundary prefix em name OU activeIngredient.
+  // Ranking: matches no name vêm antes dos só-em-activeIngredient.
   const search = useCallback(
     (query, limit = 10) => {
       if (!database || !query || query.trim().length < 3) return []
       const q = normalizeText(query)
-      const results = []
+      const nameMatches = []
+      const ingredientMatches = []
       for (const med of database) {
-        if (
-          normalizeText(med.name).includes(q) ||
-          normalizeText(med.activeIngredient).includes(q)
-        ) {
-          results.push(med)
-          if (results.length >= limit) break
+        const nameHit = matchesPrefix(normalizeText(med.name), q)
+        if (nameHit) {
+          nameMatches.push(med)
+          if (nameMatches.length >= limit) break
+          continue
+        }
+        if (matchesPrefix(normalizeText(med.activeIngredient), q)) {
+          ingredientMatches.push(med)
         }
       }
-      return results
+      return [...nameMatches, ...ingredientMatches].slice(0, limit)
     },
     [database],
   )

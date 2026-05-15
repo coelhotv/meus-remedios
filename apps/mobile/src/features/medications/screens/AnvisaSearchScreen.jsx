@@ -1,46 +1,125 @@
-import { useState } from 'react'
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, Pressable } from 'react-native'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Keyboard,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { ChevronLeft, Pill } from 'lucide-react-native'
+import { ChevronLeft, Pill, Search, X } from 'lucide-react-native'
 import { useMedicineDatabase } from '@shared/hooks/useMedicineDatabase'
-import FormAutocomplete from '@shared/components/form/FormAutocomplete'
 import { colors, spacing, borderRadius } from '@shared/styles/tokens'
+
+// Tela dedicada de busca ANVISA. Layout único: input no topo + lista
+// ocupando o resto da tela (sem overlay sobreposto). Para uso inline em
+// formulários, prefira FormAutocomplete (overlay) ou um bottom sheet.
+
+const DEBOUNCE_MS = 200
+const MAX_RESULTS = 30
+const MIN_CHARS = 3
 
 export default function AnvisaSearchScreen({ navigation, route }) {
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const { search, isReady, isLoading, error, lastUpdated } = useMedicineDatabase()
-  const results = isReady && query.trim().length >= 3 ? search(query, 20) : []
 
+  // Debounce do termo de busca
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS)
+    return () => clearTimeout(t)
+  }, [query])
+
+  const trimmed = debouncedQuery.trim()
+  const results = useMemo(() => {
+    if (!isReady || trimmed.length < MIN_CHARS) return []
+    return search(trimmed, MAX_RESULTS)
+  }, [isReady, trimmed, search])
+
+  // Retorna o medicamento via params serializáveis (React Navigation v7 best practice)
   function handleSelect(medicine) {
-    route?.params?.onSelect?.(medicine)
-    navigation?.goBack()
+    Keyboard.dismiss()
+    const returnRoute = route?.params?.returnRoute
+    if (returnRoute) {
+      navigation?.navigate({
+        name: returnRoute,
+        params: { selectedMedicine: medicine },
+        merge: true,
+      })
+    } else {
+      navigation?.goBack()
+    }
   }
 
-  function renderResultItem({ item }) {
+  function renderItem({ item }) {
     return (
       <Pressable
-        style={({ pressed }) => [styles.resultRow, pressed && styles.resultRowPressed]}
+        style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
         onPress={() => handleSelect(item)}
         accessibilityRole="button"
         accessibilityLabel={item.name}
       >
-        <Pill size={18} color={colors.primary[500]} strokeWidth={2} style={styles.pillIcon} />
-        <View style={styles.resultText}>
-          <Text style={styles.resultName} numberOfLines={1}>{item.name}</Text>
+        <View style={styles.cardIcon}>
+          <Pill size={18} color={colors.primary[700]} strokeWidth={2} />
+        </View>
+        <View style={styles.cardText}>
+          <Text style={styles.cardName} numberOfLines={1}>
+            {item.name}
+          </Text>
           {item.activeIngredient ? (
-            <Text style={styles.resultSub} numberOfLines={1}>{item.activeIngredient}</Text>
+            <Text style={styles.cardSub} numberOfLines={1}>
+              {item.activeIngredient}
+            </Text>
           ) : null}
           {item.laboratory ? (
-            <Text style={styles.resultLab} numberOfLines={1}>{item.laboratory}</Text>
+            <Text style={styles.cardLab} numberOfLines={1}>
+              {item.laboratory}
+            </Text>
           ) : null}
         </View>
       </Pressable>
     )
   }
 
+  function renderEmpty() {
+    if (!isReady) {
+      if (isLoading) {
+        return (
+          <View style={styles.statusCenter}>
+            <ActivityIndicator color={colors.primary[700]} />
+            <Text style={styles.statusText}>Baixando base ANVISA…</Text>
+          </View>
+        )
+      }
+      if (error) {
+        return (
+          <Text style={styles.errorText}>
+            {`Falha ao baixar base: ${error}. Verifique sua conexão e tente novamente.`}
+          </Text>
+        )
+      }
+      return null
+    }
+    if (trimmed.length < MIN_CHARS) {
+      return (
+        <Text style={styles.hintText}>
+          Digite ao menos {MIN_CHARS} caracteres para buscar.
+        </Text>
+      )
+    }
+    return (
+      <Text style={styles.hintText}>
+        Nenhum medicamento encontrado para "{trimmed}".
+      </Text>
+    )
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* Cabeçalho com botão voltar e título centralizado */}
+      {/* Cabeçalho */}
       <View style={styles.header}>
         <Pressable
           style={({ pressed }) => [styles.backBtn, pressed && styles.backBtnPressed]}
@@ -51,64 +130,54 @@ export default function AnvisaSearchScreen({ navigation, route }) {
           <ChevronLeft size={24} color={colors.text.primary} strokeWidth={2} />
         </Pressable>
         <Text style={styles.headerTitle}>Buscar medicamento</Text>
-        {/* Espaçador para simetria do título centralizado */}
         <View style={styles.headerSpacer} />
       </View>
 
-      <View style={styles.body}>
-        {/* Campo de busca com overlay de sugestões */}
-        <FormAutocomplete
-          name="anvisa"
-          label="Nome do medicamento"
-          placeholder="Digite ao menos 3 letras"
-          value={query}
-          onChange={(_, v) => setQuery(v)}
-          search={search}
-          getItemLabel={(m) => m.name}
-          getItemSubtitle={(m) => m.activeIngredient}
-          onSelect={handleSelect}
-        />
-
-        {/* Bloco de status enquanto a base não está pronta */}
-        {!isReady && (
-          <View style={styles.statusBlock}>
-            {isLoading ? (
-              <View style={styles.statusRow}>
-                <ActivityIndicator color={colors.primary[700]} />
-                <Text style={styles.statusText}>Baixando base ANVISA…</Text>
-              </View>
-            ) : error ? (
-              <Text style={styles.errorText}>
-                {`Falha ao baixar base: ${error}. Verifique sua conexão e tente novamente.`}
-              </Text>
-            ) : null}
-          </View>
-        )}
-
-        {/* Dica quando base está pronta mas query curta */}
-        {isReady && query.trim().length < 3 && (
-          <Text style={styles.hintText}>Digite ao menos 3 caracteres para buscar.</Text>
-        )}
-
-        {/* Lista de resultados expandida (top 20) */}
-        {results.length > 0 && (
-          <FlatList
-            data={results}
-            keyExtractor={(item, idx) => `${item.name}-${idx}`}
-            renderItem={renderResultItem}
-            keyboardShouldPersistTaps="handled"
-            style={styles.list}
-            contentContainerStyle={styles.listContent}
+      {/* Input de busca */}
+      <View style={styles.searchWrapper}>
+        <View style={styles.searchBox}>
+          <Search size={18} color={colors.text.muted} strokeWidth={2} />
+          <TextInput
+            style={styles.searchInput}
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Digite o nome ou princípio ativo"
+            placeholderTextColor={colors.text.muted}
+            autoCorrect={false}
+            autoCapitalize="words"
+            returnKeyType="search"
+            accessibilityLabel="Buscar medicamento"
           />
-        )}
-
-        {/* Atualização da base (quando disponível) */}
-        {isReady && lastUpdated ? (
-          <Text style={styles.updatedText}>
-            {`Base atualizada em ${lastUpdated.toLocaleDateString('pt-BR')}`}
-          </Text>
-        ) : null}
+          {query ? (
+            <Pressable
+              onPress={() => setQuery('')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel="Limpar"
+            >
+              <X size={18} color={colors.text.muted} strokeWidth={2} />
+            </Pressable>
+          ) : null}
+        </View>
       </View>
+
+      {/* Lista única ocupando o restante da tela */}
+      <FlatList
+        data={results}
+        keyExtractor={(item, idx) => `${item.name}-${idx}`}
+        renderItem={renderItem}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={renderEmpty}
+        ListFooterComponent={
+          isReady && lastUpdated ? (
+            <Text style={styles.updatedText}>
+              {`Base atualizada em ${lastUpdated.toLocaleDateString('pt-BR')}`}
+            </Text>
+          ) : null
+        }
+      />
     </SafeAreaView>
   )
 }
@@ -147,17 +216,80 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 40,
   },
-  body: {
-    flex: 1,
-    padding: spacing[5],
+  searchWrapper: {
+    paddingHorizontal: spacing[5],
+    paddingTop: spacing[4],
+    paddingBottom: spacing[3],
+    backgroundColor: colors.bg.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
   },
-  statusBlock: {
-    marginTop: spacing[4],
-  },
-  statusRow: {
+  searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[2],
+    height: 44,
+    paddingHorizontal: spacing[3],
+    backgroundColor: colors.neutral[100],
+    borderRadius: borderRadius.md,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.text.primary,
+    padding: 0,
+  },
+  listContent: {
+    padding: spacing[5],
+    paddingBottom: spacing[10],
+    flexGrow: 1,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: spacing[3],
+    backgroundColor: colors.bg.card,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing[2],
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    gap: spacing[3],
+  },
+  cardPressed: {
+    backgroundColor: colors.primary[50],
+    borderColor: colors.primary[200],
+  },
+  cardIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.primary[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardText: {
+    flex: 1,
+  },
+  cardName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  cardSub: {
+    fontSize: 13,
+    color: colors.text.muted,
+    marginTop: 2,
+  },
+  cardLab: {
+    fontSize: 11,
+    color: colors.text.muted,
+    marginTop: 2,
+  },
+  statusCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing[8],
+    gap: spacing[3],
   },
   statusText: {
     fontSize: 14,
@@ -167,54 +299,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.status.error,
     lineHeight: 20,
+    textAlign: 'center',
+    marginTop: spacing[4],
   },
   hintText: {
-    marginTop: spacing[4],
     fontSize: 14,
     color: colors.text.muted,
     textAlign: 'center',
-  },
-  list: {
-    marginTop: spacing[4],
-  },
-  listContent: {
-    gap: 0,
-  },
-  resultRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[4],
-    backgroundColor: colors.bg.card,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing[2],
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    gap: spacing[3],
-  },
-  resultRowPressed: {
-    backgroundColor: colors.primary[50],
-  },
-  pillIcon: {
-    marginTop: 2,
-  },
-  resultText: {
-    flex: 1,
-  },
-  resultName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.text.primary,
-  },
-  resultSub: {
-    fontSize: 13,
-    color: colors.text.muted,
-    marginTop: 2,
-  },
-  resultLab: {
-    fontSize: 11,
-    color: colors.text.muted,
-    marginTop: 2,
+    marginTop: spacing[8],
   },
   updatedText: {
     marginTop: spacing[4],

@@ -27,6 +27,10 @@ const mockData = [
   { name: 'Paracetamol', activeIngredient: 'Paracetamol', therapeuticClass: 'Analgésico', laboratory: 'Lab A' },
   { name: 'Dipirona', activeIngredient: 'Dipirona Sódica', therapeuticClass: 'Analgésico', laboratory: 'Lab B' },
   { name: 'Ácido Acetilsalicílico', activeIngredient: 'AAS', therapeuticClass: 'Anti-inflamatório', laboratory: 'Lab C' },
+  // Casos para testar word-boundary prefix
+  { name: 'Maleato de Trimebutina', activeIngredient: 'Trimebutina', therapeuticClass: 'Antiespasmódico', laboratory: 'Lab D' },
+  { name: 'Sumatriptana', activeIngredient: 'Sumatriptana', therapeuticClass: 'Antimigranoso', laboratory: 'Lab E' },
+  { name: 'Aparat', activeIngredient: 'Aparat', therapeuticClass: 'Misc', laboratory: 'Lab F' },
 ]
 
 function mockFetchOk(body) {
@@ -228,9 +232,9 @@ describe('search()', () => {
 
   it('respeita o limite', async () => {
     const result = await getReadyHook()
-    // 'ana' aparece em Paracetamol (ativa ingredient) e Dipirona
-    const res = result.current.search('ana', 1)
-    expect(res.length).toBeLessThanOrEqual(1)
+    // 'dip' casa Dipirona (name + ingredient) — limit 1 deve cortar
+    const res = result.current.search('dip', 1)
+    expect(res.length).toBe(1)
   })
 
   it('retorna [] para query com menos de 3 caracteres', async () => {
@@ -243,6 +247,42 @@ describe('search()', () => {
     const result = await getReadyHook()
     expect(result.current.search(null, 10)).toEqual([])
     expect(result.current.search(undefined, 10)).toEqual([])
+  })
+
+  it('match word-boundary: "trime" casa "Maleato de Trimebutina" (segunda palavra)', async () => {
+    const result = await getReadyHook()
+    const res = result.current.search('trime', 10)
+    expect(res.some((m) => m.name === 'Maleato de Trimebutina')).toBe(true)
+  })
+
+  it('match word-boundary: "trime" casa via activeIngredient "Trimebutina"', async () => {
+    const result = await getReadyHook()
+    const res = result.current.search('trime', 10)
+    expect(res.length).toBeGreaterThan(0)
+  })
+
+  it('NÃO match mid-word: "trip" não casa "Suma**trip**tana"', async () => {
+    const result = await getReadyHook()
+    const res = result.current.search('trip', 10)
+    expect(res.some((m) => m.name === 'Sumatriptana')).toBe(false)
+  })
+
+  it('NÃO match mid-word: "para" não casa "A**para**t"', async () => {
+    const result = await getReadyHook()
+    const res = result.current.search('para', 10)
+    expect(res.some((m) => m.name === 'Aparat')).toBe(false)
+    // Mas DEVE casar Paracetamol (prefixo do início)
+    expect(res.some((m) => m.name === 'Paracetamol')).toBe(true)
+  })
+
+  it('ranking: name-prefix vem antes de só-activeIngredient-prefix', async () => {
+    const result = await getReadyHook()
+    // 'trime' casa name "Maleato de Trimebutina" (segunda palavra do name)
+    // E também casa activeIngredient "Trimebutina"
+    // Como ambos têm match no name, primeiro deve ser quem tem match no name
+    const res = result.current.search('dipi', 10)
+    // Dipirona casa por name; nenhum outro registro casa por nada
+    expect(res[0].name).toBe('Dipirona')
   })
 })
 
