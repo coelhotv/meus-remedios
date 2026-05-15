@@ -19,8 +19,7 @@ export default function MedicineCard({ medicine, onPress }) {
   const Icon = isSupplement ? PillBottle : Pill
   const iconColor = isSupplement ? colors.supplement[500] : colors.primary[500]
   const iconBg = isSupplement ? colors.supplement[50] : colors.primary[50]
-  const badgeBg = iconBg
-  const badgeColor = isSupplement ? colors.supplement[700] : colors.primary[700]
+  const doseColor = isSupplement ? colors.supplement[700] : colors.primary[700]
 
   const handlePress = () => {
     selectionTap()
@@ -46,24 +45,19 @@ export default function MedicineCard({ medicine, onPress }) {
         </View>
         <Text style={styles.name} numberOfLines={1}>
           {name}
+          {hasDose && (
+            <Text style={[styles.inlineDose, { color: doseColor }]}>
+              {' '}({dosage_per_pill}{dosage_unit})
+            </Text>
+          )}
         </Text>
       </View>
 
-      <View style={styles.metaRow}>
-        {hasDose && (
-          <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-            <Text style={[styles.badgeText, { color: badgeColor }]}>
-              {dosage_per_pill} {dosage_unit}
-            </Text>
-          </View>
-        )}
-        {laboratory ? (
-          <Text style={styles.meta} numberOfLines={1}>
-            {hasDose ? ' · ' : ''}
-            {laboratory}
-          </Text>
-        ) : null}
-      </View>
+      {laboratory ? (
+        <Text style={styles.meta} numberOfLines={1}>
+          {laboratory}
+        </Text>
+      ) : null}
 
       <Text style={styles.protocols}>{protocolsLabel}</Text>
     </Pressable>
@@ -101,26 +95,15 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontFamily: typography.fontFamily.bold,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing[2],
-  },
-  badge: {
-    backgroundColor: colors.primary[50],
-    paddingHorizontal: spacing[2],
-    paddingVertical: 2,
-    borderRadius: borderRadius.xs,
-  },
-  badgeText: {
-    fontSize: 12,
+  inlineDose: {
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.primary[700],
   },
   meta: {
-    flex: 1,
     fontSize: 13,
     color: colors.text.muted,
+    marginTop: spacing[1],
+    marginLeft: 32 + spacing[3],
   },
   protocols: {
     marginTop: spacing[2],

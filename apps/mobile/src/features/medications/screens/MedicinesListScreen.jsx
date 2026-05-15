@@ -11,7 +11,7 @@ import {
   StyleSheet,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { Search, X, Plus } from 'lucide-react-native'
+import { Search, X, Plus, ChevronLeft } from 'lucide-react-native'
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
 import ErrorState from '@shared/components/states/ErrorState'
@@ -103,6 +103,15 @@ export default function MedicinesListScreen() {
       <View style={styles.header}>
         {!searchOpen ? (
           <>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={styles.iconButton}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar"
+              hitSlop={8}
+            >
+              <ChevronLeft size={24} color={colors.text.primary} />
+            </Pressable>
             <Text style={styles.title}>Meus Medicamentos</Text>
             <Pressable
               onPress={toggleSearch}
