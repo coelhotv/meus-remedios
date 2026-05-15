@@ -1,18 +1,26 @@
 // MedicineCard.jsx — card de medicamento (Sprint M1.1 Fase 1)
 
 import { Pressable, View, Text, StyleSheet } from 'react-native'
-import { Pill } from 'lucide-react-native'
+import { Pill, PillBottle } from 'lucide-react-native'
 import { colors, spacing, borderRadius, shadows, typography } from '@shared/styles/tokens'
 import { selectionTap } from '@shared/utils/haptics'
 
 export default function MedicineCard({ medicine, onPress }) {
   const {
     name,
+    type,
     dosage_per_pill,
     dosage_unit,
     laboratory,
     active_protocols_count = 0,
   } = medicine ?? {}
+
+  const isSupplement = type === 'suplemento'
+  const Icon = isSupplement ? PillBottle : Pill
+  const iconColor = isSupplement ? colors.supplement[500] : colors.primary[500]
+  const iconBg = isSupplement ? colors.supplement[50] : colors.primary[50]
+  const badgeBg = iconBg
+  const badgeColor = isSupplement ? colors.supplement[700] : colors.primary[700]
 
   const handlePress = () => {
     selectionTap()
@@ -33,8 +41,8 @@ export default function MedicineCard({ medicine, onPress }) {
       accessibilityLabel={`Medicamento ${name}`}
     >
       <View style={styles.row}>
-        <View style={styles.iconWrap}>
-          <Pill size={20} color={colors.primary[500]} />
+        <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
+          <Icon size={20} color={iconColor} />
         </View>
         <Text style={styles.name} numberOfLines={1}>
           {name}
@@ -43,8 +51,8 @@ export default function MedicineCard({ medicine, onPress }) {
 
       <View style={styles.metaRow}>
         {hasDose && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
+          <View style={[styles.badge, { backgroundColor: badgeBg }]}>
+            <Text style={[styles.badgeText, { color: badgeColor }]}>
               {dosage_per_pill} {dosage_unit}
             </Text>
           </View>

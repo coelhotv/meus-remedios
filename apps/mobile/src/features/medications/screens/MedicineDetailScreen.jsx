@@ -15,6 +15,7 @@ import {
   Pencil,
   MoreVertical,
   Pill,
+  PillBottle,
 } from 'lucide-react-native'
 
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
@@ -163,8 +164,20 @@ export default function MedicineDetailScreen() {
       >
         {/* Hero card */}
         <View style={styles.heroCard}>
-          <View style={styles.heroIconWrap}>
-            <Pill size={48} color={colors.primary[500]} />
+          <View
+            style={[
+              styles.heroIconWrap,
+              {
+                backgroundColor:
+                  data.type === 'suplemento' ? colors.supplement[50] : colors.primary[50],
+              },
+            ]}
+          >
+            {data.type === 'suplemento' ? (
+              <PillBottle size={48} color={colors.supplement[500]} />
+            ) : (
+              <Pill size={48} color={colors.primary[500]} />
+            )}
           </View>
           <View style={styles.heroBody}>
             <Text style={styles.heroName} numberOfLines={2}>
@@ -199,6 +212,7 @@ export default function MedicineDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>IDENTIFICAÇÃO</Text>
           <View style={styles.sectionCard}>
+            <KVRow label="Tipo" value={typeLabel} />
             <KVRow label="Princípio Ativo" value={data.active_ingredient} />
             <KVRow label="Laboratório" value={data.laboratory} />
             <KVRow label="Classe Terapêutica" value={data.therapeutic_class} />
@@ -221,8 +235,8 @@ export default function MedicineDetailScreen() {
                   ? `${data.dosage_per_pill} ${data.dosage_unit ?? ''}`.trim()
                   : null
               }
+              isLast
             />
-            <KVRow label="Forma" value={typeLabel} isLast />
           </View>
         </View>
 
