@@ -13,6 +13,16 @@ import {
   FormSection,
   FormActions,
 } from '@shared/components/form'
+import DeleteConfirmation from '@shared/components/feedback/DeleteConfirmation'
+import { useToast } from '@shared/components/feedback/Toast'
+import {
+  successHaptic,
+  errorHaptic,
+  warningHaptic,
+  lightTap,
+  mediumTap,
+  heavyTap,
+} from '@shared/utils/haptics'
 import { ROUTES } from '../../../navigation/routes'
 import { colors, spacing } from '@shared/styles/tokens'
 
@@ -26,15 +36,30 @@ const FREQUENCY_OPTIONS = [
 
 export default function FormKitDemoScreen({ navigation, route }) {
   const [selectedAnvisa, setSelectedAnvisa] = useState(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const { show: showToast } = useToast()
+
+  function handleDeleteConfirm() {
+    setDeleteLoading(true)
+    setTimeout(() => {
+      setDeleteLoading(false)
+      setDeleteOpen(false)
+      showToast('Medicamento excluído', { variant: 'success' })
+    }, 1200)
+  }
 
   // Captura medicamento devolvido pela AnvisaSearchScreen via params (serializável)
   useEffect(() => {
     const picked = route?.params?.selectedMedicine
-    if (picked) {
+    if (!picked) return undefined
+    // Defer para próximo tick (evita setState síncrono no effect)
+    const t = setTimeout(() => {
       setSelectedAnvisa(picked)
       // Limpa o param para evitar re-aplicação em re-render
       navigation?.setParams({ selectedMedicine: undefined })
-    }
+    }, 0)
+    return () => clearTimeout(t)
   }, [route?.params?.selectedMedicine, navigation])
 
   // Inputs interativos
@@ -256,6 +281,63 @@ export default function FormKitDemoScreen({ navigation, route }) {
           ) : null}
         </FormSection>
 
+        {/* Seção 6 — Feedback (Sprint P.3) */}
+        <FormSection
+          title="Feedback (P.3)"
+          description="DeleteConfirmation, Toast e Haptics"
+        >
+          <TouchableOpacity
+            onPress={() => setDeleteOpen(true)}
+            style={styles.dangerBtn}
+          >
+            <Text style={styles.dangerBtnText}>Excluir Paracetamol</Text>
+          </TouchableOpacity>
+
+          <View style={styles.row}>
+            <TouchableOpacity
+              onPress={() => showToast('Medicamento salvo', { variant: 'success' })}
+              style={[styles.smallBtn, styles.btnSuccess]}
+            >
+              <Text style={styles.smallBtnTextInverse}>Toast Success</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => showToast('Erro ao salvar', { variant: 'error' })}
+              style={[styles.smallBtn, styles.btnError]}
+            >
+              <Text style={styles.smallBtnTextInverse}>Toast Error</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => showToast('Estoque atualizado', { variant: 'info' })}
+              style={[styles.smallBtn, styles.btnInfo]}
+            >
+              <Text style={styles.smallBtnTextInverse}>Toast Info</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.row}>
+            <TouchableOpacity onPress={successHaptic} style={styles.smallBtn}>
+              <Text style={styles.smallBtnText}>Success</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={errorHaptic} style={styles.smallBtn}>
+              <Text style={styles.smallBtnText}>Error</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={warningHaptic} style={styles.smallBtn}>
+              <Text style={styles.smallBtnText}>Warning</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity onPress={lightTap} style={styles.smallBtn}>
+              <Text style={styles.smallBtnText}>Light tap</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={mediumTap} style={styles.smallBtn}>
+              <Text style={styles.smallBtnText}>Medium tap</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={heavyTap} style={styles.smallBtn}>
+              <Text style={styles.smallBtnText}>Heavy tap</Text>
+            </TouchableOpacity>
+          </View>
+        </FormSection>
+
         {/* Estado atual (debug) */}
         <FormSection
           title="Estado atual"
@@ -272,6 +354,16 @@ export default function FormKitDemoScreen({ navigation, route }) {
           </View>
         </FormSection>
       </ScrollView>
+
+      <DeleteConfirmation
+        visible={deleteOpen}
+        title="Excluir medicamento"
+        description="Esta ação não pode ser desfeita."
+        itemName="Paracetamol 500mg"
+        isLoading={deleteLoading}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
     </SafeAreaView>
   )
 }
@@ -359,6 +451,53 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.text.secondary,
     marginTop: 2,
+  },
+  // Feedback section (P.3)
+  dangerBtn: {
+    height: 48,
+    paddingHorizontal: spacing[4],
+    backgroundColor: colors.status.error,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dangerBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.text.inverse,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: spacing[2],
+    marginTop: spacing[2],
+  },
+  smallBtn: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: spacing[2],
+    backgroundColor: colors.neutral[100],
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  smallBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  smallBtnTextInverse: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.text.inverse,
+  },
+  btnSuccess: {
+    backgroundColor: colors.status.success,
+  },
+  btnError: {
+    backgroundColor: colors.status.error,
+  },
+  btnInfo: {
+    backgroundColor: colors.text.primary,
   },
   debugText: {
     fontFamily: 'Courier',

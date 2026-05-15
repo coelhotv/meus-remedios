@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
-import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { successHaptic, errorHaptic } from '@shared/utils/haptics'
 
 // Hook para mutations C/U/D (create/update/delete) com:
 // - guard contra double-submit
@@ -68,19 +68,14 @@ export function useMutation({
           }
         }
 
-        // Haptic success — fire-and-forget (não bloqueia callback)
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-          () => {},
-        )
+        successHaptic()
 
         setIsLoading(false)
         inFlightRef.current = false
         onSuccess?.(result)
         return result
       } catch (err) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(
-          () => {},
-        )
+        errorHaptic()
         setError(err)
         setIsLoading(false)
         inFlightRef.current = false
