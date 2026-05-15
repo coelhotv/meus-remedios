@@ -5,6 +5,8 @@ import { Pill, PillBottle } from 'lucide-react-native'
 import { colors, spacing, borderRadius, shadows, typography } from '@shared/styles/tokens'
 import { selectionTap } from '@shared/utils/haptics'
 
+const ICON_WRAP_SIZE = 32
+
 export default function MedicineCard({ medicine, onPress }) {
   const {
     name,
@@ -82,8 +84,8 @@ const styles = StyleSheet.create({
     gap: spacing[3],
   },
   iconWrap: {
-    width: 32,
-    height: 32,
+    width: ICON_WRAP_SIZE,
+    height: ICON_WRAP_SIZE,
     borderRadius: borderRadius.sm,
     backgroundColor: colors.primary[50],
     alignItems: 'center',
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.text.muted,
     marginTop: spacing[1],
-    marginLeft: 32 + spacing[3],
+    marginLeft: ICON_WRAP_SIZE + spacing[3],
   },
   protocols: {
     marginTop: spacing[2],

@@ -12,13 +12,16 @@ import { debugLog } from '@shared/utils/debugLog'
 
 const MEDICINES_CACHE_KEY = '@dosiq/medicines-snapshot'
 const CACHE_TTL_HOURS = 24
+const MS_PER_HOUR = 1000 * 60 * 60
 
 export function useMedicines() {
+  // States
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [stale, setStale] = useState(false)
 
+  // Handlers (load fn — declarado antes do effect que depende dele)
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -35,7 +38,7 @@ export function useMedicines() {
         if (cached) {
           const parsed = JSON.parse(cached)
           const capturedAt = parseISO(parsed.capturedAt)
-          const diffHours = (getNow() - capturedAt) / (1000 * 60 * 60)
+          const diffHours = (getNow() - capturedAt) / MS_PER_HOUR
           if (diffHours < CACHE_TTL_HOURS) {
             setData(parsed.data)
             setStale(true)
@@ -52,12 +55,15 @@ export function useMedicines() {
     }
   }, [])
 
+  // Effects — startTransition exigido pelo lint react-hooks/set-state-in-effect
+  // (mesmo padrão de useTreatments.js)
   useEffect(() => {
     startTransition(() => {
       load()
     })
   }, [load])
 
+  // Memos (return shape)
   return useMemo(
     () => ({ data, loading, error, stale, refresh: load }),
     [data, loading, error, stale, load]
@@ -65,10 +71,12 @@ export function useMedicines() {
 }
 
 export function useMedicine(id) {
+  // States
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Handlers
   const load = useCallback(async () => {
     if (!id) {
       setLoading(false)
@@ -87,12 +95,15 @@ export function useMedicine(id) {
     }
   }, [id])
 
+  // Effects — startTransition exigido pelo lint react-hooks/set-state-in-effect
+  // (mesmo padrão de useTreatments.js)
   useEffect(() => {
     startTransition(() => {
       load()
     })
   }, [load])
 
+  // Memos
   return useMemo(
     () => ({ data, loading, error, refresh: load }),
     [data, loading, error, load]
