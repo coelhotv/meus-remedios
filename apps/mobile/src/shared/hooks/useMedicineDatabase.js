@@ -32,7 +32,7 @@ function normalizeText(text) {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 // Match por prefixo com word-boundary: "trime" casa "Maleato de Trimebutina"
