@@ -31,7 +31,11 @@ export default function MedicineDemoScreen({ navigation }) {
           <TouchableOpacity
             onPress={() => {
               lightTap()
-              navigation?.navigate(ROUTES.MEDICINES_LIST)
+              // MedicinesList vive em TreatmentsStack → Tab Tratamentos → root Tabs
+              navigation?.navigate(ROUTES.TABS, {
+                screen: ROUTES.TREATMENTS,
+                params: { screen: ROUTES.MEDICINES_LIST },
+              })
             }}
             style={styles.buttonCard}
           >
