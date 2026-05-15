@@ -1,7 +1,7 @@
 // Toast.jsx — Provider global de notificações toast + hook useToast
 // Exporta: ToastProvider (default), useToast (named)
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, memo, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AlertCircle, CheckCircle, Info } from 'lucide-react-native'
@@ -34,13 +34,30 @@ const VARIANT_CONFIG = {
 
 // ─── ToastItem ────────────────────────────────────────────────────────────────
 
-function ToastItem({ toast, onDismiss }) {
+const ToastItem = memo(function ToastItem({ toast, onDismiss }) {
   // States
   const [translateY] = useState(() => new Animated.Value(-100))
   const [opacity] = useState(() => new Animated.Value(0))
 
   const config = VARIANT_CONFIG[toast.variant] ?? VARIANT_CONFIG.info
   const { Icon } = config
+
+  // Handlers
+  const handleDismiss = useCallback(() => {
+    // Animação de saída antes de remover
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: -100,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => onDismiss())
+  }, [opacity, onDismiss, translateY])
 
   // Effects
   useEffect(() => {
@@ -60,22 +77,13 @@ function ToastItem({ toast, onDismiss }) {
     ]).start()
   }, [opacity, translateY])
 
-  // Handlers
-  const handleDismiss = useCallback(() => {
-    // Animação de saída antes de remover
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: -100,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start(() => onDismiss())
-  }, [opacity, onDismiss, translateY])
+  useEffect(() => {
+    // Auto-dismiss: item gerencia próprio ciclo de vida → dispara animação
+    // de saída antes da remoção do estado global. Cleanup garante que timer
+    // morra no unmount ou se usuário tocar pra dispensar cedo.
+    const timer = setTimeout(handleDismiss, toast.duration)
+    return () => clearTimeout(timer)
+  }, [handleDismiss, toast.duration])
 
   return (
     <Animated.View style={[styles.toast, { backgroundColor: config.bg, transform: [{ translateY }], opacity }]}>
@@ -85,7 +93,7 @@ function ToastItem({ toast, onDismiss }) {
       </Pressable>
     </Animated.View>
   )
-}
+})
 
 // ─── ToastProvider ────────────────────────────────────────────────────────────
 
@@ -112,14 +120,14 @@ export function ToastProvider({ children }) {
     config.haptic?.()
 
     setToasts(prev => [...prev, toast].slice(-3))
-
-    setTimeout(() => dismiss(id), duration)
-  }, [dismiss])
+    // Auto-dismiss agora é responsabilidade do ToastItem — ele dispara
+    // animação de saída antes de chamar onDismiss.
+  }, [])
 
   return (
     <ToastContext.Provider value={{ show }}>
       {children}
-      <View style={[styles.overlay, { top: insets.top }]} pointerEvents="box-none">
+      <View style={[styles.overlay, { top: insets.top + spacing[2] }]} pointerEvents="box-none">
         {toasts.map(t => (
           <ToastItem key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />
         ))}
@@ -151,13 +159,11 @@ const styles = StyleSheet.create({
   toast: {
     borderRadius: borderRadius.md,
     overflow: 'hidden',
-    ...{
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 12,
-      elevation: 6,
-    },
+    shadowColor: colors.neutral[900],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
   toastInner: {
     flexDirection: 'row',
