@@ -447,16 +447,20 @@ const FALLBACK = { singular: 'unidade', plural: 'unidades' }
 // pluralizeDoseUnit(1, 'gotas') → 'gota'
 // pluralizeDoseUnit(15, 'ml') → 'ml'
 // pluralizeDoseUnit(qty, undefined) → 'unidades' (fallback antes de selecionar medicamento)
+// Coerce explícito Number(qty) — valores podem vir como string de TextInput
 export function pluralizeDoseUnit(qty, dosageUnit) {
   const u = UNIT_DISPLAY[dosageUnit] ?? FALLBACK
-  return qty === 1 ? u.singular : u.plural
+  return Number(qty) === 1 ? u.singular : u.plural
 }
 
 // formatDoseUnit(2, 'mg') → '2 comprimidos'
 // formatDoseUnit(1, 'gotas') → '1 gota'
-// formatDoseUnit(15.5, 'ml') → '15,5 ml' (vírgula PT-BR via toLocaleString)
+// formatDoseUnit(15.5, 'ml') → '15,5 ml'
+// NOTA: Hermes (mobile) default NÃO inclui ICU completo — toLocaleString('pt-BR')
+// cai em fallback US e mantém ponto. Helper manual replace('.', ',') é confiável
+// em ambos web (V8) e mobile (Hermes).
 export function formatDoseUnit(qty, dosageUnit) {
-  const display = qty.toLocaleString('pt-BR')
+  const display = String(qty).replace('.', ',')
   return `${display} ${pluralizeDoseUnit(qty, dosageUnit)}`
 }
 ```

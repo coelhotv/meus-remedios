@@ -16,7 +16,7 @@ Aplicam-se a TODA UI do app (mobile + web).
 | **"Uso contínuo"** em vez de "Sem prazo" para `end_date` null em tratamentos | Termo mais claro para paciente — comunica intent | ❌ "Sem prazo" → ✅ "Uso contínuo" |
 | **Unidades formatadas via helper** (`pluralizeDoseUnit`/`formatDoseUnit`) | Nunca hardcoded "comprimidos" — render correto baseado em `medicine.dosage_unit` | `formatDoseUnit(15, 'ml')` → `"15 ml"` `formatDoseUnit(2, 'mg')` → `"2 comprimidos"` |
 | **Datas PT-BR** formato `"12 mar 2026"` (`DD MMM YYYY`, mês abreviado lowercase) | Padrão visual brasileiro | Via `formatDatePtBR` em `@dosiq/core/utils/dateFormat.js` |
-| **Vírgula decimal** em valores numéricos exibidos | Convenção PT-BR | `15,5 ml` (não `15.5 ml`) — via `toLocaleString('pt-BR')` |
+| **Vírgula decimal** em valores numéricos exibidos | Convenção PT-BR | `15,5 ml` (não `15.5 ml`) — via helper manual `.replace('.', ',')` (Hermes default NÃO tem ICU completo; `toLocaleString('pt-BR')` cai em fallback US e mantém ponto) |
 | **Sem ponto final** em microcopy curto (titles, CTAs, labels) | Estilo mobile-first | ❌ "Criar tratamento." → ✅ "Criar tratamento" |
 | **Verbos de CTA no infinitivo** | Padrão | "Criar tratamento", "Excluir", "Salvar alterações" |
 | **Termos médicos suaves** quando possível | App é para pacientes, não profissionais | "Tratamento" (não "protocolo terapêutico"), "Dose por tomada" (não "posologia") |
@@ -122,7 +122,7 @@ Componentes interativos DEVEM ter `accessibilityLabel` em PT-BR, descritivo. Exe
 | Ícone editar | `"Editar tratamento"` |
 | Ícone excluir | `"Excluir tratamento"` |
 | Search bar | `"Buscar em medicamentos"` |
-| Toggle dia da semana | `"Segunda-feira, ativado"` (dinâmico) |
+| Toggle dia da semana | `"Segunda-feira"` — estado via `accessibilityState={{ checked: true/false }}` (NÃO incluir "ativado/desativado" no label — leitor de tela anuncia o state nativamente, evita redundância) |
 
 ---
 
