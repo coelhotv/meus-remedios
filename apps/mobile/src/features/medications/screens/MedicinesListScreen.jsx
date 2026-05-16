@@ -76,7 +76,7 @@ export default function MedicinesListScreen() {
       <MedicineCard
         medicine={{
           ...item,
-          active_protocols_count: item.protocols?.length ?? 0,
+          protocols_count: item.protocols?.length ?? 0,
         }}
         onPress={() => navigation.navigate(ROUTES.MEDICINE_DETAIL, { id: item.id })}
       />
