@@ -314,6 +314,7 @@ Mesma estrutura do create, com:
 | T1.8 | Atualizar `TreatmentsStack` com rotas PROTOCOL_FORM + PROTOCOL_DETAIL | `apps/mobile/src/navigation/TreatmentsStack.jsx` | 🤖 Haiku | ⭐ | ADR-036 (JS stack já aplicado) |
 | T1.9 | Atualizar `routes.js` | `apps/mobile/src/navigation/routes.js` | 🤖 Haiku | ⭐ | — |
 | T1.10 | Testes do `protocolService` mobile (12+ tests espelhando Fase 1) | `apps/mobile/src/features/treatments/services/__tests__/protocolService.test.js` | 🤖 Sonnet | ⭐⭐ | Jest + zod transformIgnorePatterns |
+| T1.11 | **Polish performance** — migrar `Ionicons` → `lucide-react-native` em 5 telas auth/landing (LoginScreen, SignupScreen, ForgotPasswordScreen, ResetPasswordScreen, LandingScreen); remover dependência `@expo/vector-icons` | (5 arquivos em `apps/mobile/src/screens/`) | 🤖 Haiku | ⭐ | AP-162; economia ~4 MB assets |
 
 **Entrega**: PR `feat/crud-protocols-t2-1` → merge em `feat/crud-protocols` (mãe).
 
