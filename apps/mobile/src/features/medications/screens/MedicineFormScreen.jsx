@@ -75,25 +75,42 @@ export default function MedicineFormScreen() {
 
   const handleAnvisaSelect = useCallback(
     (item) => {
+      // Genéricos não trazem laboratório (será preenchido no estoque por compra).
+      // Demais categorias: usar laboratory do registro ANVISA.
+      const isGeneric = (item.regulatoryCategory ?? '')
+        .toLowerCase()
+        .startsWith('gener')
       form.setValues({
         name: item.name ?? form.values.name,
         active_ingredient: item.activeIngredient ?? form.values.active_ingredient,
         therapeutic_class: item.therapeuticClass ?? form.values.therapeutic_class,
         regulatory_category: item.regulatoryCategory ?? form.values.regulatory_category,
+        laboratory: isGeneric ? '' : (item.laboratory ?? form.values.laboratory ?? ''),
       })
       setSheetOpen(false)
     },
     [form]
   )
 
+  // Normaliza vírgula→ponto antes do submit (PT-BR digita 1,5 — Supabase/JS espera 1.5)
+  const normalizePayload = useCallback((values) => {
+    const dose = values.dosage_per_pill
+    if (dose === undefined || dose === null || dose === '') return values
+    if (typeof dose === 'string') {
+      return { ...values, dosage_per_pill: dose.replace(',', '.') }
+    }
+    return values
+  }, [])
+
   const handleSubmit = useCallback(async () => {
     if (!form.validate()) return
+    const payload = normalizePayload(form.values)
     if (isEditing) {
-      await update(medicine.id, form.values, { goBack: true })
+      await update(medicine.id, payload, { goBack: true })
     } else {
-      await create(form.values, { goBack: true })
+      await create(payload, { goBack: true })
     }
-  }, [form, isEditing, medicine, create, update])
+  }, [form, isEditing, medicine, create, update, normalizePayload])
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -134,20 +151,26 @@ export default function MedicineFormScreen() {
         </FormSection>
 
         <FormSection title="Dosagem">
-          <FormInput
-            name="dosage_per_pill"
-            label="Dose por unidade"
-            required
-            keyboardType="numeric"
-            {...formProps(form, 'dosage_per_pill')}
-          />
-          <FormSelect
-            name="dosage_unit"
-            label="Unidade"
-            required
-            options={UNIT_OPTIONS}
-            {...formProps(form, 'dosage_unit')}
-          />
+          <View style={styles.row}>
+            <View style={styles.rowDose}>
+              <FormInput
+                name="dosage_per_pill"
+                label="Dose por unidade"
+                required
+                keyboardType="decimal-pad"
+                {...formProps(form, 'dosage_per_pill')}
+              />
+            </View>
+            <View style={styles.rowUnit}>
+              <FormSelect
+                name="dosage_unit"
+                label="Unidade"
+                required
+                options={UNIT_OPTIONS}
+                {...formProps(form, 'dosage_unit')}
+              />
+            </View>
+          </View>
         </FormSection>
 
         <FormSection title="Classificação">
@@ -156,11 +179,6 @@ export default function MedicineFormScreen() {
             label="Tipo"
             options={TYPE_OPTIONS}
             {...formProps(form, 'type')}
-          />
-          <FormInput
-            name="laboratory"
-            label="Laboratório"
-            {...formProps(form, 'laboratory')}
           />
           <FormInput
             name="therapeutic_class"
@@ -172,6 +190,11 @@ export default function MedicineFormScreen() {
             label="Categoria Regulatória"
             options={REGULATORY_OPTIONS}
             {...formProps(form, 'regulatory_category')}
+          />
+          <FormInput
+            name="laboratory"
+            label="Laboratório"
+            {...formProps(form, 'laboratory')}
           />
         </FormSection>
       </ScrollView>
@@ -225,6 +248,19 @@ const styles = StyleSheet.create({
     width: 40,
   },
   scroll: {
+    paddingHorizontal: spacing[5],
+    paddingTop: spacing[4],
     paddingBottom: spacing[12],
+  },
+  row: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    alignItems: 'flex-start',
+  },
+  rowDose: {
+    flex: 2,
+  },
+  rowUnit: {
+    flex: 1,
   },
 })

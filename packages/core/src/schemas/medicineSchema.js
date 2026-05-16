@@ -74,10 +74,10 @@ export const medicineSchema = z.object({
     .nullable()
     .transform((val) => val || null),
 
-  dosage_per_pill: z
-    .number()
-    .positive('Dosagem deve ser maior que zero')
-    .max(10000, 'Dosagem parece estar muito alta. Verifique o valor'),
+  dosage_per_pill: z.coerce
+    .number({ errorMap: () => ({ message: 'Dose por unidade deve ser um número válido' }) })
+    .positive('Dose deve ser maior que zero')
+    .max(10000, 'Dose parece estar muito alta. Verifique o valor'),
 
   dosage_unit: z.enum(DOSAGE_UNITS, {
     errorMap: () => ({
