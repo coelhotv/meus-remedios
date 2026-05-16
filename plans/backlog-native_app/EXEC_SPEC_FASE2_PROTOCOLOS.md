@@ -6,6 +6,8 @@
 > **Pré-condição**: ✅ Fase 1 completa (G1→G2→G3 Medicamentos)  
 > **Quality Gates**: G1 (Copy) → G2 (Extract) → G3 (Migrate)  
 > **Titulação**: ⏸️ POSTERGADA — apenas leitura de status, sem edição de schedule
+> **Versão do app**: 'v0.3.9' - experiencia da app já começa a ganhar corpo (v0.4.0 será consolidada na fase 3)
+
 
 ---
 
