@@ -22,6 +22,12 @@ describe('formatDatePtBR', () => {
     const d = new Date(2026, 6, 15)
     expect(formatDatePtBR(d)).toBe('15 jul 2026')
   })
+
+  it('retorna vazio para tipo não-Date (number, object)', () => {
+    expect(formatDatePtBR(12345)).toBe('')
+    expect(formatDatePtBR({})).toBe('')
+    expect(formatDatePtBR(true)).toBe('')
+  })
 })
 
 describe('formatEndDate', () => {

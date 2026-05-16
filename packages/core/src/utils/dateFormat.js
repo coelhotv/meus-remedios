@@ -19,7 +19,7 @@ const MONTHS_PT_BR = [
 export function formatDatePtBR(isoDate) {
   if (!isoDate) return ''
   const d = typeof isoDate === 'string' ? parseLocalDate(isoDate) : isoDate
-  if (!d || Number.isNaN(d.getTime())) return ''
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return ''
   const day = String(d.getDate()).padStart(2, '0')
   const month = MONTHS_PT_BR[d.getMonth()]
   const year = d.getFullYear()
