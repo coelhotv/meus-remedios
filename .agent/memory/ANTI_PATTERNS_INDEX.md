@@ -72,6 +72,7 @@
 ## 🛡️ Process & Testing (`process_and_testing`)
 - **[AP-001]** Production bug — fix goes to unused file -> [`anti-patterns/process_and_testing/AP-001.md`](./anti-patterns/process_and_testing/AP-001.md)
 - **[AP-160]** Opus violando R-010 (ordem de hooks) em fixes incrementais pós-validação (cavecrew acerta zero-shot via R-230) -> [`anti-patterns/process_and_testing/AP-160.md`](./anti-patterns/process_and_testing/AP-160.md)
+- **[AP-161]** DEVFLOW state.json counter drift entre distillations — sessions modificam INDEX.md sem bumpar counters; D5 self-clean profundo é a correção obrigatória -> [`anti-patterns/process_and_testing/AP-161.md`](./anti-patterns/process_and_testing/AP-161.md)
 - **[AP-012]** Broken build, lint errors, failing tests -> [`anti-patterns/process_and_testing/AP-012.md`](./anti-patterns/process_and_testing/AP-012.md)
 - **[AP-095]** Preview build fails, PR unmergeeable, wasted review cycles -> [`anti-patterns/process_and_testing/AP-095.md`](./anti-patterns/process_and_testing/AP-095.md)
 - **[AP-A01]** Code ends up on `main` without review, history/audit trail lost, violates delive... -> [`anti-patterns/process_and_testing/AP-A01.md`](./anti-patterns/process_and_testing/AP-A01.md)
