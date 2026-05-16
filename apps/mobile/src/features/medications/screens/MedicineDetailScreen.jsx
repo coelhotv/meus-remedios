@@ -67,13 +67,6 @@ export default function MedicineDetailScreen() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [blockedOpen, setBlockedOpen] = useState(false)
 
-  // Refresh ao voltar da tela de edição (route focus)
-  useFocusEffect(
-    useCallback(() => {
-      refresh()
-    }, [refresh])
-  )
-
   // Memos
   const typeLabel = useMemo(() => {
     if (!data?.type) return '—'
@@ -108,6 +101,14 @@ export default function MedicineDetailScreen() {
     if (totalUnits <= 0) return null
     return `${totalUnits} un.`
   }, [data])
+
+  // Effects
+  // Refresh ao voltar da tela de edição (route focus)
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [refresh])
+  )
 
   // Handlers
   const handleBack = useCallback(() => navigation.goBack(), [navigation])

@@ -51,12 +51,14 @@ function formProps(form, name) {
 
 // eslint-disable-next-line max-lines-per-function
 export default function MedicineFormScreen() {
-  // States
+  // States (R-010 — States → Memos → Effects → Handlers)
   const navigation = useNavigation()
   const route = useRoute()
+  const [sheetOpen, setSheetOpen] = useState(false)
   const medicine = route.params?.medicine ?? null
   const isEditing = !!medicine
 
+  // Memos
   // FormInput espera string. Converter dosage_per_pill (number no DB) para string
   // ao carregar para edição. Outros campos number-like seguem mesma regra.
   const initialValues = useMemo(() => {
@@ -70,11 +72,11 @@ export default function MedicineFormScreen() {
     }
   }, [medicine])
 
+  // Hooks dependentes (consomem memos acima)
   // Usa createSchema para create + edit — em edit todos obrigatórios continuam exigidos
   // (não pode apagar nome/dose/unidade ao editar).
   const form = useFormState(medicineCreateSchema, { initialValues })
   const { create, update, isLoading } = useMedicineMutation()
-  const [sheetOpen, setSheetOpen] = useState(false)
 
   // Handlers
   const openSheet = useCallback(() => setSheetOpen(true), [])

@@ -462,8 +462,8 @@ export function MedicineAnvisaSheet({ open, onClose, onSelect }) {
 
 ```jsx
 // Antes de deletar, verifica:
-// 1. Tratamentos ativos usando este medicamento (variável JS continua `protocols` — só UI muda)
-// 2. Entradas de estoque (warning, não bloqueio)
+// 1. Tratamentos ativos usando este medicamento (variável JS continua `protocols` — só UI muda; warning, bloqueio)
+// 2. Entradas de estoque (warning, bloqueio)
 // 3. Registros de dose históricos (warning, não bloqueio)
 //
 // Retorna { canDelete, blocker, warnings, deletePreCheck() }
