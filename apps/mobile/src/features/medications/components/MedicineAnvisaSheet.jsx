@@ -17,21 +17,9 @@ import { colors, spacing, borderRadius } from '@shared/styles/tokens'
 // de criação/edição de medicamentos. Overlay leve com altura máxima 85%.
 
 export function MedicineAnvisaSheet({ open, onClose, onSelect }) {
-  // States
+  // States (R-010 — States → Memos → Effects → Handlers)
   const [query, setQuery] = useState('')
   const { search, isReady } = useMedicineDatabase()
-
-  // Handlers
-  function handleClose() {
-    setQuery('')
-    onClose?.()
-  }
-
-  function handleSelect(item) {
-    selectionTap()
-    onSelect?.(item)
-    setQuery('')
-  }
 
   // Memos
   const trimmed = query.trim()
@@ -45,6 +33,18 @@ export function MedicineAnvisaSheet({ open, onClose, onSelect }) {
     if (results.length === 0) return 'Nenhum resultado'
     return `${results.length} resultados — toque para preencher`
   }, [trimmed, results.length])
+
+  // Handlers
+  function handleClose() {
+    setQuery('')
+    onClose?.()
+  }
+
+  function handleSelect(item) {
+    selectionTap()
+    onSelect?.(item)
+    setQuery('')
+  }
 
   function renderItem({ item }) {
     const isSupplement = item.type === 'suplemento'

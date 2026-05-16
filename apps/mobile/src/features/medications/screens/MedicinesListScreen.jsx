@@ -38,13 +38,7 @@ export default function MedicinesListScreen() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
 
-  // Refresh ao voltar (Detail edit / Create) — cache invalidado
-  useFocusEffect(
-    useCallback(() => {
-      refresh()
-    }, [refresh])
-  )
-
+  // Memos (R-010 — States → Memos → Effects → Handlers)
   const filtered = useMemo(() => {
     if (!data) return []
     const q = normalize(query.trim())
@@ -53,6 +47,13 @@ export default function MedicinesListScreen() {
       m => normalize(m.name).includes(q) || normalize(m.active_ingredient).includes(q)
     )
   }, [data, query])
+
+  // Effects — Refresh ao voltar (Detail edit / Create) — cache invalidado
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [refresh])
+  )
 
   const toggleSearch = useCallback(() => {
     setSearchOpen(prev => {
