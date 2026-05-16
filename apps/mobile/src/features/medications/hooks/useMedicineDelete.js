@@ -2,19 +2,25 @@
 //
 // v1: usa `protocols` (tratamentos) já carregados no medicine via getById.
 // Bloqueia delete se houver tratamentos ativos. Estoque/logs históricos
-// não são verificados no v1 (futuro — paridade com web fetchMedicineDependencies).
+// não são verificados no v1.
 //
-// Uso:
-//   const { preCheck, confirmDelete, isLoading } = useMedicineDelete(medicine)
-//   const check = preCheck()
-//   if (check.blocker) show(check.blocker, 'error')
-//   else openConfirmation(check.warnings)
+// Implementação direta (sem useMedicineMutation) p/ poder garantir navegação
+// pós-sucesso real (delete não retorna value — wrapper genérico não distingue
+// sucesso de falha pelo retorno).
 
-import { useCallback, useMemo } from 'react'
-import { useMedicineMutation } from './useMedicineMutation'
+import { useState, useMemo, useCallback } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation } from '@react-navigation/native'
+import { useToast } from '@shared/components/feedback/Toast'
+import { successHaptic, errorHaptic } from '@shared/utils/haptics'
+import { medicineService } from '../services/medicineService'
+
+const MEDICINES_CACHE_KEY = '@dosiq/medicines-snapshot'
 
 export function useMedicineDelete(medicine) {
-  const { remove, isLoading } = useMedicineMutation()
+  const navigation = useNavigation()
+  const { show } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
 
   const preCheck = useMemo(() => {
     const protocols = Array.isArray(medicine?.protocols) ? medicine.protocols : []
@@ -30,10 +36,24 @@ export function useMedicineDelete(medicine) {
     }
   }, [medicine])
 
-  const confirmDelete = useCallback(
-    () => remove(medicine?.id, { goBack: true }),
-    [remove, medicine]
-  )
+  const confirmDelete = useCallback(async () => {
+    if (!medicine?.id) return false
+    setIsLoading(true)
+    try {
+      await medicineService.delete(medicine.id)
+      await AsyncStorage.removeItem(MEDICINES_CACHE_KEY).catch(() => {})
+      successHaptic()
+      show('Medicamento removido', { variant: 'success' })
+      navigation.goBack()
+      return true
+    } catch (err) {
+      errorHaptic()
+      show(err?.message ?? 'Erro ao remover medicamento', { variant: 'error' })
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }, [medicine, navigation, show])
 
   return {
     preCheck,

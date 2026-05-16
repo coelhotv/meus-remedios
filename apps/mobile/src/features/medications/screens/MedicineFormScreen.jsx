@@ -10,7 +10,6 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { ChevronLeft } from 'lucide-react-native'
 import {
   medicineCreateSchema,
-  medicineUpdateSchema,
   MEDICINE_TYPES,
   MEDICINE_TYPE_LABELS,
   DOSAGE_UNITS,
@@ -50,6 +49,7 @@ function formProps(form, name) {
   }
 }
 
+// eslint-disable-next-line max-lines-per-function
 export default function MedicineFormScreen() {
   // States
   const navigation = useNavigation()
@@ -57,15 +57,22 @@ export default function MedicineFormScreen() {
   const medicine = route.params?.medicine ?? null
   const isEditing = !!medicine
 
-  const initialValues = useMemo(
-    () => (medicine ?? DEFAULT_INITIAL),
-    [medicine]
-  )
+  // FormInput espera string. Converter dosage_per_pill (number no DB) para string
+  // ao carregar para edição. Outros campos number-like seguem mesma regra.
+  const initialValues = useMemo(() => {
+    if (!medicine) return DEFAULT_INITIAL
+    return {
+      ...medicine,
+      dosage_per_pill:
+        medicine.dosage_per_pill !== null && medicine.dosage_per_pill !== undefined
+          ? String(medicine.dosage_per_pill)
+          : '',
+    }
+  }, [medicine])
 
-  const form = useFormState(
-    isEditing ? medicineUpdateSchema : medicineCreateSchema,
-    { initialValues }
-  )
+  // Usa createSchema para create + edit — em edit todos obrigatórios continuam exigidos
+  // (não pode apagar nome/dose/unidade ao editar).
+  const form = useFormState(medicineCreateSchema, { initialValues })
   const { create, update, isLoading } = useMedicineMutation()
   const [sheetOpen, setSheetOpen] = useState(false)
 

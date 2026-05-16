@@ -10,7 +10,7 @@ import {
   RefreshControl,
   StyleSheet,
 } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { Search, X, Plus, ChevronLeft } from 'lucide-react-native'
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
@@ -37,6 +37,13 @@ export default function MedicinesListScreen() {
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
+
+  // Refresh ao voltar (Detail edit / Create) — cache invalidado
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [refresh])
+  )
 
   const filtered = useMemo(() => {
     if (!data) return []
