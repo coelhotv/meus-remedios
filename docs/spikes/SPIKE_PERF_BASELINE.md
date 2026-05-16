@@ -1,9 +1,9 @@
-# SPIKE — Performance Baseline Mobile
+# SPIKE — Performance Baseline + Crash Tracking Mobile
 
-> **Status**: Investigação (timebox 1.5h)
+> **Status**: Parcialmente aplicado (web bundle capturado + Crashlytics + cold start integrados; mobile bundle pendente)
 > **Data**: 2026-05-16 (Spike Pre-Fase-2)
-> **Origem**: RETRO_FASE1 §6 T8 — sem baseline = sem detectar regressões
-> **Decisão**: Capturar baseline antes de Fase 2 + instrumentação leve
+> **Origem**: RETRO_FASE1 §6 T8 + decisão PO 2026-05-16 (integrar Crashlytics aproveitando Firebase já ativo)
+> **Decisão**: Integração Tier 1 (Analytics cold start + Crashlytics) feita NESTE PR; captura bundle mobile pendente
 
 ---
 
@@ -14,133 +14,174 @@ Fase 0 entregou Form Kit (119 mobile tests passando) e Fase 1 entregou CRUD Medi
 - JS bundle size mobile (Hermes-compiled)
 - Time-to-Interactive (TTI) após cold start
 - Bundle size web
+- Crashes em produção (especialmente cenários legacy como Android API 24 onde tivemos crash rn-screens em Fase 1)
 
-Sem baseline = ao terminar Fase 2 não saberemos se regredimos performance.
+Sem baseline + sem crash tracking = ao terminar Fase 2 não saberemos se regredimos performance nem se quebramos algo em prod.
+
+---
 
 ## Métricas que importam (priorizadas)
 
-### Tier 1 — Críticas (medir agora)
-1. **Mobile cold start** (`app.launch_time` Firebase Analytics ou manual via `Date.now()` em `App.js`)
-2. **Mobile JS bundle size** (Expo build output ou `npx expo export` analysis)
-3. **Web bundle size** (Vite `dist/` total + per-chunk; já existe `bundleVisualizer` no projeto?)
+### Tier 1 — Críticas (cobertura inicial NESTE spike)
+1. **Mobile cold start** — `analytics().logEvent('cold_start', { duration_ms })` ✅ integrado em `AppRoot.jsx`
+2. **Mobile crash tracking** — `@react-native-firebase/crashlytics` ✅ instalado + plugin + ErrorBoundary global
+3. **Web bundle size** — ✅ capturado (números em §Baseline atual)
+4. **Mobile JS bundle size** — ⏳ pendente (executar `npx expo export` quando EAS build estiver pronto)
 
 ### Tier 2 — Importantes (medir se Tier 1 mostrar dor)
-4. **Mobile TTI** (screen-by-screen via custom `performance.now()` em mount/unmount)
-5. **Mobile memory pressure** (Firebase Crashlytics ou Android Studio Profiler manual)
-6. **API call latency** (Supabase response times — `getAll` medicines, protocols, etc.)
+5. **Mobile TTI** screen-by-screen via custom `performance.now()` em mount/unmount
+6. **Mobile memory pressure** — Firebase Performance Monitoring (não Crashlytics) ou Android Studio Profiler manual
+7. **API call latency** — Supabase response times (`getAll` medicines/protocols/etc)
 
 ### Tier 3 — Nice-to-have
-7. Frame rate em scroll de listas longas (FlatList performance)
-8. Image loading time (ANVISA mocks, ícones)
+8. Frame rate em scroll de listas longas (FlatList performance)
+9. Image loading time (ANVISA mocks, ícones)
 
-## Instrumentação proposta (leve — não tooling pesado)
+---
 
-### Cold start — Mobile
+## Baseline atual capturado
 
-Adicionar ao `apps/mobile/App.js`:
+### Web bundle (`apps/web/dist/`) — 2026-05-16 pós-Fase-1
+
+| Métrica | Valor |
+|---------|-------|
+| Total `dist/` | 14 MB (inclui sourcemaps + assets) |
+| Total JS files | 36 arquivos |
+| Total JS sum | 3.36 MB (raw, sem gzip) |
+| **Maior chunk** | `feature-medicines-db-CCIbo1ef.js` 1.34 MB raw / **129 kB gzip** (ANVISA DB) |
+| `vendor-pdf` | 588 kB / 174 kB gzip |
+| `index` (entry) | 247 kB / 76 kB gzip |
+| `feature-stock` | 219 kB / 61 kB gzip |
+| `vendor-supabase` | 204 kB / 53 kB gzip |
+| `index.es` (zod?) | 159 kB / 53 kB gzip |
+| `vendor-framer` | 134 kB / 44 kB gzip |
+| `Treatments` view | 41 kB / 12 kB gzip |
+| `Dashboard` | 40 kB / 13 kB gzip |
+| Service worker (PWA) | 17 kB / 6 kB gzip |
+| Precache total (Workbox) | 3.6 MB / 63 entries |
+| Build time | 3.44s |
+
+**Critical path** (entry + main vendor + index.es): ~280 kB gzip
+**Lazy loaded medicines-db**: 129 kB gzip (apenas quando user abre busca ANVISA)
+
+### Mobile bundle — ⏳ pendente
+
+Comandos para captura (executar quando EAS build estiver pronto pós install Crashlytics):
+
+```bash
+cd apps/mobile
+npx expo export --platform ios     > /tmp/perf-ios-pre-f2.txt 2>&1
+npx expo export --platform android > /tmp/perf-android-pre-f2.txt 2>&1
+```
+
+Anotar aqui o resultado: tamanho do bundle Hermes + assets totais por plataforma.
+
+---
+
+## Instrumentação aplicada NESTE PR
+
+### 1. Cold start telemetry (`AppRoot.jsx`)
 
 ```javascript
-import { useEffect } from 'react'
-import analytics from '@react-native-firebase/analytics'
+const APP_START_TS = Date.now() // top-level do módulo (antes de React mount)
 
-const APP_START_TS = Date.now() // capturado no top-level do módulo
+export default function AppRoot() {
+  const [fontsLoaded] = useFonts({ ... })
 
-export default function App() {
   useEffect(() => {
+    if (!fontsLoaded) return
     const launchMs = Date.now() - APP_START_TS
-    if (__DEV__) console.log(`[perf] cold_start: ${launchMs}ms`)
-    analytics().logEvent('cold_start', { duration_ms: launchMs })
-  }, [])
+    if (__DEV__) debugLog(`[perf] cold_start: ${launchMs}ms`)
+    analytics().logEvent('cold_start', { duration_ms: launchMs }).catch(() => {})
+  }, [fontsLoaded])
   // ...
 }
 ```
 
-**Custo**: ~10 LOC, 1 evento Firebase por launch. Já temos Firebase Analytics instalado.
+- Dispara 1x quando fontes carregam (app considerado "interativo")
+- Log em dev via `debugLog`; produção envia evento `cold_start` para Firebase Analytics
+- Custo: ~5 LOC + 1 evento/launch
 
-### Bundle size — Mobile
+### 2. Crashlytics (ErrorBoundary global + native crashes)
 
-Rodar `npx expo export --platform ios` e `npx expo export --platform android`. Output em `dist/` mostra tamanho do bundle JS Hermes + assets. Capturar baseline em arquivo:
+**Pacote**: `@react-native-firebase/crashlytics@21.14.0` instalado.
+**Plugin Expo**: `'@react-native-firebase/crashlytics'` adicionado a `apps/mobile/app.config.js`.
 
-```bash
-# Em CI ou script local pré-merge mãe→main
-npx expo export --platform ios 2>&1 | tee perf-baseline-ios.txt
-npx expo export --platform android 2>&1 | tee perf-baseline-android.txt
+**ErrorBoundary** (`apps/mobile/src/shared/components/ErrorBoundary.jsx`):
+- Class component (necessário para `componentDidCatch`)
+- Em dev: `console.error` + re-throw (LogBox/RedBox padrão)
+- Em prod: fallback UI ("Algo deu errado" + botão "Tentar novamente") + `crashlytics().recordError(error)`
+- Wrappa toda a árvore via `AppRoot.jsx`:
+  ```jsx
+  <ErrorBoundary>
+    <SafeAreaProvider>
+      <ToastProvider>
+        <Navigation />
+      </ToastProvider>
+    </SafeAreaProvider>
+  </ErrorBoundary>
+  ```
+
+**Cobertura automática** (sem código adicional):
+- Crashes nativos iOS (Objective-C/Swift) → Firebase Console
+- Crashes nativos Android (Java/Kotlin) → Firebase Console
+- Crashes JS não-tratados (capturados pelo ErrorBoundary) → Firebase Console
+
+### 3. Smoke test crash (pendente — adicionar dev-only)
+
+Quando EAS build estiver pronto, adicionar botão escondido em `MedicineDemoScreen` (tela `_dev`):
+```jsx
+<Pressable onPress={() => crashlytics().crash()}>
+  <Text>Trigger crash (dev only)</Text>
+</Pressable>
 ```
-
-**Captura inicial sugerida**: rodar em main pós-Fase-1 antes de iniciar Fase 2.
-
-### Bundle size — Web
-
-Vite já emite warnings de chunk size > 500kb. Capturar baseline:
-
-```bash
-cd apps/web && rtk npm run build 2>&1 | tee perf-baseline-web.txt
-```
-
-Output mostra cada chunk + total gzipped. Comparar pre vs post Fase 2 em PRs G3.
-
-### TTI por tela (Tier 2 — adiar)
-
-Pattern proposto se Tier 1 mostrar regressão:
-
-```javascript
-// useScreenPerf.js — custom hook
-import { useEffect, useRef } from 'react'
-
-export function useScreenPerf(screenName) {
-  const mountedAt = useRef(Date.now())
-  useEffect(() => {
-    const tti = Date.now() - mountedAt.current
-    if (__DEV__) console.log(`[perf] ${screenName} TTI: ${tti}ms`)
-  }, [screenName])
-}
-
-// Uso em cada screen:
-useScreenPerf('TreatmentsScreen')
-```
+Valida pipeline Crashlytics em dev antes de assumir que funciona em prod.
 
 ---
 
-## Procedimento de captura inicial (executar AGORA)
+## Próximos passos (pós-merge deste PR)
 
-Antes do PR final do spike pre-fase-2 incluir os números:
-
-```bash
-# Web bundle baseline (em main, pós Fase 1)
-cd apps/web && rtk npm run build > /tmp/perf-web-pre-f2.txt 2>&1
-# Extrair: total dist size, vendor chunks size
-
-# Mobile bundle baseline (em main, pós Fase 1)
-cd apps/mobile && npx expo export --platform ios > /tmp/perf-ios-pre-f2.txt 2>&1
-cd apps/mobile && npx expo export --platform android > /tmp/perf-android-pre-f2.txt 2>&1
-```
-
-**⚠️ Captura real fica para o user executar quando ambiente estiver pronto** — agente não roda `expo export` sem aprovação (pode triggar warnings/auth).
+| Ordem | Ação | Owner | Bloqueia Fase 2? |
+|-------|------|-------|------------------|
+| 1 | EAS build novo com Crashlytics plugin (precisa rebuild nativo) | User | ⚠️ Recomendado antes de T2.1 |
+| 2 | Capturar bundle mobile via `expo export` | User | ❌ |
+| 3 | Smoke test crash em dev (trigger + verificar no Firebase Console) | User | ❌ |
+| 4 | Ajustar thresholds nesta doc com números reais (substituir chutes) | Opus pós-baseline | ❌ |
+| 5 | TTI per-screen (Tier 2) — só se cold start mostrar regressão | Adiado | ❌ |
 
 ---
 
 ## Critério de regressão (post-Fase-2)
 
+> Thresholds atuais são **conservadores** — refinar após captura real do bundle mobile.
+
 | Métrica | Threshold de regressão |
 |---------|------------------------|
-| Mobile cold start | > 1500ms baseline (variar ±10% OK) |
-| Mobile bundle JS | > +5% vs baseline |
-| Web bundle (gzipped) | > 110 kB (atual ~102 kB pós lazy load) |
+| Mobile cold start | > +20% vs baseline (capturado via evento Firebase) |
+| Mobile bundle JS (Hermes) | > +5% vs baseline mobile |
+| Web bundle critical path (entry+vendor+index.es) | > 310 kB gzip (atual ~280 kB +10%) |
+| Web `vendor-supabase` | > 60 kB gzip (atual 53 kB) |
+| Web `feature-medicines-db` | manter lazy load — chunk não pode entrar em critical path |
 | Web `validate:agent` | < 530 tests passing OU duration > +50% |
+| Crashlytics crash-free rate | < 99% sessions em dev/staging (medir ao longo das semanas) |
 
 Se qualquer threshold for ultrapassado em PR Fase 2 → PR HALT, análise antes de prosseguir.
 
 ---
 
-## Decisão recomendada
+## Decisão final
 
-1. **Capturar baseline AGORA** (web bundle via `rtk npm run build`; mobile via Expo export quando user autorizar)
-2. **Instrumentar cold start** mobile via Firebase Analytics (~10 LOC, low risk) — pode entrar no Sprint T2.1
-3. **Adiar TTI per-screen** (Tier 2) — só se cold start mostrar regressão
-4. **Adicionar comparação de bundle size** ao smoke checklist Fase 2 (`PROTOCOLS_G3_SMOKE_CHECKLIST.md` já tem placeholder em "Critério de aprovação")
+1. ✅ Capturar web bundle baseline — **feito neste PR**
+2. ✅ Integrar Crashlytics + ErrorBoundary global — **feito neste PR**
+3. ✅ Instrumentar cold start mobile — **feito neste PR**
+4. ⏳ Capturar mobile bundle baseline — pendente (user roda `expo export` pós-EAS build)
+5. ⏳ Smoke test crash dev — pendente (T2.1)
+6. 🔜 TTI per-screen (Tier 2) — só se cold start mostrar regressão
+7. ✅ Adicionar comparação de bundle ao `PROTOCOLS_G3_SMOKE_CHECKLIST.md`
 
 ---
 
 ## Histórico
 
-- 2026-05-16 — spike inicial; baseline real pendente de execução pelo user
+- 2026-05-16 (manhã) — spike inicial; só investigação e proposta
+- 2026-05-16 (tarde) — PO autorizou integrar Crashlytics. Web bundle capturado, Crashlytics instalado + ErrorBoundary + cold start telemetry. Mobile bundle pendente de EAS build.
