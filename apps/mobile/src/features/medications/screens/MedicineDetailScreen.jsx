@@ -1,7 +1,7 @@
 // MedicineDetailScreen.jsx — detalhe do medicamento (Sprint M1.1 Fase 1)
 // Layout: header fixo + hero card + sections (Identificação / Dosagem / Em uso)
 
-import { useMemo } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import {
   ChevronLeft,
   Pencil,
-  MoreVertical,
+  Trash2,
   Pill,
   PillBottle,
 } from 'lucide-react-native'
@@ -21,8 +21,11 @@ import {
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
 import ErrorState from '@shared/components/states/ErrorState'
+import DeleteConfirmation from '@shared/components/feedback/DeleteConfirmation'
+import { useToast } from '@shared/components/feedback/Toast'
 import { ROUTES } from '@navigation/routes'
 import { useMedicine } from '@medications/hooks/useMedicines'
+import { useMedicineDelete } from '@medications/hooks/useMedicineDelete'
 import { colors, spacing, borderRadius, shadows } from '@shared/styles/tokens'
 
 const TYPE_LABELS = {
@@ -56,8 +59,11 @@ export default function MedicineDetailScreen() {
   // States (via hooks)
   const navigation = useNavigation()
   const route = useRoute()
+  const { show } = useToast()
   const id = route.params?.id
   const { data, loading, error, refresh } = useMedicine(id)
+  const { preCheck, confirmDelete, isLoading: deleteLoading } = useMedicineDelete(data)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   // Memos
   const typeLabel = useMemo(() => {
@@ -77,17 +83,25 @@ export default function MedicineDetailScreen() {
   }, [data])
 
   // Handlers
-  const handleBack = () => navigation.goBack()
-  const handleEdit = () => {
+  const handleBack = useCallback(() => navigation.goBack(), [navigation])
+  const handleEdit = useCallback(() => {
     if (!data) return
     navigation.navigate(ROUTES.MEDICINE_EDIT, { medicine: data })
-  }
-  const handleMenu = () => {
-    if (__DEV__) {
-      // eslint-disable-next-line no-console
-      console.log('[MedicineDetail] menu placeholder (v1 sem ação)')
+  }, [data, navigation])
+
+  const handleDeletePress = useCallback(() => {
+    if (!data) return
+    if (preCheck.blocker) {
+      show(preCheck.blocker, { variant: 'error' })
+      return
     }
-  }
+    setDeleteOpen(true)
+  }, [data, preCheck, show])
+
+  const handleDeleteConfirm = useCallback(async () => {
+    await confirmDelete()
+    setDeleteOpen(false)
+  }, [confirmDelete])
 
   // Header (reaproveitado em todos os estados)
   const Header = (
@@ -116,13 +130,17 @@ export default function MedicineDetailScreen() {
           />
         </Pressable>
         <Pressable
-          onPress={handleMenu}
+          onPress={handleDeletePress}
           hitSlop={8}
           style={styles.iconButton}
           accessibilityRole="button"
-          accessibilityLabel="Mais opções"
+          accessibilityLabel="Remover medicamento"
+          disabled={!data}
         >
-          <MoreVertical size={22} color={colors.text.primary} />
+          <Trash2
+            size={22}
+            color={data ? colors.status.error : colors.text.muted}
+          />
         </Pressable>
       </View>
     </View>
@@ -269,6 +287,17 @@ export default function MedicineDetailScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <DeleteConfirmation
+        visible={deleteOpen}
+        title="Remover medicamento"
+        description="Esta ação não pode ser desfeita. Estoque e doses históricas serão preservados."
+        itemName={data?.name}
+        confirmLabel="Remover"
+        isLoading={deleteLoading}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
     </ScreenContainer>
   )
 }
