@@ -25,6 +25,13 @@ Toda sessão de implementação Fase 2 começa com:
 
 **Realismo sobre refinos UX** (lição RETRO §6 T1): mocks 100% revisados antes do kickoff REDUZ commits de iteração; nunca os elimina. Refinos que só aparecem em uso real são aceitos e fazem parte do escopo. O que se evita é refino de elemento JÁ presente no mock.
 
+**Mocks NÃO são pixel-perfect specs** (binding). São **referências visuais e de experiência** — comunicam intent, hierarquia, fluxo. Convenções do projeto sobrescrevem o mock quando há conflito. Exemplos:
+- Mocks podem mostrar `"Meus Tratamentos"` no header; código segue convenção **sem pronomes possessivos** ("Tratamentos") — app pode ser usado por cuidadores/familiares (ver §8 Glossário, regra de convenção).
+- Mocks podem mostrar `"comprimidos"` hardcoded; código usa `formatDoseUnit(qty, medicine.dosage_unit)` para renderizar a unidade correta (cp/ml/gotas/UI/etc).
+- Mocks podem mostrar `"Sem prazo"`; código usa `"Uso contínuo"`.
+
+Em caso de conflito mock vs convenção: **convenção vence**. Em caso de mock ambíguo: consultar PO.
+
 ---
 
 ## 1. Pré-condições estabelecidas pela Fase 1
@@ -94,8 +101,8 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 **Estado**: usuário sem nenhum tratamento ativo.
 
 **Layout (top → bottom)**:
-1. Header: `"Meus Tratamentos"` + subtitle `"Acompanhe seus tratamentos ativos"` (titles já existem em Fase 1)
-2. Link `"Meus Medicamentos →"` no topo (ícone Pill + chevron) — **JÁ implementado em Fase 1**; quando empty, fica no topo
+1. Header: `"Tratamentos"` + subtitle `"Acompanhe os tratamentos ativos"` (titles já existem em Fase 1)
+2. Link `"Medicamentos →"` no rodapé (ícone Pill + chevron) — **JÁ implementado em Fase 1**; quando empty, fica no topo
 3. Ilustração: card circular com calendário cinza-claro + ícone de "+" verde primary (centralizada, ~120px)
 4. Título: `"Comece seu primeiro tratamento"` (titleMD, weight 700)
 5. Body: `"Configure doses, horários e duração para receber lembretes e acompanhar a adesão."` (body, cor inkMuted, centro)
@@ -115,11 +122,11 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 **Estado**: usuário com tratamentos. JÁ implementado em Fase 1 com Heurística de Complexidade Adaptativa (SIMPLE até 3 protocolos; COMPLEX agrupado por plano com accordions). **Manter implementação atual** com ajustes:
 
 **Adições neste sprint**:
-- FAB `"+ Novo tratamento"` (já existe variante FAB Plus — substituir por FAB com label) — bottom-right, sticky
+- FAB `"+"` (vamos reaproveitar o FAB Plus, só alterando o destino do click) — bottom-right, sticky
 - Em cada grupo expandido (modo COMPLEX): footer link `"+ Adicionar tratamento ao grupo"` (color primary, dashed border-top opcional)
 - Tap em qualquer card → `navigation.navigate(ROUTES.PROTOCOL_DETAIL, { id })`
 - Tap FAB → `navigation.navigate(ROUTES.PROTOCOL_FORM)` (create mode)
-- Link "Meus Medicamentos" no rodapé quando há tratamentos (JÁ implementado em Fase 1)
+- Link "Medicamentos" no rodapé quando há tratamentos (JÁ implementado em Fase 1)
 
 **Card de tratamento** (mock):
 - Ícone pill colorido (primary[500]) + ícone bg pill (primary[50])
@@ -137,25 +144,26 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 1. **AppBar**: `← SeloZok 50mg` (título = nome do medicamento + dosagem) | trailing icons: Edit + More (kebab menu para opções como pausar, futuro)
 2. **Hero card — Medicamento associado (clicável)**:
    - Background: `primaryBg` (verde claro)
-   - Layout: ícone pill 52px branco + bloco de info + chevron right
+   - Layout: ícone dinâmico **Pill** ou **PillBottle** 52px branco baseado em `medicine.type` (`medicamento` → Pill, `suplemento` → PillBottle) — mesmo pattern aplicado em `MedicineCard` da Fase 1
    - Eyebrow: `"Medicamento"` (caption color primary)
-   - Title: `SeloZok` + `DosagePill 50mg` inline
-   - Subtitle: `Succinato de Metoprolol` (active_ingredient, caption inkMuted)
+   - Title: `medicine.name` + `DosagePill medicine.dosage_per_pill medicine.dosage_unit` inline (ex: `SeloZok` + `50mg`)
+   - Subtitle: `medicine.active_ingredient` (caption inkMuted)
    - Trailing: chevron primary → `navigation.navigate(ROUTES.MEDICINE_DETAIL, { id: medicine_id })`
-   - Footer da hero: badge `✓ Estável` (DosiqBadge variant primary com check) + caption `"Em uso há 64 dias"` (`getTodayLocal() - start_date`)
+   - Footer da hero: badge `✓ Estável` (DosiqBadge variant primary com check) + caption `"Em uso há N dias"` (`differenceInDays(getNow(), start_date)`)
+   - **Requisito de dado**: `protocolService.getById` detailSelect DEVE incluir `medicine:medicines(*)` (não apenas `medicine_id`) — confirmar em §6
 3. **Card "Dosagem & Frequência"** (DosiqCard):
    - SectionLabel: `"DOSAGEM & FREQUÊNCIA"` (eyebrow inkSubtle)
-   - DetailRow `Dose por tomada`: `2 comprimidos`
+   - DetailRow `Dose por tomada`: `formatDoseUnit(dosage_per_intake, medicine.dosage_unit)` — ex: `"2 comprimidos"`, `"15 gotas"`, `"10 ml"`, `"4 UI"`
    - DetailRow `Frequência`: `2x ao dia` (derivado de `time_schedule.length`)
    - Bloco `Horários`: label `"Horários"` + TimeChips lado a lado: `🕐 08:00` `🕐 20:00` (badge primarySoft)
-   - DetailRow `Consumo diário`: `4 comprimidos` (`dosage_per_intake × time_schedule.length`)
+   - DetailRow `Consumo diário`: `formatDoseUnit(dosage_per_intake × time_schedule.length, medicine.dosage_unit)` — ex: `"4 comprimidos"`
 4. **Card "Período"**:
-   - DetailRow `Início`: `12 mar 2026` (format DD MMM YYYY, PT-BR)
-   - DetailRow `Término`: `Sem prazo` ou data (color inkMuted se vazio)
+   - DetailRow `Início`: `formatDatePtBR(start_date)` → `"12 mar 2026"` (DD MMM YYYY)
+   - DetailRow `Término`: `formatEndDate(end_date)` → `"Uso contínuo"` se null/undefined, senão `formatDatePtBR(end_date)` (color inkMuted quando `"Uso contínuo"`)
 5. **Card "Plano terapêutico"** (se `treatment_plan_id`):
    - SectionLabel: `"PLANO TERAPÊUTICO"`
    - Card clicável: emoji + nome + caption `"+ N outros tratamentos neste plano"` + chevron right → navega para plano (Fase 3 ou novo)
-   - **Se sem plano**: ocultar card OU mostrar CTA `"+ Adicionar a um plano"`
+   - **Se sem plano**: mostrar CTA `"+ Adicionar a um plano"`
 6. **Card "Observações"** (se `notes`):
    - SectionLabel: `"OBSERVAÇÕES"`
    - Body text com line-height 1.5
@@ -176,18 +184,18 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 **Seções verticais** (gap 22px, padding lateral 20px):
 
 1. **`MEDICAMENTO`** (SectionTitle eyebrow):
-   - `MedicineSelectorRow` em estado vazio: card dashed border + ícone "+" no quadrado + label `"Selecionar medicamento"` + subtitle `"Escolha da sua biblioteca ou cadastre um novo"` + chevron right
+   - `MedicineSelectorRow` em estado vazio: card dashed border + ícone "+" no quadrado + label `"Selecionar medicamento"` + subtitle `"Escolha da biblioteca ou cadastre um novo"` + chevron right
    - Tap → abre bottom sheet `MedicineSelectorSheet` (§3.5)
 2. **`INFORMAÇÕES BÁSICAS`**:
    - `FormInput name="name"` label `"Nome do tratamento"` required, placeholder `"Ex: SeloZok manhã/noite"`
-   - `FormInput name="dosage_per_intake"` label `"Dose por tomada"` required, placeholder `"0"`, suffix `"comprimidos"`, `keyboardType="decimal-pad"` (vírgula→ponto normalize via R-232 ou handler local)
+   - `FormInput name="dosage_per_intake"` label `"Dose por tomada"` required, placeholder `"0"`, **suffix dinâmico via `pluralizeDoseUnit(qty, medicine.dosage_unit)`** — ex: `"comprimidos"` / `"ml"` / `"gotas"` / `"UI"` baseado no medicamento selecionado. Antes de selecionar medicamento, suffix mostra `"unidades"` (genérico). `keyboardType="decimal-pad"` (vírgula→ponto normalize via R-232 ou handler local)
 3. **`FREQUÊNCIA`**:
    - `FormSelect name="frequency"` label `"Periodicidade"` required, options `[Diário, Dias alternados, Semanal, Personalizado, Quando necessário]` (de `FREQUENCIES` enum)
    - **Condicional**: se `frequency ∈ {semanal, personalizado}` → mostrar `WeekdaySelector` abaixo
    - `TimeSchedulePicker` (var Chips): lista vertical de cards de horário (cada um: ícone clock primary + tempo grande + X remove) + botão dashed `"+ Adicionar horário"` (color primary)
 4. **`PERÍODO`** (linha de 2 campos lado a lado):
    - `FormDatePicker name="start_date"` label `"Início"` hint `"opcional"` (mostrado se não informado), default `getTodayLocal()`, placeholder `"Hoje"`, trailing ícone calendário
-   - `FormDatePicker name="end_date"` label `"Término"` hint `"opcional"`, placeholder `"Sem prazo"`
+   - `FormDatePicker name="end_date"` label `"Término"` hint `"opcional"`, placeholder `"Sem prazo / Uso contínuo"`
 5. **`ORGANIZAÇÃO`** (renomeado de "Plano terapêutico" — termo mais leve, mock):
    - **Variação A (padrão)**: `FormSelect name="treatment_plan_id"` label `"Plano terapêutico"` com items dos planos existentes + último item `"+ Criar novo"` que muda para Variação B
    - **Variação B**: `PlanInlineCreate` card primaryBg expandido com:
@@ -216,7 +224,7 @@ Bottom sheet 85% altura sobre `ProtocolFormScreen`. Análogo a `MedicineAnvisaSh
 
 **Layout**:
 1. Header: title `"Escolher medicamento"`
-2. Search bar: pill cinza claro com ícone search + placeholder `"Buscar nos meus medicamentos…"`
+2. Search bar: pill cinza claro com ícone search + placeholder `"Buscar em medicamentos…"`
 3. Section eyebrow: `"Biblioteca · N medicamentos"` (caption inkSubtle)
 4. Lista vertical: cards de medicamento (ícone pill + nome + DosagePill + active_ingredient + radio à direita)
    - Estado `selected`: card com border primary 1.5px + radio preenchido primary + ícone check branco
@@ -416,6 +424,58 @@ Mesma estrutura do create, com:
 - Customizar mensagens só quando regra dá info útil (R-232); deixar locale global cobrir genéricos
 - Refinements cross-campo: **NÃO** usar `schema.pick({field:true}).safeParse` (AP-156). Usar `validateField` do `useFormState` que parsea objeto completo e filtra issues por campo
 
+### Helpers de Apresentação (a criar em `@dosiq/core/utils/`)
+
+Centralizar formatação em `@dosiq/core` para reuso web↔mobile. Criar **antes** do spawn de telas que usam (sprint T2.1 task adicional, ou parte de T2.6):
+
+```javascript
+// packages/core/src/utils/doseUnit.js — Fase 2
+
+const UNIT_DISPLAY = {
+  mg: { singular: 'comprimido', plural: 'comprimidos' },
+  mcg: { singular: 'comprimido', plural: 'comprimidos' },
+  g: { singular: 'comprimido', plural: 'comprimidos' },
+  cp: { singular: 'comprimido', plural: 'comprimidos' },
+  ml: { singular: 'ml', plural: 'ml' },
+  gotas: { singular: 'gota', plural: 'gotas' },
+  ui: { singular: 'UI', plural: 'UI' },
+}
+const FALLBACK = { singular: 'unidade', plural: 'unidades' }
+
+// pluralizeDoseUnit(2, 'mg') → 'comprimidos'
+// pluralizeDoseUnit(1, 'gotas') → 'gota'
+// pluralizeDoseUnit(15, 'ml') → 'ml'
+// pluralizeDoseUnit(qty, undefined) → 'unidades' (fallback antes de selecionar medicamento)
+export function pluralizeDoseUnit(qty, dosageUnit) {
+  const u = UNIT_DISPLAY[dosageUnit] ?? FALLBACK
+  return qty === 1 ? u.singular : u.plural
+}
+
+// formatDoseUnit(2, 'mg') → '2 comprimidos'
+// formatDoseUnit(1, 'gotas') → '1 gota'
+// formatDoseUnit(15.5, 'ml') → '15,5 ml' (vírgula PT-BR via toLocaleString)
+export function formatDoseUnit(qty, dosageUnit) {
+  const display = qty.toLocaleString('pt-BR')
+  return `${display} ${pluralizeDoseUnit(qty, dosageUnit)}`
+}
+```
+
+```javascript
+// packages/core/src/utils/dateFormat.js — Fase 2 (extender se já existir)
+
+// formatDatePtBR('2026-03-12') → '12 mar 2026'
+export function formatDatePtBR(isoDate) { /* ... */ }
+
+// formatEndDate(null) → 'Uso contínuo'
+// formatEndDate('2026-12-31') → '31 dez 2026'
+export function formatEndDate(isoDate) {
+  if (!isoDate) return 'Uso contínuo'
+  return formatDatePtBR(isoDate)
+}
+```
+
+**Reuso obrigatório**: tanto detail (§3.3) quanto form (§3.4) usam `pluralizeDoseUnit` para suffix dinâmico baseado em `medicine.dosage_unit`. Web pode adotar os mesmos helpers no G3 (consistência cross-plataforma).
+
 ---
 
 ## 7. Brief padrão para spawn (R-230 — 6 itens obrigatórios)
@@ -448,15 +508,27 @@ Todo spawn cavecrew Fase 2 DEVE receber:
 
 ## 8. Glossário de Termos (Fase 2)
 
+### Convenções de string (aplicam-se a TODA UI do app)
+
+| Regra | Razão |
+|-------|-------|
+| **Sem pronomes possessivos** em headers, placeholders, subtitles, CTAs (proibido: "meu/minha/meus/minhas/sua/seu/seus") | App pode ser usado por cuidadores/familiares; os remédios/tratamentos não são "deles". Exemplos: ❌ "Meus Tratamentos" → ✅ "Tratamentos"; ❌ "Buscar nos meus medicamentos" → ✅ "Buscar em medicamentos". |
+| **"Uso contínuo"** em vez de "Sem prazo" para `end_date` null | Termo mais claro para paciente — comunica intenção (tratamento ongoing). |
+| **Unidades formatadas via `pluralizeDoseUnit`** | Nunca hardcoded "comprimidos" — usar helper baseado em `medicine.dosage_unit`. |
+| **Datas PT-BR** formato `"12 mar 2026"` (`DD MMM YYYY`) | Padrão visual brasileiro; mês abreviado lowercase. |
+| **Vírgula decimal** em valores numéricos exibidos (`15,5 ml`, não `15.5 ml`) | Via `toLocaleString('pt-BR')`. |
+
+### Tabela termo UI ↔ código
+
 | Termo UI (PT) | Variável código (EN) | Contexto |
 |---------------|---------------------|----------|
 | Tratamento(s) | `protocol(s)` | DB table `protocols`; UI usa "tratamento" sempre |
 | Plano terapêutico / Organização | `treatment_plan` | DB table; UI usa "plano" curto OU "organização" em forms |
-| Dose por tomada | `dosage_per_intake` | Quantidade em unidades (comprimidos) |
+| Dose por tomada | `dosage_per_intake` | Quantidade em unidades farmacêuticas (cp/ml/gotas/UI/etc — depende de `medicine.dosage_unit`); renderizar via `formatDoseUnit` |
 | Frequência / Periodicidade | `frequency` | enum PT-BR snake_case |
 | Horários | `time_schedule` | array de "HH:MM" |
 | Dias da semana | `weekdays` | array enum dom/seg/ter/qua/qui/sex/sab |
-| Início / Término | `start_date` / `end_date` | YYYY-MM-DD |
+| Início / Término | `start_date` / `end_date` | YYYY-MM-DD; `end_date null` → renderizar `"Uso contínuo"` via `formatEndDate` |
 | Observações | `notes` | string livre |
 | Estado | `titration_status` | enum (estavel/escalando/descalando) — read-only v1 |
 
