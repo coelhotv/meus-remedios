@@ -24,15 +24,21 @@ export function useMedicineDelete(medicine) {
 
   const preCheck = useMemo(() => {
     const protocols = Array.isArray(medicine?.protocols) ? medicine.protocols : []
-    const activeProtocols = protocols.filter((p) => p?.active !== false)
-    const canDelete = activeProtocols.length === 0
+    const stock = Array.isArray(medicine?.stock) ? medicine.stock : []
+
+    const stockUnits = stock.reduce((acc, s) => acc + (Number(s?.quantity) || 0), 0)
+    const stockLots = stock.filter((s) => (Number(s?.quantity) || 0) > 0).length
+
+    // Bloqueio hard: QUALQUER dependência (protocolo ativo/pausado OU estoque > 0).
+    // Apagar medicamento com dependências deixaria órfãos no banco e na UX.
+    const hasDependencies = protocols.length > 0 || stockUnits > 0
+
     return {
-      canDelete,
-      activeProtocolsCount: activeProtocols.length,
-      blocker: canDelete
-        ? null
-        : `Existem ${activeProtocols.length} tratamento(s) associado(s) a este medicamento. Remova-os antes de excluir.`,
-      warnings: [],
+      canDelete: !hasDependencies,
+      protocols,
+      stockUnits,
+      stockLots,
+      hasStock: stockUnits > 0,
     }
   }, [medicine])
 

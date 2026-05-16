@@ -24,10 +24,10 @@ import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
 import ErrorState from '@shared/components/states/ErrorState'
 import DeleteConfirmation from '@shared/components/feedback/DeleteConfirmation'
-import { useToast } from '@shared/components/feedback/Toast'
 import { ROUTES } from '@navigation/routes'
 import { useMedicine } from '@medications/hooks/useMedicines'
 import { useMedicineDelete } from '@medications/hooks/useMedicineDelete'
+import { MedicineDeleteBlockedSheet } from '@medications/components/MedicineDeleteBlockedSheet'
 import { colors, spacing, borderRadius, shadows } from '@shared/styles/tokens'
 
 const TYPE_LABELS = {
@@ -61,11 +61,11 @@ export default function MedicineDetailScreen() {
   // States (via hooks)
   const navigation = useNavigation()
   const route = useRoute()
-  const { show } = useToast()
   const id = route.params?.id
   const { data, loading, error, refresh } = useMedicine(id)
   const { preCheck, confirmDelete, isLoading: deleteLoading } = useMedicineDelete(data)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [blockedOpen, setBlockedOpen] = useState(false)
 
   // Refresh ao voltar da tela de edição (route focus)
   useFocusEffect(
@@ -118,17 +118,22 @@ export default function MedicineDetailScreen() {
 
   const handleDeletePress = useCallback(() => {
     if (!data) return
-    if (preCheck.blocker) {
-      show(preCheck.blocker, { variant: 'error' })
+    if (!preCheck.canDelete) {
+      setBlockedOpen(true)
       return
     }
     setDeleteOpen(true)
-  }, [data, preCheck, show])
+  }, [data, preCheck])
 
   const handleDeleteConfirm = useCallback(async () => {
     await confirmDelete()
     setDeleteOpen(false)
   }, [confirmDelete])
+
+  const handleOpenTreatments = useCallback(() => {
+    setBlockedOpen(false)
+    navigation.navigate(ROUTES.TREATMENTS_LIST)
+  }, [navigation])
 
   // Header (reaproveitado em todos os estados)
   const Header = (
@@ -324,12 +329,22 @@ export default function MedicineDetailScreen() {
       <DeleteConfirmation
         visible={deleteOpen}
         title="Remover medicamento"
-        description="Esta ação não pode ser desfeita. Estoque e doses históricas serão preservados."
+        description="Esta ação não pode ser desfeita."
         itemName={data?.name}
         confirmLabel="Remover"
         isLoading={deleteLoading}
         onCancel={() => setDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
+      />
+
+      <MedicineDeleteBlockedSheet
+        visible={blockedOpen}
+        medicineName={data?.name}
+        protocols={preCheck.protocols}
+        stockUnits={preCheck.stockUnits}
+        stockLots={preCheck.stockLots}
+        onCancel={() => setBlockedOpen(false)}
+        onOpenTreatments={handleOpenTreatments}
       />
     </ScreenContainer>
   )
