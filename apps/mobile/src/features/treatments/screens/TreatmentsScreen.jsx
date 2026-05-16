@@ -89,16 +89,20 @@ export default function TreatmentsScreen() {
           <Text style={styles.subtitle}>Acompanhe os tratamentos ativos</Text>
         </View>
 
-        <Pressable
-          onPress={goToMedicines}
-          style={({ pressed }) => [styles.medicinesLink, pressed && styles.medicinesLinkPressed]}
-          accessibilityRole="button"
-          accessibilityLabel="Medicamentos"
-        >
-          <Pill size={18} color={colors.primary[700]} />
-          <Text style={styles.medicinesLinkText}>Medicamentos</Text>
-          <ChevronRight size={18} color={colors.primary[700]} />
-        </Pressable>
+        {/* Link Medicamentos no topo APENAS no estado zero — destaque para onboarding.
+            Quando há tratamentos, o link migra para o rodapé (gestão diária = tratamentos). */}
+        {isEmpty && (
+          <Pressable
+            onPress={goToMedicines}
+            style={({ pressed }) => [styles.medicinesLink, pressed && styles.medicinesLinkPressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Medicamentos"
+          >
+            <Pill size={18} color={colors.primary[700]} />
+            <Text style={styles.medicinesLinkText}>Medicamentos</Text>
+            <ChevronRight size={18} color={colors.primary[700]} />
+          </Pressable>
+        )}
 
         {isEmpty ? (
           <EmptyState 
@@ -144,6 +148,24 @@ export default function TreatmentsScreen() {
               </View>
             )
           })
+        )}
+
+        {/* Link Medicamentos no rodapé quando há tratamentos — mesmo estilo do topo, só posição diferente. */}
+        {!isEmpty && (
+          <Pressable
+            onPress={goToMedicines}
+            style={({ pressed }) => [
+              styles.medicinesLink,
+              styles.medicinesLinkFooter,
+              pressed && styles.medicinesLinkPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Medicamentos"
+          >
+            <Pill size={18} color={colors.primary[700]} />
+            <Text style={styles.medicinesLinkText}>Medicamentos</Text>
+            <ChevronRight size={18} color={colors.primary[700]} />
+          </Pressable>
         )}
       </ScrollView>
     </ScreenContainer>
@@ -198,5 +220,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary[700],
     fontFamily: typography.fontFamily.bold,
+  },
+  medicinesLinkFooter: {
+    marginTop: spacing[6],
+    marginBottom: spacing[2],
   },
 })

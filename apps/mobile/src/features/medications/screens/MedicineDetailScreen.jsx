@@ -1,7 +1,7 @@
 // MedicineDetailScreen.jsx — detalhe do medicamento (Sprint M1.1 Fase 1)
 // Layout: header fixo + hero card + sections (Identificação / Dosagem / Em uso)
 
-import { useMemo } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import {
   View,
   Text,
@@ -9,20 +9,25 @@ import {
   Pressable,
   StyleSheet,
 } from 'react-native'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import {
   ChevronLeft,
   Pencil,
-  MoreVertical,
+  Trash2,
   Pill,
   PillBottle,
+  Layers,
+  Package,
 } from 'lucide-react-native'
 
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
 import ErrorState from '@shared/components/states/ErrorState'
+import DeleteConfirmation from '@shared/components/feedback/DeleteConfirmation'
 import { ROUTES } from '@navigation/routes'
 import { useMedicine } from '@medications/hooks/useMedicines'
+import { useMedicineDelete } from '@medications/hooks/useMedicineDelete'
+import { MedicineDeleteBlockedSheet } from '@medications/components/MedicineDeleteBlockedSheet'
 import { colors, spacing, borderRadius, shadows } from '@shared/styles/tokens'
 
 const TYPE_LABELS = {
@@ -58,6 +63,9 @@ export default function MedicineDetailScreen() {
   const route = useRoute()
   const id = route.params?.id
   const { data, loading, error, refresh } = useMedicine(id)
+  const { preCheck, confirmDelete, isLoading: deleteLoading } = useMedicineDelete(data)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [blockedOpen, setBlockedOpen] = useState(false)
 
   // Memos
   const typeLabel = useMemo(() => {
@@ -76,18 +84,57 @@ export default function MedicineDetailScreen() {
     return data.protocols
   }, [data])
 
+  const protocolsSummary = useMemo(() => {
+    if (protocols.length === 0) return null
+    const labels = protocols
+      .map((p) => p?.short_name ?? p?.acronym ?? p?.name ?? '')
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(' · ')
+    return labels || null
+  }, [protocols])
+
+  const stockSummary = useMemo(() => {
+    const stock = Array.isArray(data?.stock) ? data.stock : []
+    if (stock.length === 0) return null
+    const totalUnits = stock.reduce((acc, s) => acc + (Number(s?.quantity) || 0), 0)
+    if (totalUnits <= 0) return null
+    return `${totalUnits} un.`
+  }, [data])
+
+  // Effects
+  // Refresh ao voltar da tela de edição (route focus)
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [refresh])
+  )
+
   // Handlers
-  const handleBack = () => navigation.goBack()
-  const handleEdit = () => {
+  const handleBack = useCallback(() => navigation.goBack(), [navigation])
+  const handleEdit = useCallback(() => {
     if (!data) return
     navigation.navigate(ROUTES.MEDICINE_EDIT, { medicine: data })
-  }
-  const handleMenu = () => {
-    if (__DEV__) {
-      // eslint-disable-next-line no-console
-      console.log('[MedicineDetail] menu placeholder (v1 sem ação)')
+  }, [data, navigation])
+
+  const handleDeletePress = useCallback(() => {
+    if (!data) return
+    if (!preCheck.canDelete) {
+      setBlockedOpen(true)
+      return
     }
-  }
+    setDeleteOpen(true)
+  }, [data, preCheck])
+
+  const handleDeleteConfirm = useCallback(async () => {
+    await confirmDelete()
+    setDeleteOpen(false)
+  }, [confirmDelete])
+
+  const handleOpenTreatments = useCallback(() => {
+    setBlockedOpen(false)
+    navigation.navigate(ROUTES.TREATMENTS_LIST)
+  }, [navigation])
 
   // Header (reaproveitado em todos os estados)
   const Header = (
@@ -114,15 +161,6 @@ export default function MedicineDetailScreen() {
             size={22}
             color={data ? colors.text.primary : colors.text.muted}
           />
-        </Pressable>
-        <Pressable
-          onPress={handleMenu}
-          hitSlop={8}
-          style={styles.iconButton}
-          accessibilityRole="button"
-          accessibilityLabel="Mais opções"
-        >
-          <MoreVertical size={22} color={colors.text.primary} />
         </Pressable>
       </View>
     </View>
@@ -245,30 +283,70 @@ export default function MedicineDetailScreen() {
         {/* Em uso */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>EM USO</Text>
-          <View style={styles.sectionCard}>
-            {protocols.length > 0 ? (
-              protocols.map((p, idx) => {
-                const name = p?.name ?? `Tratamento #${p?.id ?? idx + 1}`
-                return (
-                  <View
-                    key={p?.id ?? `protocol-${idx}`}
-                    style={[
-                      styles.kvRow,
-                      idx === protocols.length - 1 && styles.kvRowLast,
-                    ]}
-                  >
-                    <Text style={styles.kvValue}>{name}</Text>
-                  </View>
-                )
-              })
-            ) : (
-              <Text style={styles.emptyText}>
-                Nenhum tratamento ativo usando este medicamento
+
+          {/* Card tratamentos */}
+          <View style={styles.useCard}>
+            <View style={[styles.useIconWrap, styles.useIconWrapPrimary]}>
+              <Layers size={18} color={colors.primary[700]} />
+            </View>
+            <Text style={styles.useLabel}>
+              {protocols.length === 0
+                ? 'Sem tratamentos associados'
+                : `${protocols.length} ${protocols.length === 1 ? 'tratamento associado' : 'tratamentos associados'}`}
+            </Text>
+            {protocolsSummary ? (
+              <Text style={styles.useMeta} numberOfLines={1}>
+                {protocolsSummary}
               </Text>
-            )}
+            ) : null}
           </View>
+
+          {/* Card estoque */}
+          <View style={styles.useCard}>
+            <View style={[styles.useIconWrap, styles.useIconWrapSupplement]}>
+              <Package size={18} color={colors.supplement[700]} />
+            </View>
+            <Text style={styles.useLabel}>Estoque</Text>
+            <Text style={styles.useMeta}>{stockSummary ?? 'Não rastreado'}</Text>
+          </View>
+
+          {/* Botão Excluir medicamento */}
+          <Pressable
+            onPress={handleDeletePress}
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.deleteButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Excluir medicamento"
+            disabled={!data || deleteLoading}
+          >
+            <Trash2 size={18} color={colors.status.error} />
+            <Text style={styles.deleteButtonText}>Excluir medicamento</Text>
+          </Pressable>
         </View>
       </ScrollView>
+
+      <DeleteConfirmation
+        visible={deleteOpen}
+        title="Remover medicamento"
+        description="Esta ação não pode ser desfeita."
+        itemName={data?.name}
+        confirmLabel="Remover"
+        isLoading={deleteLoading}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
+
+      <MedicineDeleteBlockedSheet
+        visible={blockedOpen}
+        medicineName={data?.name}
+        protocols={preCheck.protocols}
+        stockUnits={preCheck.stockUnits}
+        stockLots={preCheck.stockLots}
+        onCancel={() => setBlockedOpen(false)}
+        onOpenTreatments={handleOpenTreatments}
+      />
     </ScreenContainer>
   )
 }
@@ -438,5 +516,64 @@ const styles = StyleSheet.create({
     color: colors.text.muted,
     paddingVertical: spacing[3],
     textAlign: 'center',
+  },
+
+  // Em uso — cards
+  useCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+    backgroundColor: colors.bg.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing[4],
+    marginBottom: spacing[2],
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
+  useIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  useIconWrapPrimary: {
+    backgroundColor: colors.primary[50],
+  },
+  useIconWrapSupplement: {
+    backgroundColor: colors.supplement[50],
+  },
+  useLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  useMeta: {
+    fontSize: 12,
+    color: colors.text.muted,
+    flexShrink: 1,
+  },
+
+  // Botão excluir (outline danger)
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing[2],
+    backgroundColor: colors.bg.card,
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing[3],
+    marginTop: spacing[3],
+    borderWidth: 1,
+    borderColor: colors.status.error,
+  },
+  deleteButtonPressed: {
+    opacity: 0.6,
+  },
+  deleteButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.status.error,
   },
 })

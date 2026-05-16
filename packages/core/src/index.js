@@ -10,6 +10,9 @@
  * - ./src/protocols-utils/index.js → Utils de protocolos (opcional, depende auditoria)
  */
 
+// Aplica locale PT-BR no Zod (efeito colateral ao importar @dosiq/core)
+import './zodSetup.js'
+
 // Re-exporte de schemas (serao populados em 2.2)
 export * from './schemas/index.js'
 

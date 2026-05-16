@@ -1,5 +1,6 @@
 // MedicineEmptyState.jsx — Estado vazio da biblioteca de medicamentos
-// Componente puro (sem state, sem effects) exibido quando a lista está vazia
+// Componente puro (sem state, sem effects) exibido quando a lista está vazia.
+// Single CTA — paradoxo da escolha evitado (decisão PO M1.2).
 
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Pill } from 'lucide-react-native'
@@ -16,37 +17,22 @@ export function MedicineEmptyState() {
     navigation.navigate(ROUTES.MEDICINE_CREATE)
   }
 
-  const handleAnvisaSearch = () => {
-    lightTap()
-    navigation.navigate(ROUTES.ANVISA_SEARCH)
-  }
-
   return (
     <View style={styles.container}>
-      {/* Ícone em círculo verde */}
       <View style={styles.iconCircle}>
         <Pill size={48} color={colors.primary[500]} strokeWidth={1.5} />
       </View>
 
-      {/* Título */}
       <Text style={styles.title}>Biblioteca vazia</Text>
 
-      {/* Subtítulo */}
       <Text style={styles.subtitle}>
         Cadastre medicamentos para começar a gerenciar tratamentos
       </Text>
 
-      {/* Spacer */}
       <View style={{ height: spacing[6] }} />
 
-      {/* Botão primário */}
       <Pressable style={styles.button} onPress={handleCreateMedicine}>
         <Text style={styles.buttonText}>+ Cadastrar primeiro medicamento</Text>
-      </Pressable>
-
-      {/* Link ANVISA */}
-      <Pressable style={styles.anvisaLink} onPress={handleAnvisaSearch}>
-        <Text style={styles.anvisaLinkText}>Buscar na base ANVISA</Text>
       </Pressable>
     </View>
   )
@@ -94,13 +80,5 @@ const styles = StyleSheet.create({
     color: colors.text.inverse,
     fontWeight: '600',
     fontSize: 15,
-  },
-  anvisaLink: {
-    marginTop: spacing[3],
-  },
-  anvisaLinkText: {
-    color: colors.primary[600],
-    fontSize: 13,
-    textDecorationLine: 'underline',
   },
 })

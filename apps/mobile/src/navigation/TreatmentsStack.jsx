@@ -10,6 +10,7 @@ import { ROUTES } from './routes'
 import TreatmentsScreen from '../features/treatments/screens/TreatmentsScreen'
 import MedicinesListScreen from '../features/medications/screens/MedicinesListScreen'
 import MedicineDetailScreen from '../features/medications/screens/MedicineDetailScreen'
+import MedicineFormScreen from '../features/medications/screens/MedicineFormScreen'
 
 const Stack = createStackNavigator()
 
@@ -19,6 +20,8 @@ export default function TreatmentsStack() {
       <Stack.Screen name={ROUTES.TREATMENTS_LIST} component={TreatmentsScreen} />
       <Stack.Screen name={ROUTES.MEDICINES_LIST} component={MedicinesListScreen} />
       <Stack.Screen name={ROUTES.MEDICINE_DETAIL} component={MedicineDetailScreen} />
+      <Stack.Screen name={ROUTES.MEDICINE_CREATE} component={MedicineFormScreen} />
+      <Stack.Screen name={ROUTES.MEDICINE_EDIT} component={MedicineFormScreen} />
     </Stack.Navigator>
   )
 }

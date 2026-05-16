@@ -13,8 +13,8 @@ export default function MedicineCard({ medicine, onPress }) {
     type,
     dosage_per_pill,
     dosage_unit,
-    laboratory,
-    active_protocols_count = 0,
+    active_ingredient,
+    protocols_count = 0,
   } = medicine ?? {}
 
   const isSupplement = type === 'suplemento'
@@ -29,9 +29,9 @@ export default function MedicineCard({ medicine, onPress }) {
 
   const hasDose = dosage_per_pill != null && dosage_unit
   const protocolsLabel =
-    active_protocols_count > 0
-      ? `${active_protocols_count} ${active_protocols_count === 1 ? 'tratamento ativo' : 'tratamentos ativos'}`
-      : 'Sem tratamentos ativos'
+    protocols_count > 0
+      ? `${protocols_count} ${protocols_count === 1 ? 'tratamento associado' : 'tratamentos associados'}`
+      : 'Sem tratamentos associados'
 
   return (
     <Pressable
@@ -56,9 +56,9 @@ export default function MedicineCard({ medicine, onPress }) {
         )}
       </View>
 
-      {laboratory ? (
+      {active_ingredient ? (
         <Text style={styles.meta} numberOfLines={1}>
-          {laboratory}
+          {active_ingredient}
         </Text>
       ) : null}
 

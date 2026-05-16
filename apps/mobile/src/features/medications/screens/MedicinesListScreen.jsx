@@ -10,7 +10,7 @@ import {
   RefreshControl,
   StyleSheet,
 } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { Search, X, Plus, ChevronLeft } from 'lucide-react-native'
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
@@ -38,12 +38,19 @@ export default function MedicinesListScreen() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
 
+  // Refresh ao voltar (Detail edit / Create) — cache invalidado
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [refresh])
+  )
+
   const filtered = useMemo(() => {
     if (!data) return []
     const q = normalize(query.trim())
     if (!q) return data
     return data.filter(
-      m => normalize(m.name).includes(q) || normalize(m.laboratory).includes(q)
+      m => normalize(m.name).includes(q) || normalize(m.active_ingredient).includes(q)
     )
   }, [data, query])
 
@@ -69,7 +76,7 @@ export default function MedicinesListScreen() {
       <MedicineCard
         medicine={{
           ...item,
-          active_protocols_count: item.protocols?.length ?? 0,
+          protocols_count: item.protocols?.length ?? 0,
         }}
         onPress={() => navigation.navigate(ROUTES.MEDICINE_DETAIL, { id: item.id })}
       />

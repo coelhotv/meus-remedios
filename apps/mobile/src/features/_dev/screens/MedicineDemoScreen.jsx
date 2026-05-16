@@ -19,7 +19,7 @@ export default function MedicineDemoScreen({ navigation }) {
         >
           <ChevronLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Medicamentos (M1.1)</Text>
+        <Text style={styles.title}>Medicamentos (M1.2)</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -45,11 +45,14 @@ export default function MedicineDemoScreen({ navigation }) {
           <TouchableOpacity
             onPress={() => {
               lightTap()
-              navigation?.navigate(ROUTES.ANVISA_SEARCH)
+              navigation?.navigate(ROUTES.TABS, {
+                screen: ROUTES.TREATMENTS,
+                params: { screen: ROUTES.MEDICINE_CREATE },
+              })
             }}
             style={styles.buttonCard}
           >
-            <Text style={styles.buttonText}>🔎 Busca ANVISA (browse)</Text>
+            <Text style={styles.buttonText}>➕ Novo Medicamento (Form)</Text>
           </TouchableOpacity>
         </View>
 
@@ -68,12 +71,13 @@ export default function MedicineDemoScreen({ navigation }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Status Sprint</Text>
           <View style={styles.statusCard}>
-            <Text style={styles.statusText}>✅ M1.1 medicineService</Text>
-            <Text style={styles.statusText}>✅ M1.3 useMedicines hook</Text>
-            <Text style={styles.statusText}>✅ M1.4-M1.7 telas Read</Text>
-            <Text style={styles.statusText}>✅ M1.8 nav stack</Text>
-            <Text style={styles.statusText}>✅ M1.9 testes (12/12)</Text>
-            <Text style={styles.statusText}>🔄 M2.x CRUD (próxima sprint)</Text>
+            <Text style={styles.statusText}>✅ M1.1 Read (Service + List + Detail)</Text>
+            <Text style={styles.statusText}>✅ M2.1 MedicineFormScreen (create/edit)</Text>
+            <Text style={styles.statusText}>✅ M2.2 MedicineAnvisaSheet (bottom sheet)</Text>
+            <Text style={styles.statusText}>✅ M2.4 useMedicineDelete (pre-check)</Text>
+            <Text style={styles.statusText}>✅ M2.5 Delete via DeleteConfirmation</Text>
+            <Text style={styles.statusText}>✅ M2.7 useMedicineMutation (C/U/D)</Text>
+            <Text style={styles.statusText}>🔄 M1.3 Extract + Migrate (próxima sprint)</Text>
           </View>
         </View>
       </ScrollView>
