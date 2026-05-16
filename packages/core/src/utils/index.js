@@ -66,3 +66,15 @@ export {
   getNotificationIcon,
   formatRelativeTime,
 } from './notificationIconMapper.js'
+
+// Dose unit presentation (Fase 2)
+export {
+  pluralizeDoseUnit,
+  formatDoseUnit,
+} from './doseUnit.js'
+
+// Date presentation PT-BR (Fase 2)
+export {
+  formatDatePtBR,
+  formatEndDate,
+} from './dateFormat.js'
