@@ -3,6 +3,13 @@
   "compressed_at": "2026-05-16T13:35:00Z",
   "sessions_total": 108,
   "summary": "Período concentrou 2 macro-entregas: (1) Wave N2 Notification Hardening (W17-W19) — quiet hours, agrupamento, dispatcher boundary, inbox; (2) CRUD Native Mobile Fase 0+1 (W19-W20) — Form Kit, CRUD Medicamentos completo, factory compartilhada @dosiq/core, locale Zod PT-BR.",
+  "counter_reconciliation": {
+    "note": "state.json esteve dessincronizado dos índices markdown desde last_distillation 2026-04-26. Distill reconciliou. Diff entre estados:",
+    "before": { "rules": 182, "anti_patterns": 160, "decisions": 44, "contracts": 21 },
+    "after":  { "rules": 183, "anti_patterns": 161, "decisions": 45, "contracts": 20 },
+    "delta":  { "rules": "+1", "anti_patterns": "+1", "decisions": "+1", "contracts": "-1" },
+    "interpretation": "Os 9 R / 10 AP / 2 ADR listados em rules_added/anti_patterns_added/decisions_made foram adicionados ao longo do período (W17-W20) com bumps sincronizados ao state.json em outras sessões. O delta líquido entre last_distillation e agora reflete apenas 4 mudanças registradas; o restante já havia sido reconciliado em distills/sessions individuais. Contracts -1 indica remoção/archive de 1 CON-NNN sem decremento sincronizado — investigar em distill futuro com D5 self-clean profundo (scan all CON files vs index)."
+  },
   "milestones": [
     { "gate": "4", "pr": 542, "summary": "L3 Cleanup Telegram + Zod v4 Fix" },
     { "gate": "5", "pr": 543, "summary": "Dispatcher Boundary Hardening + Payload Standardization" },
