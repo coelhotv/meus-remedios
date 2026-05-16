@@ -64,17 +64,35 @@ Sem baseline + sem crash tracking = ao terminar Fase 2 não saberemos se regredi
 **Critical path** (entry + main vendor + index.es): ~280 kB gzip
 **Lazy loaded medicines-db**: 129 kB gzip (apenas quando user abre busca ANVISA)
 
-### Mobile bundle — ⏳ pendente
+### Mobile bundle — 2026-05-16 (pós-Crashlytics integration, branch `chore/spike-pre-fase-2`)
 
-Comandos para captura (executar quando EAS build estiver pronto pós install Crashlytics):
+Comando: `cd apps/mobile && npx expo export --platform <ios|android>`
 
-```bash
-cd apps/mobile
-npx expo export --platform ios     > /tmp/perf-ios-pre-f2.txt 2>&1
-npx expo export --platform android > /tmp/perf-android-pre-f2.txt 2>&1
-```
+| Métrica | iOS | Android |
+|---------|-----|---------|
+| Total `dist/` | **11 MB** | **11 MB** |
+| Hermes bundle (`.hbc` binary) | **6.6 MB** (`index-da59e23a...hbc`) | **6.6 MB** (`index-97ba0649...hbc`) |
+| Assets totais (`dist/assets/`) | **4.6 MB** | **4.6 MB** |
+| Módulos transformados | 3295 | 3295 |
+| Build time | ~20s | ~20s |
+| metro-file-map watchman warning | sim (iCloud — esperado, nada a fazer) | sim |
 
-Anotar aqui o resultado: tamanho do bundle Hermes + assets totais por plataforma.
+**Composição dos assets (4.6 MB)** — dominado por fonts vector-icons (carregados eagermente pelo `@expo/vector-icons`):
+- Fontes vector-icons: ~4 MB cumulativo (MaterialCommunityIcons 1.15 MB, FontAwesome6_Solid 424 kB, Ionicons 443 kB, MaterialIcons 357 kB, Fontisto 314 kB, etc.)
+- Fontes Comfortaa: 555 kB (5 variants × 111 kB)
+- Icon do app: 281 kB
+- Icons React Navigation: < 5 kB
+
+**Possível otimização futura** (não para Fase 2): substituir `@expo/vector-icons` (puxa todos os fonts) por imports seletivos de `lucide-react-native` que já usamos — economizaria ~3 MB de assets se vector-icons não for usado. Investigar pós-Fase-3 quando bundle size virar problema real.
+
+**Bundle Hermes 6.6 MB raw** = JS binário compilado (não gzipped no APK/IPA — Hermes já comprime via bytecode). Inclui:
+- React + React Native + Navigation
+- Supabase JS SDK
+- Firebase modules (analytics + crashlytics agora)
+- Zod + locale PT-BR
+- @dosiq/core (schemas + repositories + utils)
+- Lucide icons + Comfortaa hooks
+- 3295 módulos totais
 
 ---
 
@@ -158,7 +176,9 @@ Valida pipeline Crashlytics em dev antes de assumir que funciona em prod.
 | Métrica | Threshold de regressão |
 |---------|------------------------|
 | Mobile cold start | > +20% vs baseline (capturado via evento Firebase) |
-| Mobile bundle JS (Hermes) | > +5% vs baseline mobile |
+| Mobile bundle JS (Hermes) | > 7.0 MB (atual 6.6 MB; +5%) |
+| Mobile dist total | > 12 MB (atual 11 MB) |
+| Mobile assets totais | > 5 MB (atual 4.6 MB) |
 | Web bundle critical path (entry+vendor+index.es) | > 310 kB gzip (atual ~280 kB +10%) |
 | Web `vendor-supabase` | > 60 kB gzip (atual 53 kB) |
 | Web `feature-medicines-db` | manter lazy load — chunk não pode entrar em critical path |
@@ -174,8 +194,9 @@ Se qualquer threshold for ultrapassado em PR Fase 2 → PR HALT, análise antes 
 1. ✅ Capturar web bundle baseline — **feito neste PR**
 2. ✅ Integrar Crashlytics + ErrorBoundary global — **feito neste PR**
 3. ✅ Instrumentar cold start mobile — **feito neste PR**
-4. ⏳ Capturar mobile bundle baseline — pendente (user roda `expo export` pós-EAS build)
+4. ✅ Capturar mobile bundle baseline — **feito neste PR** (iOS+Android 11 MB total, 6.6 MB Hermes)
 5. ⏳ Smoke test crash dev — pendente (T2.1)
+6. ⏳ EAS build novo pós-merge (necessário para Crashlytics native code linkar) — user executa
 6. 🔜 TTI per-screen (Tier 2) — só se cold start mostrar regressão
 7. ✅ Adicionar comparação de bundle ao `PROTOCOLS_G3_SMOKE_CHECKLIST.md`
 
