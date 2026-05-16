@@ -50,7 +50,7 @@ export default function MedicinesListScreen() {
     const q = normalize(query.trim())
     if (!q) return data
     return data.filter(
-      m => normalize(m.name).includes(q) || normalize(m.laboratory).includes(q)
+      m => normalize(m.name).includes(q) || normalize(m.active_ingredient).includes(q)
     )
   }, [data, query])
 

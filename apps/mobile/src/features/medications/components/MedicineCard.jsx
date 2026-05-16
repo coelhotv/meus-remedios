@@ -13,7 +13,7 @@ export default function MedicineCard({ medicine, onPress }) {
     type,
     dosage_per_pill,
     dosage_unit,
-    laboratory,
+    active_ingredient,
     protocols_count = 0,
   } = medicine ?? {}
 
@@ -56,9 +56,9 @@ export default function MedicineCard({ medicine, onPress }) {
         )}
       </View>
 
-      {laboratory ? (
+      {active_ingredient ? (
         <Text style={styles.meta} numberOfLines={1}>
-          {laboratory}
+          {active_ingredient}
         </Text>
       ) : null}
 
