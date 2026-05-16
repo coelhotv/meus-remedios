@@ -285,8 +285,8 @@ export default function MedicineDetailScreen() {
             </View>
             <Text style={styles.useLabel}>
               {protocols.length === 0
-                ? 'Sem tratamentos ativos'
-                : `${protocols.length} ${protocols.length === 1 ? 'tratamento ativo' : 'tratamentos ativos'}`}
+                ? 'Sem tratamentos associados'
+                : `${protocols.length} ${protocols.length === 1 ? 'tratamento associado' : 'tratamentos associados'}`}
             </Text>
             {protocolsSummary ? (
               <Text style={styles.useMeta} numberOfLines={1}>

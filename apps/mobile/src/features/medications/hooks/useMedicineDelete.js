@@ -31,7 +31,7 @@ export function useMedicineDelete(medicine) {
       activeProtocolsCount: activeProtocols.length,
       blocker: canDelete
         ? null
-        : `Existem ${activeProtocols.length} tratamento(s) ativo(s) usando este medicamento. Desative-os antes de remover.`,
+        : `Existem ${activeProtocols.length} tratamento(s) associado(s) a este medicamento. Remova-os antes de excluir.`,
       warnings: [],
     }
   }, [medicine])
