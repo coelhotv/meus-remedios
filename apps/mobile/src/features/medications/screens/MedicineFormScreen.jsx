@@ -92,25 +92,28 @@ export default function MedicineFormScreen() {
     [form]
   )
 
-  // Normaliza vírgula→ponto antes do submit (PT-BR digita 1,5 — Supabase/JS espera 1.5)
-  const normalizePayload = useCallback((values) => {
-    const dose = values.dosage_per_pill
-    if (dose === undefined || dose === null || dose === '') return values
-    if (typeof dose === 'string') {
-      return { ...values, dosage_per_pill: dose.replace(',', '.') }
-    }
-    return values
-  }, [])
+  // Normaliza vírgula→ponto em tempo real (PT-BR digita 1,5; JS/Postgres esperam 1.5).
+  // Aceita apenas dígitos + um separador decimal único.
+  const handleDoseChange = useCallback(
+    (_name, value) => {
+      const cleaned = String(value ?? '')
+        .replace(',', '.')
+        .replace(/[^\d.]/g, '')
+        // colapsa múltiplos pontos no primeiro
+        .replace(/^(\d*\.\d*).*$/, '$1')
+      form.handleChange('dosage_per_pill', cleaned)
+    },
+    [form]
+  )
 
   const handleSubmit = useCallback(async () => {
     if (!form.validate()) return
-    const payload = normalizePayload(form.values)
     if (isEditing) {
-      await update(medicine.id, payload, { goBack: true })
+      await update(medicine.id, form.values, { goBack: true })
     } else {
-      await create(payload, { goBack: true })
+      await create(form.values, { goBack: true })
     }
-  }, [form, isEditing, medicine, create, update, normalizePayload])
+  }, [form, isEditing, medicine, create, update])
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -159,6 +162,7 @@ export default function MedicineFormScreen() {
                 required
                 keyboardType="decimal-pad"
                 {...formProps(form, 'dosage_per_pill')}
+                onChange={handleDoseChange}
               />
             </View>
             <View style={styles.rowUnit}>
