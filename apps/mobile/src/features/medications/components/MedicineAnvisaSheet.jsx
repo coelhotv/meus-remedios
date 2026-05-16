@@ -14,8 +14,7 @@ import { selectionTap } from '@shared/utils/haptics'
 import { colors, spacing, borderRadius } from '@shared/styles/tokens'
 
 // Bottom sheet modal de busca na base ANVISA. Reutilizável em formulários
-// de criação/edição de medicamentos. Diferente do AnvisaSearchScreen
-// (fullscreen), este é overlay leve com altura máxima 85%.
+// de criação/edição de medicamentos. Overlay leve com altura máxima 85%.
 
 export function MedicineAnvisaSheet({ open, onClose, onSelect }) {
   // States

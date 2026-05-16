@@ -45,16 +45,6 @@ export default function MedicineDemoScreen({ navigation }) {
           <TouchableOpacity
             onPress={() => {
               lightTap()
-              navigation?.navigate(ROUTES.ANVISA_SEARCH)
-            }}
-            style={styles.buttonCard}
-          >
-            <Text style={styles.buttonText}>🔎 Busca ANVISA (browse)</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              lightTap()
               navigation?.navigate(ROUTES.TABS, {
                 screen: ROUTES.TREATMENTS,
                 params: { screen: ROUTES.MEDICINE_CREATE },

@@ -30,9 +30,6 @@ export const ROUTES = {
   NOTIFICATION_PREFERENCES: 'NotificationPreferences',
   NOTIFICATION_INBOX: 'NotificationInbox',
 
-  // ANVISA search (Sprint P.2)
-  ANVISA_SEARCH: 'AnvisaSearch',
-
   // Sub-rotas de Medicamentos (Fase 1)
   MEDICINES_LIST: 'MedicinesList',
   MEDICINE_CREATE: 'MedicineCreate',
