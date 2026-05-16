@@ -1,12 +1,12 @@
 import { useState, useCallback, useMemo } from 'react'
 import { ScrollView, View, Text, Pressable, StyleSheet, RefreshControl, LayoutAnimation, Platform, UIManager } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { Pill, ChevronRight } from 'lucide-react-native'
+import { Pill, ChevronRight, Plus } from 'lucide-react-native'
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
 import ErrorState from '@shared/components/states/ErrorState'
-import EmptyState from '@shared/components/states/EmptyState'
 import TreatmentCard from '@treatments/components/TreatmentCard'
+import TreatmentEmptyState from '@treatments/components/TreatmentEmptyState'
 import TreatmentPlanHeader from '@treatments/components/TreatmentPlanHeader'
 import { useTreatments } from '@treatments/hooks/useTreatments'
 import { colors, spacing, typography } from '@shared/styles/tokens'
@@ -29,6 +29,21 @@ export default function TreatmentsScreen() {
   const goToMedicines = useCallback(() => {
     lightTap()
     navigation.navigate(ROUTES.MEDICINES_LIST)
+  }, [navigation])
+
+  const goToCreate = useCallback(() => {
+    lightTap()
+    navigation.navigate(ROUTES.PROTOCOL_FORM)
+  }, [navigation])
+
+  const openProtocolDetail = useCallback((id) => {
+    lightTap()
+    navigation.navigate(ROUTES.PROTOCOL_DETAIL, { id })
+  }, [navigation])
+
+  const goToCreateInGroup = useCallback((groupId) => {
+    lightTap()
+    navigation.navigate(ROUTES.PROTOCOL_FORM, { treatment_plan_id: groupId })
   }, [navigation])
 
   // Heurística de Complexidade Adaptativa (Wave 10A)
@@ -105,17 +120,15 @@ export default function TreatmentsScreen() {
         )}
 
         {isEmpty ? (
-          <EmptyState 
-            title="Nenhum tratamento ativo"
-            message={'Sem tratamentos ativos.\nAdicione tratamentos na versão web.'}
-          />
+          <TreatmentEmptyState onCreatePress={goToCreate} />
         ) : !isComplex ? (
           /* MODO SIMPLE: Dona Maria (Lista direta sem accordions) */
           <View style={styles.simpleList}>
             {flatData.map(protocol => (
-              <TreatmentCard 
-                key={protocol.id} 
-                treatment={protocol} 
+              <TreatmentCard
+                key={protocol.id}
+                treatment={protocol}
+                onPress={() => openProtocolDetail(protocol.id)}
               />
             ))}
           </View>
@@ -123,10 +136,10 @@ export default function TreatmentsScreen() {
           /* MODO COMPLEX: Carlos (Agrupado por planos/classes) */
           groups.map(group => {
             const isExpanded = expandedGroups[group.id] !== false
-            
+
             return (
               <View key={group.id} style={styles.groupContainer}>
-                <TreatmentPlanHeader 
+                <TreatmentPlanHeader
                   title={group.title}
                   emoji={group.emoji}
                   color={group.color}
@@ -134,15 +147,28 @@ export default function TreatmentsScreen() {
                   onToggle={() => toggleGroup(group.id)}
                   count={group.protocols.length}
                 />
-                
+
                 {isExpanded && (
                   <View style={styles.protocolsList}>
                     {group.protocols.map(protocol => (
-                      <TreatmentCard 
-                        key={protocol.id} 
-                        treatment={protocol} 
+                      <TreatmentCard
+                        key={protocol.id}
+                        treatment={protocol}
+                        onPress={() => openProtocolDetail(protocol.id)}
                       />
                     ))}
+                    <Pressable
+                      onPress={() => goToCreateInGroup(group.id)}
+                      style={({ pressed }) => [
+                        styles.addToGroup,
+                        pressed && styles.addToGroupPressed,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Adicionar tratamento ao grupo ${group.title}`}
+                    >
+                      <Plus size={16} color={colors.primary[700]} />
+                      <Text style={styles.addToGroupText}>Adicionar tratamento ao grupo</Text>
+                    </Pressable>
                   </View>
                 )}
               </View>
@@ -168,6 +194,17 @@ export default function TreatmentsScreen() {
           </Pressable>
         )}
       </ScrollView>
+
+      {!isEmpty && (
+        <Pressable
+          onPress={goToCreate}
+          style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+          accessibilityRole="button"
+          accessibilityLabel="Criar novo tratamento"
+        >
+          <Plus size={28} color={colors.text.inverse} />
+        </Pressable>
+      )}
     </ScreenContainer>
   )
 }
@@ -224,5 +261,45 @@ const styles = StyleSheet.create({
   medicinesLinkFooter: {
     marginTop: spacing[6],
     marginBottom: spacing[2],
+  },
+  addToGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing[1],
+    marginTop: spacing[2],
+    marginHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    borderTopWidth: 1,
+    borderTopColor: colors.primary[100],
+    borderStyle: 'dashed',
+  },
+  addToGroupPressed: {
+    opacity: 0.6,
+  },
+  addToGroupText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary[700],
+    fontFamily: typography.fontFamily.bold,
+  },
+  fab: {
+    position: 'absolute',
+    right: spacing[5],
+    bottom: spacing[6],
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary[600],
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  fabPressed: {
+    opacity: 0.85,
   },
 })

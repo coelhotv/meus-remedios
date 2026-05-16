@@ -38,6 +38,6 @@ describe('TreatmentsScreen', () => {
   it('renders empty state when no treatments', () => {
     useTreatments.mockReturnValue({ loading: false, data: [] });
     const { getByText } = render(<TreatmentsScreen />);
-    expect(getByText(/Nenhum tratamento ativo/i)).toBeTruthy();
+    expect(getByText(/Comece seu primeiro tratamento/i)).toBeTruthy();
   });
 });
