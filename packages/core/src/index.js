@@ -19,5 +19,8 @@ export * from './schemas/index.js'
 // Re-exporte de utils (serao populados em 2.3)
 export * from './utils/index.js'
 
+// Re-exporte de repositories (Fase 1 G2 — factory CRUD canônico)
+export * from './repositories/index.js'
+
 // Re-exporte de protocols-utils (opcional, auditado em 2.4)
 // export * from './protocols-utils/index.js'
