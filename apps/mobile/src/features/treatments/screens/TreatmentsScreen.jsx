@@ -150,7 +150,7 @@ export default function TreatmentsScreen() {
           })
         )}
 
-        {/* Link Medicamentos no rodapé quando há tratamentos — discrição na gestão diária. */}
+        {/* Link Medicamentos no rodapé quando há tratamentos — mesmo estilo do topo, só posição diferente. */}
         {!isEmpty && (
           <Pressable
             onPress={goToMedicines}
@@ -162,9 +162,9 @@ export default function TreatmentsScreen() {
             accessibilityRole="button"
             accessibilityLabel="Medicamentos"
           >
-            <Pill size={16} color={colors.text.muted} />
-            <Text style={styles.medicinesLinkFooterText}>Medicamentos</Text>
-            <ChevronRight size={16} color={colors.text.muted} />
+            <Pill size={18} color={colors.primary[700]} />
+            <Text style={styles.medicinesLinkText}>Medicamentos</Text>
+            <ChevronRight size={18} color={colors.primary[700]} />
           </Pressable>
         )}
       </ScrollView>
@@ -224,11 +224,5 @@ const styles = StyleSheet.create({
   medicinesLinkFooter: {
     marginTop: spacing[6],
     marginBottom: spacing[2],
-    justifyContent: 'center',
-  },
-  medicinesLinkFooterText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.text.muted,
   },
 })
