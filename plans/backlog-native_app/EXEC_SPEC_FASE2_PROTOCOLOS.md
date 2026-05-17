@@ -604,12 +604,12 @@ Cobertura mínima:
 
 ## 11. Critérios para encerramento da Fase 2
 
-- [x] G1, G2, G3 todos passaram (humano)
-- [x] PR final mãe→main mergeada (humano)
-- [x] DEVFLOW C5 executado: R-NNN, AP-NNN, ADR-NNN, journal entry, state.json bump
-- [x] Spec atualizada com lições da Fase 2 (capture-as-you-go)
-- [x] Smoke checklist completo (`PROTOCOLS_G3_SMOKE_CHECKLIST.md` 100%)
-- [x] Distill trigger se `journal_entries >= 15`
+- [ ] G1, G2, G3 todos passaram (humano)
+- [ ] PR final mãe→main mergeada (humano)
+- [ ] DEVFLOW C5 executado: R-NNN, AP-NNN, ADR-NNN, journal entry, state.json bump
+- [ ] Spec atualizada com lições da Fase 2 (capture-as-you-go)
+- [ ] Smoke checklist completo (`PROTOCOLS_G3_SMOKE_CHECKLIST.md` 100%)
+- [ ] Distill trigger se `journal_entries >= 15`
 
 ---
 
