@@ -5,7 +5,7 @@
 // Delete sheet com warning soft + stats chega em Sprint T2.2 (T2.11/T2.12).
 
 import { useCallback, useMemo, useState } from 'react'
-import { ScrollView, View, Text, Pressable, StyleSheet, Alert } from 'react-native'
+import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import {
   ArrowLeft,
@@ -30,6 +30,7 @@ import LoadingState from '@shared/components/states/LoadingState'
 import ErrorState from '@shared/components/states/ErrorState'
 import { useProtocol } from '@treatments/hooks/useProtocols'
 import { protocolService } from '@treatments/services/protocolService'
+import ProtocolDeleteSheet from '@treatments/components/ProtocolDeleteSheet'
 import { useToast } from '@shared/components/feedback/Toast'
 import { lightTap, selectionTap, successHaptic } from '@shared/utils/haptics'
 import { colors, spacing, typography } from '@shared/styles/tokens'
@@ -59,6 +60,7 @@ export default function ProtocolDetailScreen() {
   const { data: protocol, loading, error, refresh } = useProtocol(id)
   const toast = useToast?.()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   // Memos
   const frequencyLabel = useMemo(
@@ -100,33 +102,31 @@ export default function ProtocolDetailScreen() {
   }, [navigation, protocol])
 
   const onDelete = useCallback(() => {
-    // Stub Sprint T2.1 — ProtocolDeleteSheet (T2.11) implementa warning soft + stats.
     if (isDeleting) return
-    Alert.alert(
-      'Excluir tratamento?',
-      'As doses registradas continuam no histórico — apenas o agendamento futuro será removido.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            setIsDeleting(true)
-            try {
-              await protocolService.delete(id)
-              successHaptic()
-              toast?.show?.('Tratamento excluído', { type: 'success' })
-              navigation.goBack()
-            } catch (err) {
-              if (__DEV__) console.error('[ProtocolDetail.delete]', err)
-              toast?.show?.(err?.message ?? 'Erro ao excluir', { type: 'error' })
-              setIsDeleting(false)
-            }
-          },
-        },
-      ]
-    )
+    lightTap()
+    setDeleteOpen(true)
+  }, [isDeleting])
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (isDeleting) return
+    setIsDeleting(true)
+    try {
+      await protocolService.delete(id)
+      successHaptic()
+      toast?.show?.('Tratamento excluído', { type: 'success' })
+      setDeleteOpen(false)
+      navigation.goBack()
+    } catch (err) {
+      if (__DEV__) console.error('[ProtocolDetail.delete]', err)
+      toast?.show?.(err?.message ?? 'Erro ao excluir', { type: 'error' })
+      setIsDeleting(false)
+    }
   }, [id, isDeleting, navigation, toast])
+
+  const handleCloseDelete = useCallback(() => {
+    if (isDeleting) return
+    setDeleteOpen(false)
+  }, [isDeleting])
 
   if (loading && !protocol) {
     return (
@@ -290,6 +290,14 @@ export default function ProtocolDetailScreen() {
           </Text>
         </Pressable>
       </ScrollView>
+
+      <ProtocolDeleteSheet
+        open={deleteOpen}
+        onClose={handleCloseDelete}
+        onConfirm={handleConfirmDelete}
+        protocolId={id}
+        isDeleting={isDeleting}
+      />
     </ScreenContainer>
   )
 }
