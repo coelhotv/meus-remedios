@@ -214,9 +214,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[10],
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    marginBottom: 8,
+    paddingHorizontal: spacing[5],
+    paddingVertical: spacing[4],
+    marginBottom: spacing[2],
   },
   title: {
     fontSize: 28,
@@ -228,13 +228,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: colors.text.secondary,
-    marginTop: 4,
+    marginTop: spacing[1],
     fontFamily: typography.fontFamily.medium || 'System',
   },
   groupContainer: {
     // marginBottom maior que o gap interno: o link "+ Adicionar ao grupo"
     // pertence ao grupo atual; separa visualmente do próximo header.
-    marginBottom: spacing[6],
+    marginBottom: spacing[4],
   },
   protocolsList: {
     marginTop: spacing[1],
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[2],
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing[5],
     paddingVertical: spacing[2],
     marginBottom: spacing[3],
   },
@@ -265,18 +265,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing[2],
   },
   addToGroup: {
-    // RN não suporta borderStyle dashed/dotted (warning ruidoso ao animar
-    // expand/collapse). Usamos solid suave em primary[100] para indicar
-    // que é um link de ação dentro do grupo, sem ruído visual.
+    // DESIGN-SYSTEM §2 No-Line Rule: sem borda 1px. Boundary via shift
+    // de background — chip soft primary[50] com cantos arredondados.
+    // RN também não suporta borderStyle dashed/dotted (AP-163).
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing[1],
-    marginTop: spacing[2],
+    marginTop: spacing[3],
     marginHorizontal: spacing[4],
     paddingVertical: spacing[3],
-    borderTopWidth: 1,
-    borderTopColor: colors.primary[100],
+    paddingHorizontal: spacing[4],
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary[50],
   },
   addToGroupPressed: {
     opacity: 0.6,
