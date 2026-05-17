@@ -43,7 +43,10 @@ export function useProtocolFormSubmit({ editId, form, planField, mutation, show,
     if (submitting) return
     const currentDose = coerceDose(form)
 
-    const ok = form.validate()
+    // Override em validate evita race com handleChange assíncrono que coerceDose
+    // dispara — validate lê state da frame anterior; passamos o valor já coercido
+    // explicitamente pra schema parse.
+    const ok = form.validate({ dosage_per_intake: currentDose })
     if (!ok) {
       show('Verifique os campos destacados', { variant: 'error' })
       onValidateFail?.()
