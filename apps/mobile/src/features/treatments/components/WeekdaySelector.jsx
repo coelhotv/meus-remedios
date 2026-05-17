@@ -62,11 +62,12 @@ export default function WeekdaySelector({ value = [], onChange, error }) {
 
 const styles = StyleSheet.create({
   row: {
+    // Sem paddingHorizontal próprio — primitivo atômico delega ao container pai
+    // (FormSection / ProtocolFormScreen). space-between distribui os 7 botões
+    // dentro da largura disponível.
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing[5],
-    gap: spacing[2],
   },
   button: {
     width: 40,
@@ -99,6 +100,5 @@ const styles = StyleSheet.create({
     color: colors.status.error,
     fontSize: 12,
     marginTop: spacing[2],
-    paddingHorizontal: spacing[5],
   },
 })
