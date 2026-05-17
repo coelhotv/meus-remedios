@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { ArrowLeft } from 'lucide-react-native'
 import {
   protocolCreateSchema,
@@ -85,6 +85,9 @@ export default function ProtocolFormScreen() {
   // Sidecar state — UI-only (não vai pro schema)
   const [medicine, setMedicine] = useState(null) // objeto completo do medicamento selecionado
   const [sheetOpen, setSheetOpen] = useState(false)
+  // Flag para reabrir o sheet ao voltar de MedicineFormScreen (UX: foco continua
+  // no contexto de selecionar medicamento; sheet recarrega lista e mostra novo).
+  const [pendingReopenSheet, setPendingReopenSheet] = useState(false)
   const [plans, setPlans] = useState([])
   const [planField, setPlanField] = useState(() => ({
     mode: 'select',
@@ -109,6 +112,16 @@ export default function ProtocolFormScreen() {
   const endDateAsDate = useMemo(
     () => (form.values.end_date ? parseLocalDate(form.values.end_date) : null),
     [form.values.end_date]
+  )
+
+  // Effects — reabrir sheet ao retornar de MedicineFormScreen
+  useFocusEffect(
+    useCallback(() => {
+      if (pendingReopenSheet) {
+        setPendingReopenSheet(false)
+        setSheetOpen(true)
+      }
+    }, [pendingReopenSheet])
   )
 
   // Effects — carregar planos terapêuticos para o seletor
@@ -149,6 +162,7 @@ export default function ProtocolFormScreen() {
   const handleCloseSheet = useCallback(() => setSheetOpen(false), [])
 
   const handleCreateNewMedicine = useCallback(() => {
+    setPendingReopenSheet(true)
     navigation.navigate(ROUTES.MEDICINE_CREATE)
   }, [navigation])
 

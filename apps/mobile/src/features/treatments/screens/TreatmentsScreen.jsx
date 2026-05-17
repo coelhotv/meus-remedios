@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { ScrollView, View, Text, Pressable, StyleSheet, RefreshControl, LayoutAnimation, Platform, UIManager } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { Pill, ChevronRight, Plus } from 'lucide-react-native'
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import LoadingState from '@shared/components/states/LoadingState'
@@ -53,6 +53,14 @@ export default function TreatmentsScreen() {
     const flat = groups.flatMap(g => g.protocols)
     return { isComplex: total > 3, flatData: flat }
   }, [groups])
+
+  // Refresh ao ganhar foco: captura tratamentos/planos criados em ProtocolFormScreen
+  // (useTreatments cache key difere de @dosiq/protocols-snapshot invalidado pela mutation).
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [refresh])
+  )
 
   const toggleGroup = useCallback((groupId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)

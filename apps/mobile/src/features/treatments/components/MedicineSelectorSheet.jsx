@@ -5,7 +5,7 @@
 // Tap-and-close: tap no item → callback onSelect(medicine) + close.
 // Footer "+ Cadastrar novo medicamento" → callback onCreateNew (parent navega).
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -37,7 +37,7 @@ export default function MedicineSelectorSheet({
 }) {
   // States (R-010 — States → Memos → Effects → Handlers)
   const [query, setQuery] = useState('')
-  const { data, loading, error } = useMedicines()
+  const { data, loading, error, refresh } = useMedicines()
 
   // Memos
   const list = useMemo(() => Array.isArray(data) ? data : [], [data])
@@ -67,6 +67,11 @@ export default function MedicineSelectorSheet({
     if (trimmed) return `${filtered.length} de ${total} medicamentos`
     return `Biblioteca · ${total} ${total === 1 ? 'medicamento' : 'medicamentos'}`
   }, [loading, error, list.length, filtered.length, trimmed])
+
+  // Effects — refresh biblioteca toda vez que sheet abre (captura med recém-criado)
+  useEffect(() => {
+    if (open) refresh?.()
+  }, [open, refresh])
 
   // Handlers
   function handleClose() {

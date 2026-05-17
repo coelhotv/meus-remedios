@@ -8,6 +8,7 @@ jest.mock('@shared/components/ui/ScreenContainer', () => ({ children }) => <>{ch
 jest.mock('@dashboard/components/AdherenceRing', () => 'AdherenceRing');
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn() }),
+  useFocusEffect: () => {},
 }));
 jest.mock('lucide-react-native', () => new Proxy({}, { get: () => () => null }));
 
