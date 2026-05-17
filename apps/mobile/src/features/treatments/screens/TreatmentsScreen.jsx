@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   groupContainer: {
     // marginBottom maior que o gap interno: o link "+ Adicionar ao grupo"
     // pertence ao grupo atual; separa visualmente do próximo header.
-    marginBottom: spacing[4],
+    marginBottom: spacing[2],
   },
   protocolsList: {
     marginTop: spacing[1],
