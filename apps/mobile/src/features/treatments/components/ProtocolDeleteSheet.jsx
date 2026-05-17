@@ -62,11 +62,10 @@ export default function ProtocolDeleteSheet({
           </View>
 
           <Text style={styles.title}>Excluir este tratamento?</Text>
-{/*           <Text style={styles.body}>
-            As doses registradas continuam no histórico — apenas o agendamento futuro
-            será removido.
+           <Text style={styles.body}>
+            Essa operação não pode ser desfeita. Reflita antes de confirmar.
           </Text>
- */}
+
           {/* Seção HISTÓRICO RECENTE */}
           <Text style={styles.eyebrow}>HISTÓRICO RECENTE</Text>
           <View style={styles.statsCard}>
