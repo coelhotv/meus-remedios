@@ -1,18 +1,13 @@
-import { getTodayLocal, isProtocolActiveOnDate } from '@dosiq/core'
+// isProtocolInPeriod (period-only) em vez de isProtocolActiveOnDate (strict
+// adherence-aware). Listagem agrupada inclui quando_necessário, semanal, etc.
+import { getTodayLocal, isProtocolInPeriod } from '@dosiq/core'
 
 export function groupTreatmentsByPlanOrClass(data) {
   if (!data) return null
   const today = getTodayLocal()
 
   const validProtocols = data
-    .filter(p => {
-      const active = isProtocolActiveOnDate(p, today)
-      if (__DEV__ && !active) {
-        // eslint-disable-next-line no-console
-        console.log(`[transformer] DROPPED ${p.name}: today=${today} start=${p.start_date} end=${p.end_date}`)
-      }
-      return active
-    })
+    .filter(p => isProtocolInPeriod(p, today))
     .sort((a, b) => {
       const timeA = (a.time_schedule && a.time_schedule[0]) || '99:99'
       const timeB = (b.time_schedule && b.time_schedule[0]) || '99:99'
