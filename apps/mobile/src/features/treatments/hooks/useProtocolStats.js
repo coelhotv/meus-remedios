@@ -34,7 +34,7 @@ export function useProtocolStats(protocolId) {
       const [protocol, logsResult] = await Promise.all([
         protocolService.getById(protocolId),
         supabase
-          .from('logs')
+          .from('medicine_logs')
           .select('*', { count: 'exact', head: true })
           .eq('protocol_id', protocolId)
           .gte('taken_at', sevenDaysAgo.toISOString())
