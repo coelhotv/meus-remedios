@@ -36,6 +36,19 @@ export default function MedicineDemoScreen({ navigation }) {
           >
             <Text style={styles.buttonText}>🧪 WeekdaySelector + MedicineSelectorRow + TimeSchedulePicker</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              lightTap()
+              // ProtocolForm vive em TreatmentsStack → Tab Tratamentos
+              navigation?.navigate(ROUTES.TABS, {
+                screen: ROUTES.TREATMENTS,
+                params: { screen: ROUTES.PROTOCOL_FORM },
+              })
+            }}
+            style={styles.buttonCard}
+          >
+            <Text style={styles.buttonText}>📝 ProtocolFormScreen (CREATE) — composição completa T2.6</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Seção 1 — Telas Sprint M1.1 */}

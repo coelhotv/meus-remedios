@@ -27,6 +27,11 @@ export {
   getLastDayOfMonth,
   parseLocalDatetime,
   parseTimestamp,
+  // Verifica APENAS validade de período (start_date/end_date). NÃO checa
+  // frequency/weekdays — use isProtocolActiveOnDate (adherenceLogic) para
+  // contexto de schedule/adesão. Exportado com nome explícito para
+  // diferenciar do strict adherence-aware.
+  isProtocolActiveOnDate as isProtocolInPeriod,
 } from './dateUtils.js'
 
 // Adherence logic and calculations

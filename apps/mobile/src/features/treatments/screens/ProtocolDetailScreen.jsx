@@ -223,7 +223,7 @@ export default function ProtocolDetailScreen() {
 
         {/* Dosagem & Frequência */}
         <SectionCard title="DOSAGEM & FREQUÊNCIA">
-          <DetailRow label="Dose por tomada" value={formatDoseUnit(protocol.dosage_per_intake, medicine?.dosage_unit)} />
+          <DetailRow label="Dose por tomada" value={formatDoseUnit(protocol.dosage_per_intake)} />
           <DetailRow label="Frequência" value={frequencyLabel} />
           {protocol.time_schedule?.length > 0 ? (
             <View style={styles.scheduleBlock}>
@@ -239,7 +239,7 @@ export default function ProtocolDetailScreen() {
             </View>
           ) : null}
           {dailyIntakeTotal !== null ? (
-            <DetailRow label="Consumo diário" value={formatDoseUnit(dailyIntakeTotal, medicine?.dosage_unit)} />
+            <DetailRow label="Consumo diário" value={formatDoseUnit(dailyIntakeTotal)} />
           ) : null}
         </SectionCard>
 

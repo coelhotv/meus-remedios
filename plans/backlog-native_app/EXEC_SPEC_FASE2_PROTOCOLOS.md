@@ -70,10 +70,27 @@ A Fase 2 herda diretamente:
 | AP-157 | NFD normalization pré-computada via useMemo (não a cada keystroke) |
 | AP-159 | Delete pre-check FK — **NÃO aplicável a tratamento** (ver §3.7) |
 | AP-160 | Opus em fixes incrementais viola R-010 — usar template comment + ler bloco antes de editar |
+| AP-163 | `borderStyle: 'dashed'/'dotted'` em RN dispara warning (RN só aceita `'solid'`) — usar background shift (No-Line Rule do DESIGN-SYSTEM §2) para separação visual |
 | ADR-036 | JS stack (`createStackNavigator`) já está aplicado em `TreatmentsStack`; não migrar |
 | ADR-043 | Hardening G1→G2→G3 — parity test obrigatório em G2 |
 | ADR-044 | Distribuição cavecrew Opus/Sonnet/Haiku + gate de confiança |
 | ADR-045 | Factory location = `@dosiq/core/repositories/` |
+
+### Cuidados aprendidos em T2.1 / T2.2 (smoke PO 2026-05-17)
+
+| Pattern | Aplicação obrigatória |
+|---------|----------------------|
+| **Listagem usa `isProtocolInPeriod`** (period-only, dateUtils) — NÃO `isProtocolActiveOnDate` (strict, adherenceLogic) | `treatmentsService.getActiveTreatments` + `_treatmentsTransformer`. A versão strict filtra por frequency/weekdays e exclui `quando_necessário`, `personalizado`, `semanal` sem weekdays. Listagem deve mostrar TODOS no período. Adherence/dashboard/stock continuam usando a strict (intent correto). |
+| **`isProtocolActiveOnDate` ambíguo** (2 funções com mesmo nome) | Barrel `@dosiq/core` re-exporta a strict como `isProtocolActiveOnDate` e a period-only como `isProtocolInPeriod`. Verificar import correto antes de spawn. |
+| **`useFocusEffect(refresh)` em tela de listagem** | TreatmentsScreen + qualquer screen que dependa de dados mutados em outras telas. Cache key invalidation NÃO é suficiente — hook montado não escuta invalidation. |
+| **Refresh on open em bottom sheets com lista** | MedicineSelectorSheet `useEffect([open, refresh])`. Captura entidades criadas em fluxos paralelos (ex: "Cadastrar novo medicamento" dentro do sheet). |
+| **Reabrir sheet pós retorno de tela de create** | Flag `pendingReopenSheet` + `useFocusEffect`. Mantém foco no contexto de seleção; user vê nova entidade na lista. |
+| **Defensive auth destructuring** | `const { data, error } = await supabase.auth.getUser(); const user = data?.user` — NUNCA `const { data: { user }, error }` (crasha se `data` null em falha crítica de rede). Aplicar em todos services mobile. |
+| **Padronização "unidade(s)" para dose** | `pluralizeDoseUnit(qty)` e `formatDoseUnit(qty)` SEMPRE retornam "unidade(s)". Mapping por `dosage_unit` (mg→comprimido, ml→ml, gotas→gota, UI→UI) era confuso semanticamente (ex: Apidra 2ml dose=1 mostrava "1 ml" em vez de "1 unidade de 2ml"). Apresentação fica visível separadamente no DosagePill do hero. |
+| **Decimais em input numérico** | `handleDoseChange` deve preservar estados intermediários como string (`"0,"`, `"."`, vazio). Conversão para number só no submit antes do `form.validate()`. Eager parse a cada keystroke perde a vírgula e bloqueia decimais. |
+| **borderStyle dashed proibido (AP-163)** | Tanto pelo RN (warning ruidoso em LayoutAnimation) quanto pelo DESIGN-SYSTEM §2 No-Line Rule. Usar background shift (primary[50] chip rounded) em vez de borda. |
+| **Barrel `packages/core/src/schemas/index.js`** | DEVE re-exportar `WEEKDAYS`, `WEEKDAY_LABELS`, `FREQUENCIES`, `FREQUENCY_LABELS` (faltavam até 2026-05-16 — primary[500] crash em WeekdaySelector). Sempre verificar barrel após adicionar export. |
+| **Padding lateral em primitivos atômicos** | Componentes (WeekdaySelector, MedicineSelectorRow, TimeSchedulePicker) NÃO devem ter `paddingHorizontal` próprio — delegar ao container pai (FormSection / Section da tela). Caso contrário, padding cumulativo estoura largura em iPhone (sábado vazando). |
 
 ---
 
@@ -122,11 +139,13 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 **Estado**: usuário com tratamentos. JÁ implementado em Fase 1 com Heurística de Complexidade Adaptativa (SIMPLE até 3 protocolos; COMPLEX agrupado por plano com accordions). **Manter implementação atual** com ajustes:
 
 **Adições neste sprint**:
-- FAB `"+"` (vamos reaproveitar o FAB Plus, só alterando o destino do click) — bottom-right, sticky
-- Em cada grupo expandido (modo COMPLEX): footer link `"+ Adicionar tratamento ao grupo"` (color primary, dashed border-top opcional)
+- FAB `"+"` bottom-right sticky — **paridade exata com FAB de `MedicinesListScreen` Fase 1**: `backgroundColor: colors.primary[500]` (verde teal — brand), `width/height: 56`, `borderRadius: borderRadius.full`, `shadows.md` do tokens. NÃO usar primary[600] (azul) — bug detectado e corrigido em smoke 2026-05-17.
+- Em cada grupo expandido (modo COMPLEX): footer link `"+ Adicionar tratamento ao grupo"` — **chip soft `colors.primary[50]` com `borderRadius: borderRadius.md` e padding interno**. SEM borderStyle dashed (AP-163 RN + DESIGN-SYSTEM §2 No-Line Rule). Separação visual do próximo grupo via `groupContainer.marginBottom: spacing[4]`.
 - Tap em qualquer card → `navigation.navigate(ROUTES.PROTOCOL_DETAIL, { id })`
 - Tap FAB → `navigation.navigate(ROUTES.PROTOCOL_FORM)` (create mode)
+- Tap "+ Adicionar tratamento ao grupo" → `navigation.navigate(ROUTES.PROTOCOL_FORM, { treatment_plan_id: groupId })` (pré-seleciona plano via `route.params`)
 - Link "Medicamentos" no rodapé quando há tratamentos (JÁ implementado em Fase 1)
+- **`useFocusEffect(refresh)` obrigatório** — captura tratamentos/planos criados em ProtocolFormScreen (`useTreatments` cache key difere de `@dosiq/protocols-snapshot` invalidado pela mutation).
 
 **Card de tratamento** (mock):
 - Ícone pill colorido (primary[500]) + ícone bg pill (primary[50])
@@ -141,11 +160,11 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 ### 3.3 — ProtocolDetailScreen — `mock-tratamentos-detalhes.png`
 
 **Layout (top → bottom)**:
-1. **AppBar**: `← SeloZok 50mg` (título = nome do medicamento + dosagem) | trailing icons: Edit + More (kebab menu para opções como pausar, futuro)
+1. **AppBar**: `← SeloZok manhã/noite` (título = nome do tratamento) | trailing icons: Edit + More (kebab menu para opções como pausar, futuro)
 2. **Hero card — Medicamento associado (clicável)**:
    - Background: `primaryBg` (verde claro)
    - Layout: ícone dinâmico **Pill** ou **PillBottle** 52px branco baseado em `medicine.type` (`medicamento` → Pill, `suplemento` → PillBottle) — mesmo pattern aplicado em `MedicineCard` da Fase 1
-   - Eyebrow: `"Medicamento"` (caption color primary)
+   - Eyebrow: `"Medicamento" ou "Suplemento"` (caption color primary)
    - Title: `medicine.name` + `DosagePill medicine.dosage_per_pill medicine.dosage_unit` inline (ex: `SeloZok` + `50mg`)
    - Subtitle: `medicine.active_ingredient` (caption inkMuted)
    - Trailing: chevron primary → `navigation.navigate(ROUTES.MEDICINE_DETAIL, { id: medicine_id })`
@@ -153,10 +172,10 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
    - **Requisito de dado**: `protocolService.getById` detailSelect DEVE incluir `medicine:medicines(*)` (não apenas `medicine_id`) — confirmar em §6
 3. **Card "Dosagem & Frequência"** (DosiqCard):
    - SectionLabel: `"DOSAGEM & FREQUÊNCIA"` (eyebrow inkSubtle)
-   - DetailRow `Dose por tomada`: `formatDoseUnit(dosage_per_intake, medicine.dosage_unit)` — ex: `"2 comprimidos"`, `"15 gotas"`, `"10 ml"`, `"4 UI"`
+   - DetailRow `Dose por tomada`: `formatDoseUnit(dosage_per_intake)` — sempre **"N unidade(s)"** independente de `medicine.dosage_unit`. Apresentação (`2ml`, `50mg`) já está no DosagePill do hero card acima. Mapping por dosage_unit foi descontinuado em 2026-05-17 (bug Apidra 2ml mostrava "1 ml" em vez de "1 unidade de 2ml").
    - DetailRow `Frequência`: `2x ao dia` (derivado de `time_schedule.length`)
    - Bloco `Horários`: label `"Horários"` + TimeChips lado a lado: `🕐 08:00` `🕐 20:00` (badge primarySoft)
-   - DetailRow `Consumo diário`: `formatDoseUnit(dosage_per_intake × time_schedule.length, medicine.dosage_unit)` — ex: `"4 comprimidos"`
+   - DetailRow `Consumo diário`: `formatDoseUnit(dosage_per_intake × time_schedule.length)` — ex: `"4 unidades"`
 4. **Card "Período"**:
    - DetailRow `Início`: `formatDatePtBR(start_date)` → `"12 mar 2026"` (DD MMM YYYY)
    - DetailRow `Término`: `formatEndDate(end_date)` → `"Uso contínuo"` se null/undefined, senão `formatDatePtBR(end_date)` (color inkMuted quando `"Uso contínuo"`)
@@ -188,7 +207,8 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
    - Tap → abre bottom sheet `MedicineSelectorSheet` (§3.5)
 2. **`INFORMAÇÕES BÁSICAS`**:
    - `FormInput name="name"` label `"Nome do tratamento"` required, placeholder `"Ex: SeloZok manhã/noite"`
-   - `FormInput name="dosage_per_intake"` label `"Dose por tomada"` required, placeholder `"0"`, **suffix dinâmico via `pluralizeDoseUnit(qty, medicine.dosage_unit)`** — ex: `"comprimidos"` / `"ml"` / `"gotas"` / `"UI"` baseado no medicamento selecionado. Antes de selecionar medicamento, suffix mostra `"unidades"` (genérico). `keyboardType="decimal-pad"` (vírgula→ponto normalize via R-232 ou handler local)
+   - `FormInput name="dosage_per_intake"` label `"Dose por tomada"` required, placeholder `"0"`, `keyboardType="decimal-pad"`. **helperText fixo**: `"Quantas unidades do medicamento por tomada (aceita decimais, ex: 0,5)"`. Sem suffix dinâmico baseado em medicine.dosage_unit (padronização em "unidade(s)" — ver §3.3).
+     - **Decimais (`0,5`)**: `handleDoseChange` DEVE preservar estados intermediários como STRING no form state (`"0,"`, `"."`, vazio). Conversão para number só acontece no `handleSubmit` antes do `form.validate()`. Eager parse a cada keystroke apaga a vírgula e bloqueia decimais (bug detectado em smoke 2026-05-17).
 3. **`FREQUÊNCIA`**:
    - `FormSelect name="frequency"` label `"Periodicidade"` required, options `[Diário, Dias alternados, Semanal, Personalizado, Quando necessário]` (de `FREQUENCIES` enum)
    - **Condicional**: se `frequency ∈ {semanal, personalizado}` → mostrar `WeekdaySelector` abaixo
@@ -233,10 +253,15 @@ Bottom sheet 85% altura sobre `ProtocolFormScreen`. Análogo a `MedicineAnvisaSh
 
 **Comportamento**:
 - Filter de busca: NFD normalize pré-computado via useMemo (AP-157)
-- Confirmar seleção: dois patterns possíveis (decidir no spawn):
-  - **Tap-and-close** (preferido): tap no item já fecha sheet e seta `medicine_id` no form
-  - **Confirm button** (alternativa): seleciona e usa "Confirmar" no footer
-- Se usuário toca "+ Cadastrar novo": fechar sheet → navegar para `MEDICINE_CREATE` → após criar (via useFocusEffect), abrir sheet de novo com novo medicamento pré-selecionado (pattern complexo — pode ficar para v2)
+- **Tap-and-close** (adotado): tap no item já fecha sheet e seta `medicine_id` no form via `onSelect(medicine)` + `onClose()`
+- **Refresh on open obrigatório**: `useEffect([open, refresh])` no sheet força reload de `useMedicines()` toda vez que `open` transitionar para `true`. Captura medicamento recém-criado em fluxo paralelo.
+- Fluxo "Cadastrar novo medicamento":
+  1. Tap no footer dispara callback `onCreateNew()` no parent (ProtocolFormScreen)
+  2. Parent seta `pendingReopenSheet=true` ANTES de `navigation.navigate(MEDICINE_CREATE)`
+  3. User cria medicamento; MedicineFormScreen faz `goBack` ao concluir
+  4. Parent ganha foco — `useFocusEffect` detecta `pendingReopenSheet=true` → reabre sheet automaticamente + limpa flag
+  5. Sheet reabre, `useMedicines.refresh()` dispara (useEffect open transition) → novo medicamento aparece na lista
+  6. User seleciona manualmente (sem pre-select complexo — foco visual já está no contexto correto)
 
 ---
 
@@ -425,51 +450,39 @@ Mesma estrutura do create, com:
 - Customizar mensagens só quando regra dá info útil (R-232); deixar locale global cobrir genéricos
 - Refinements cross-campo: **NÃO** usar `schema.pick({field:true}).safeParse` (AP-156). Usar `validateField` do `useFormState` que parsea objeto completo e filtra issues por campo
 
-### Helpers de Apresentação (a criar em `@dosiq/core/utils/`)
+### Helpers de Apresentação (`@dosiq/core/utils/`)
 
-Centralizar formatação em `@dosiq/core` para reuso web↔mobile. Criar **antes** do spawn de telas que usam (sprint T2.1 task adicional, ou parte de T2.6):
+Centralizados em `@dosiq/core` para reuso web↔mobile. Já criados em PR-A T2.1 (mergeado).
 
 ```javascript
-// packages/core/src/utils/doseUnit.js — Fase 2
+// packages/core/src/utils/doseUnit.js — Fase 2 (padronizado 2026-05-17)
+//
+// dosage_per_intake = NÚMERO DE UNIDADES farmacêuticas do medicamento por
+// tomada (1 comprimido, 1 ampola, 1 gota). A apresentação (dosage_per_pill +
+// dosage_unit no medicamento) é a carga POR UNIDADE — exibida separadamente
+// no DosagePill do hero card.
+//
+// Padronização: SEMPRE "unidade(s)", independente de dosage_unit. Mapping
+// (mg→comprimido, ml→ml, gotas→gota) foi descontinuado por gerar bug
+// semântico (Apidra 2ml dose=1 → "1 ml" em vez de "1 unidade [de 2ml]").
 
-const UNIT_DISPLAY = {
-  mg: { singular: 'comprimido', plural: 'comprimidos' },
-  mcg: { singular: 'comprimido', plural: 'comprimidos' },
-  g: { singular: 'comprimido', plural: 'comprimidos' },
-  cp: { singular: 'comprimido', plural: 'comprimidos' },
-  ml: { singular: 'ml', plural: 'ml' },
-  gotas: { singular: 'gota', plural: 'gotas' },
-  ui: { singular: 'UI', plural: 'UI' },
-}
-const FALLBACK = { singular: 'unidade', plural: 'unidades' }
-
-// pluralizeDoseUnit(2, 'mg') → 'comprimidos'
-// pluralizeDoseUnit(1, 'gotas') → 'gota'
-// pluralizeDoseUnit(15, 'ml') → 'ml'
-// pluralizeDoseUnit(qty, undefined) → 'unidades' (fallback antes de selecionar medicamento)
-// Coerce explícito Number(qty) — valores podem vir como string de TextInput
-export function pluralizeDoseUnit(qty, dosageUnit) {
-  const u = UNIT_DISPLAY[dosageUnit] ?? FALLBACK
-  return Number(qty) === 1 ? u.singular : u.plural
+export function pluralizeDoseUnit(qty) {
+  return Number(qty) === 1 ? 'unidade' : 'unidades'
 }
 
-// formatDoseUnit(2, 'mg') → '2 comprimidos'
-// formatDoseUnit(1, 'gotas') → '1 gota'
-// formatDoseUnit(15.5, 'ml') → '15,5 ml'
-// NOTA: Hermes (mobile) default NÃO inclui ICU completo — toLocaleString('pt-BR')
-// cai em fallback US e mantém ponto. Helper manual replace('.', ',') é confiável
-// em ambos web (V8) e mobile (Hermes).
-export function formatDoseUnit(qty, dosageUnit) {
+// Hermes (mobile) sem ICU completo → replace('.', ',') manual em vez de
+// toLocaleString('pt-BR') (cairia em fallback US).
+export function formatDoseUnit(qty) {
   const display = String(qty).replace('.', ',')
-  return `${display} ${pluralizeDoseUnit(qty, dosageUnit)}`
+  return `${display} ${pluralizeDoseUnit(qty)}`
 }
 ```
 
 ```javascript
-// packages/core/src/utils/dateFormat.js — Fase 2 (extender se já existir)
+// packages/core/src/utils/dateFormat.js — Fase 2
 
 // formatDatePtBR('2026-03-12') → '12 mar 2026'
-export function formatDatePtBR(isoDate) { /* ... */ }
+export function formatDatePtBR(isoDate) { /* tabela manual de meses PT */ }
 
 // formatEndDate(null) → 'Uso contínuo'
 // formatEndDate('2026-12-31') → '31 dez 2026'
@@ -479,7 +492,30 @@ export function formatEndDate(isoDate) {
 }
 ```
 
-**Reuso obrigatório**: tanto detail (§3.3) quanto form (§3.4) usam `pluralizeDoseUnit` para suffix dinâmico baseado em `medicine.dosage_unit`. Web pode adotar os mesmos helpers no G3 (consistência cross-plataforma).
+**Reuso obrigatório**: tanto detail (§3.3) quanto form (§3.4 helperText) usam apenas o número (sem dosage_unit). Web pode adotar os mesmos helpers no G3.
+
+### Barrel exports críticos (`packages/core/src/schemas/index.js`)
+
+A partir de 2026-05-16, o barrel DEVE re-exportar (faltavam — bug crashou WeekdaySelector):
+
+```javascript
+export {
+  protocolSchema, protocolCreateSchema, ...,
+  FREQUENCIES, FREQUENCY_LABELS,
+  WEEKDAYS, WEEKDAY_LABELS,  // ← obrigatórios para WeekdaySelector + FormSelect frequency
+} from './protocolSchema.js'
+```
+
+### Função `isProtocolActiveOnDate` — DUAS variantes (cuidado)
+
+`@dosiq/core` exporta DUAS funções com semântica diferente — escolher a correta por contexto:
+
+| Função | De onde | Comportamento | Quando usar |
+|--------|---------|---------------|-------------|
+| `isProtocolActiveOnDate` | `adherenceLogic.js` (strict) | Checa period + frequency + weekdays. Retorna false para `quando_necessário`/`personalizado` SEMPRE. Para `semanal` exige `weekdays`. | Adherence: cálculo de doses esperadas hoje. Dashboard/calendar/stock. |
+| `isProtocolInPeriod` | `dateUtils.js` (period-only) | Checa apenas start_date/end_date | **Listagem** de tratamentos visíveis ao paciente. treatmentsService + _treatmentsTransformer. |
+
+Usar o nome errado oculta tratamentos não-diários da listagem (bug detectado e corrigido em 2026-05-17).
 
 ---
 
@@ -579,6 +615,15 @@ Cobertura mínima:
 
 ## 12. Histórico
 
+- **2026-05-17 (Sprint T2.2 PR-A + PR-B smoke PO)**: Spec atualizada com lições de implementação real (3 PRs mergeados: #561 PR-A T2.1, #563 PR-A T2.2, #562 T2.1 fan-out; #564 PR-B T2.2 aguardando review). Mudanças principais:
+  - §1 — adicionado AP-163 (borderStyle dashed/dotted RN proibido) + bloco "Cuidados aprendidos em T2.1/T2.2" com 11 patterns obrigatórios (focus refresh, sheet reopen, defensive auth destructure, padronização unidade(s), decimais intermediate string, padding lateral atomic components, etc.).
+  - §3.2 — FAB primary[500] verde teal (paridade Fase 1 — não primary[600] azul). Link "+ Adicionar tratamento ao grupo" usa chip primary[50] soft em vez de dashed border (No-Line Rule + AP-163). `useFocusEffect(refresh)` obrigatório.
+  - §3.3 — Dose por tomada/Consumo diário usam `formatDoseUnit(qty)` sem dosage_unit (padronizado em "unidade(s)").
+  - §3.4 — Dose input com `decimal-pad` aceita decimais via estado intermediate string (coerce no submit). helperText explica intent.
+  - §3.5 — MedicineSelectorSheet com refresh on open + flow completo "Cadastrar novo medicamento" (pendingReopenSheet flag + reabertura automática).
+  - §6 — Helpers reescritos (padronização "unidade(s)"). Barrel exports schemas/index.js explicitados. Documentação das DUAS `isProtocolActiveOnDate` (strict adherence vs period-only) com tabela de uso.
+  - PRs entregues: #561 helpers+protocolService, #562 hooks+screens+navigation+icons, #563 primitivos+useProtocolMutation/Delete/Stats+dev demo, #564 MedicineSelectorSheet+PlanSelectField+ProtocolFormScreen CREATE.
+  - Bugs corrigidos no smoke (8 ciclos cobertos pela spec atualizada): WEEKDAYS not exported, Android picker race condition, sábado vazando, dashed warning, focus refresh, sheet reopen, isProtocolActiveOnDate strict filtrando não-diários, Apidra 2ml semantic, decimais bloqueados.
 - **2026-05-16 (Spike Pre-Fase-2)**: Spec reescrita aplicando RETRO_FASE1 (18 gaps) + mocks Fase 2 aprovados pelo PO (8 PNG + 1173 LOC JSX referência) + ADR-045 (factory location). Mudanças principais:
   - G1: factory location consolidado em `@dosiq/core/repositories/` (descarta `shared-data/services/`)
   - G4: delete tratamento NÃO usa hard block — warning soft com histórico (mock confirma)
