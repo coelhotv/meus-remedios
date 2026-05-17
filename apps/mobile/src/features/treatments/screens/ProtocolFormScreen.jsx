@@ -21,7 +21,6 @@ import {
   getTodayLocal,
   parseLocalDate,
   formatLocalDate,
-  pluralizeDoseUnit,
 } from '@dosiq/core'
 import ScreenContainer from '@shared/components/ui/ScreenContainer'
 import FormInput from '@shared/components/form/FormInput'
@@ -100,10 +99,6 @@ export default function ProtocolFormScreen() {
 
   // Memos
   const showWeekdays = REQUIRES_WEEKDAYS.has(form.values.frequency)
-  const doseSuffix = useMemo(
-    () => pluralizeDoseUnit(form.values.dosage_per_intake || 0, medicine?.dosage_unit),
-    [form.values.dosage_per_intake, medicine]
-  )
 
   const startDateAsDate = useMemo(
     () => (form.values.start_date ? parseLocalDate(form.values.start_date) : null),
@@ -168,10 +163,24 @@ export default function ProtocolFormScreen() {
 
   const handleDoseChange = useCallback(
     (name, raw) => {
-      // Normaliza vírgula → ponto para Number parsing (Hermes-safe)
-      const normalized = String(raw ?? '').replace(',', '.')
-      const num = normalized === '' ? '' : Number(normalized)
-      form.handleChange(name, Number.isFinite(num) ? num : '')
+      // Aceita decimais "0,5" / "0.5" / vazio / intermediários "0," "0.".
+      // Estados intermediários (trailing ponto/vírgula OU só ponto/vírgula)
+      // mantidos como STRING para preservar a digitação do usuário — converter
+      // para Number agora apagaria a vírgula e bloquearia decimais.
+      // Schema Zod faz coerce no submit (z.number()).
+      const str = String(raw ?? '')
+      if (str === '') {
+        form.handleChange(name, '')
+        return
+      }
+      const normalized = str.replace(',', '.')
+      const isIntermediate = normalized === '.' || normalized.endsWith('.')
+      if (isIntermediate) {
+        form.handleChange(name, str)
+        return
+      }
+      const num = Number(normalized)
+      form.handleChange(name, Number.isFinite(num) ? num : str)
     },
     [form]
   )
@@ -200,6 +209,17 @@ export default function ProtocolFormScreen() {
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return
+    // Coerce dose string→number antes do validate. handleDoseChange mantém
+    // estados intermediários como string ("0,") pra preservar digitação;
+    // no submit garantimos number final que o Zod schema espera.
+    const rawDose = form.values.dosage_per_intake
+    if (typeof rawDose === 'string' && rawDose !== '') {
+      const normalized = rawDose.replace(',', '.')
+      const num = Number(normalized)
+      if (Number.isFinite(num)) {
+        form.handleChange('dosage_per_intake', num)
+      }
+    }
     // Validação Zod com refinements cross-campo (AP-156)
     const ok = form.validate()
     if (!ok) {
@@ -283,7 +303,7 @@ export default function ProtocolFormScreen() {
               onBlur={form.handleBlur}
               placeholder="0"
               keyboardType="decimal-pad"
-              helperText={`Unidade: ${doseSuffix}`}
+              helperText="Quantas unidades do medicamento por tomada (aceita decimais, ex: 0,5)"
               required
             />
           </Section>
