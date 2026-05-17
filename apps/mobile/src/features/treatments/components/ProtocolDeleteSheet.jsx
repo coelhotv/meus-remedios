@@ -63,7 +63,7 @@ export default function ProtocolDeleteSheet({
 
           <Text style={styles.title}>Excluir este tratamento?</Text>
            <Text style={styles.body}>
-            Essa operação não pode ser desfeita. Reflita antes de confirmar.
+            Essa operação não pode ser desfeita.
           </Text>
 
           {/* Seção HISTÓRICO RECENTE */}
