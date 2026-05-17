@@ -265,6 +265,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing[2],
   },
   addToGroup: {
+    // RN não suporta borderStyle dashed/dotted (warning ruidoso ao animar
+    // expand/collapse). Usamos solid suave em primary[100] para indicar
+    // que é um link de ação dentro do grupo, sem ruído visual.
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -274,7 +277,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[3],
     borderTopWidth: 1,
     borderTopColor: colors.primary[100],
-    borderStyle: 'dashed',
   },
   addToGroupPressed: {
     opacity: 0.6,
