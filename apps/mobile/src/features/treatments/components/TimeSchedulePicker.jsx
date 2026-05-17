@@ -53,22 +53,23 @@ export default function TimeSchedulePicker({
     setEditIndex(null)
   }, [])
 
-  const commitTime = useCallback(
-    (date) => {
+  // commitTimeAt recebe idx explicito — evita capturar editIndex via closure
+  // (no Android o picker imperativo dispara onChange ANTES do setState assíncrono
+  // re-renderizar; usar idx do closure direto é confiável em ambos os OS).
+  const commitTimeAt = useCallback(
+    (idx, date) => {
       const newTime = dateToString(date)
       const next = [...value]
-      if (editIndex === -1) {
-        // Add novo (evita duplicata)
+      if (idx === -1) {
         if (!next.includes(newTime)) next.push(newTime)
-      } else if (editIndex >= 0) {
-        next[editIndex] = newTime
+      } else if (idx >= 0) {
+        next[idx] = newTime
       }
-      // Ordena horários cronologicamente para UX previsível
       next.sort()
       onChange(next)
       selectionTap()
     },
-    [editIndex, value, onChange]
+    [value, onChange]
   )
 
   const openEditor = useCallback(
@@ -76,23 +77,24 @@ export default function TimeSchedulePicker({
       if (idx === -1 && !canAddMore) return
       lightTap()
       const seed = idx >= 0 ? stringToDate(value[idx]) : stringToDate('08:00')
-      setTempDate(seed)
-      setEditIndex(idx)
 
       if (Platform.OS === 'android') {
-        // Android usa picker imperativo nativo
+        // Android: picker imperativo nativo — commit inline via idx do closure
         DateTimePickerAndroid.open({
           value: seed,
           mode: 'time',
           is24Hour: true,
           onChange: (event, selectedDate) => {
-            if (event.type === 'set' && selectedDate) commitTime(selectedDate)
-            closePicker()
+            if (event.type === 'set' && selectedDate) commitTimeAt(idx, selectedDate)
           },
         })
+      } else {
+        // iOS: modal controlado por state (re-render acontece antes do OK)
+        setTempDate(seed)
+        setEditIndex(idx)
       }
     },
-    [value, canAddMore, commitTime, closePicker]
+    [value, canAddMore, commitTimeAt]
   )
 
   const removeAt = useCallback(
@@ -108,9 +110,9 @@ export default function TimeSchedulePicker({
   }, [])
 
   const onIosConfirm = useCallback(() => {
-    commitTime(tempDate)
+    if (editIndex !== null) commitTimeAt(editIndex, tempDate)
     closePicker()
-  }, [commitTime, closePicker, tempDate])
+  }, [commitTimeAt, closePicker, editIndex, tempDate])
 
   return (
     <View>
