@@ -272,7 +272,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing[1],
-    marginTop: spacing[3],
     marginHorizontal: spacing[4],
     paddingVertical: spacing[3],
     paddingHorizontal: spacing[4],
