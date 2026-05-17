@@ -4,7 +4,7 @@
 // v1 Sprint T2.1: leitura completa + navegação para medicamento + stub delete.
 // Delete sheet com warning soft + stats chega em Sprint T2.2 (T2.11/T2.12).
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { ScrollView, View, Text, Pressable, StyleSheet, Alert } from 'react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import {
@@ -52,12 +52,13 @@ function daysInUse(startDate) {
 }
 
 export default function ProtocolDetailScreen() {
-  // States — (sem state local; hooks via useProtocol)
+  // States
   const navigation = useNavigation()
   const route = useRoute()
   const id = route.params?.id
   const { data: protocol, loading, error, refresh } = useProtocol(id)
   const toast = useToast?.()
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Memos
   const frequencyLabel = useMemo(
@@ -100,6 +101,7 @@ export default function ProtocolDetailScreen() {
 
   const onDelete = useCallback(() => {
     // Stub Sprint T2.1 — ProtocolDeleteSheet (T2.11) implementa warning soft + stats.
+    if (isDeleting) return
     Alert.alert(
       'Excluir tratamento?',
       'As doses registradas continuam no histórico — apenas o agendamento futuro será removido.',
@@ -109,19 +111,22 @@ export default function ProtocolDetailScreen() {
           text: 'Excluir',
           style: 'destructive',
           onPress: async () => {
+            setIsDeleting(true)
             try {
               await protocolService.delete(id)
               successHaptic()
               toast?.show?.('Tratamento excluído', { type: 'success' })
               navigation.goBack()
             } catch (err) {
+              if (__DEV__) console.error('[ProtocolDetail.delete]', err)
               toast?.show?.(err?.message ?? 'Erro ao excluir', { type: 'error' })
+              setIsDeleting(false)
             }
           },
         },
       ]
     )
-  }, [id, navigation, toast])
+  }, [id, isDeleting, navigation, toast])
 
   if (loading && !protocol) {
     return (
@@ -270,12 +275,19 @@ export default function ProtocolDetailScreen() {
         {/* Excluir tratamento */}
         <Pressable
           onPress={onDelete}
-          style={({ pressed }) => [styles.deleteBtn, pressed && styles.deleteBtnPressed]}
+          disabled={isDeleting}
+          style={({ pressed }) => [
+            styles.deleteBtn,
+            (pressed || isDeleting) && styles.deleteBtnPressed,
+          ]}
           accessibilityRole="button"
           accessibilityLabel="Excluir tratamento"
+          accessibilityState={{ disabled: isDeleting }}
         >
           <Trash2 size={18} color={colors.status.error} />
-          <Text style={styles.deleteBtnText}>Excluir tratamento</Text>
+          <Text style={styles.deleteBtnText}>
+            {isDeleting ? 'Excluindo…' : 'Excluir tratamento'}
+          </Text>
         </Pressable>
       </ScrollView>
     </ScreenContainer>
