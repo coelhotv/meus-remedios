@@ -70,6 +70,7 @@ export default function ProtocolFormBody({
           onChange={form.handleChange}
           onBlur={form.handleBlur}
           placeholder="Ex: SeloZok manhã/noite"
+          maxLength={200}
           required
         />
         <FormInput
@@ -81,6 +82,7 @@ export default function ProtocolFormBody({
           onBlur={form.handleBlur}
           placeholder="0"
           keyboardType="decimal-pad"
+          maxLength={10}
           helperText="Quantas unidades do medicamento por tomada (aceita decimais, ex: 0,5)"
           required
         />
@@ -162,6 +164,7 @@ export default function ProtocolFormBody({
           placeholder="Notas sobre este tratamento…"
           multiline
           numberOfLines={4}
+          maxLength={1000}
           helperText="Opcional"
         />
       </Section>
