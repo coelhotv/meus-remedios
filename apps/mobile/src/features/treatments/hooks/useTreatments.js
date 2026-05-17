@@ -34,10 +34,19 @@ export function useTreatments() {
       if (authError || !user) throw new Error('Sessão expirada.')
 
       const result = await getActiveTreatments(user.id)
-      
+
       if (!result.success) throw new Error(result.error)
 
       const newData = result.data
+      if (__DEV__) {
+        debugLog('useTreatments', `RAW: ${newData?.length ?? 0} protocols from supabase`)
+        newData?.forEach((p) => {
+          debugLog(
+            'useTreatments',
+            `  - ${p.name} | active=${p.active} | start=${p.start_date} | end=${p.end_date} | plan_id=${p.treatment_plan?.id ?? 'null'} (${p.treatment_plan?.name ?? 'no-join'})`
+          )
+        })
+      }
       const today = getTodayLocal()
       const snapshot = {
         data: newData,
