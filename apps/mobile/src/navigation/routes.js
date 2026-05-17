@@ -42,4 +42,5 @@ export const ROUTES = {
 
   // Dev-only (apenas __DEV__)
   MEDICINE_DEMO: 'MedicineDemo',
+  TREATMENT_PRIMITIVES_DEMO: 'TreatmentPrimitivesDemo',
 }
