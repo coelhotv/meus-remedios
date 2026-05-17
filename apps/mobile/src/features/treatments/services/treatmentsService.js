@@ -19,7 +19,7 @@ export async function getActiveTreatments(userId) {
 
     debugLog('treatmentsService', `Buscando tratamentos ativos para: ${userId}`)
 
-    const { data: rawData, error } = await nativeSupabaseClient
+    const { data: rawData, error, status, count } = await nativeSupabaseClient
       .from('protocols')
       .select(`
         id,
@@ -45,10 +45,17 @@ export async function getActiveTreatments(userId) {
           dosage_unit,
           therapeutic_class
         )
-      `)
+      `, { count: 'exact' })
       .eq('user_id', userId)
       .eq('active', true)
       .order('name')
+
+    if (__DEV__) {
+      debugLog('treatmentsService', `RESP status=${status} count=${count} data.length=${(rawData || []).length}`)
+      if (Array.isArray(rawData)) {
+        debugLog('treatmentsService', `IDs: ${rawData.map((r) => `${r.name}#${r.id?.slice(0, 8)}`).join(' | ')}`)
+      }
+    }
 
     if (error) {
       errorLog('treatmentsService', 'Erro Supabase', error)
