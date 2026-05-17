@@ -159,6 +159,7 @@ export default function MedicineSelectorSheet({
               autoCapitalize="none"
               returnKeyType="search"
               accessibilityLabel="Buscar medicamento na biblioteca"
+              maxLength={100}
             />
             {query ? (
               <Pressable

@@ -129,6 +129,7 @@ export default function PlanSelectField({
         placeholderTextColor={colors.text.muted}
         style={styles.inlineInput}
         autoCapitalize="words"
+        maxLength={50}
       />
 
       <Text style={styles.inlineLabel}>Cor</Text>
