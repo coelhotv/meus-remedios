@@ -9,7 +9,7 @@ import TreatmentCard from '@treatments/components/TreatmentCard'
 import TreatmentEmptyState from '@treatments/components/TreatmentEmptyState'
 import TreatmentPlanHeader from '@treatments/components/TreatmentPlanHeader'
 import { useTreatments } from '@treatments/hooks/useTreatments'
-import { colors, spacing, typography } from '@shared/styles/tokens'
+import { colors, spacing, typography, borderRadius, shadows } from '@shared/styles/tokens'
 import { lightTap } from '@shared/utils/haptics'
 import { ROUTES } from '@navigation/routes'
 import StaleBanner from '@shared/components/feedback/StaleBanner'
@@ -232,7 +232,9 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.medium || 'System',
   },
   groupContainer: {
-    marginBottom: spacing[1],
+    // marginBottom maior que o gap interno: o link "+ Adicionar ao grupo"
+    // pertence ao grupo atual; separa visualmente do próximo header.
+    marginBottom: spacing[6],
   },
   protocolsList: {
     marginTop: spacing[1],
@@ -284,22 +286,19 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.bold,
   },
   fab: {
+    // Paridade Fase 1 (MedicinesListScreen): primary[500] verde + shadows.md.
     position: 'absolute',
-    right: spacing[5],
     bottom: spacing[6],
+    right: spacing[5],
     width: 56,
     height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary[600],
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.primary[500],
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    elevation: 6,
+    ...shadows.md,
   },
   fabPressed: {
-    opacity: 0.85,
+    opacity: 0.9,
   },
 })

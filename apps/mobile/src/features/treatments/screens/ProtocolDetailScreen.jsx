@@ -148,7 +148,11 @@ export default function ProtocolDetailScreen() {
   }
 
   const medicine = protocol.medicine
-  const MedicineIcon = medicine?.type === 'suplemento' ? PillBottle : Pill
+  const isSupplement = medicine?.type === 'suplemento'
+  const MedicineIcon = isSupplement ? PillBottle : Pill
+  const heroIconBg = isSupplement ? colors.supplement[500] : colors.primary[600]
+  const heroEyebrowColor = isSupplement ? colors.supplement[700] : colors.primary[700]
+  const eyebrowLabel = isSupplement ? 'Suplemento' : 'Medicamento'
 
   return (
     <ScreenContainer>
@@ -158,16 +162,11 @@ export default function ProtocolDetailScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </Pressable>
         <View style={styles.appbarTitleWrap}>
+          {/* AppBar mostra o NOME do tratamento (campo "Nome do tratamento"),
+              não o nome do medicamento — esse fica no hero card abaixo. */}
           <Text style={styles.appbarTitle} numberOfLines={1}>
-            {medicine?.name || protocol.name}
+            {protocol.name}
           </Text>
-          {medicine?.dosage_per_pill ? (
-            <View style={styles.dosagePill}>
-              <Text style={styles.dosagePillText}>
-                {medicine.dosage_per_pill}{medicine.dosage_unit}
-              </Text>
-            </View>
-          ) : null}
         </View>
         <Pressable onPress={goEdit} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Editar tratamento" hitSlop={12}>
           <Edit3 size={22} color={colors.text.primary} />
@@ -183,11 +182,11 @@ export default function ProtocolDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel={`Abrir medicamento ${medicine.name}`}
           >
-            <View style={styles.heroIconWrap}>
+            <View style={[styles.heroIconWrap, { backgroundColor: heroIconBg }]}>
               <MedicineIcon size={32} color={colors.text.inverse} />
             </View>
             <View style={styles.heroBody}>
-              <Text style={styles.heroEyebrow}>Medicamento</Text>
+              <Text style={[styles.heroEyebrow, { color: heroEyebrowColor }]}>{eyebrowLabel}</Text>
               <View style={styles.heroTitleRow}>
                 <Text style={styles.heroTitle} numberOfLines={1}>{medicine.name}</Text>
                 {medicine.dosage_per_pill ? (
