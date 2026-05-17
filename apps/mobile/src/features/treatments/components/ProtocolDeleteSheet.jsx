@@ -63,7 +63,7 @@ export default function ProtocolDeleteSheet({
 
           <Text style={styles.title}>Excluir este tratamento?</Text>
            <Text style={styles.body}>
-            Essa operação não pode ser desfeita.
+            Confira os detalhes abaixo.
           </Text>
 
           {/* Seção HISTÓRICO RECENTE */}
@@ -75,7 +75,7 @@ export default function ProtocolDeleteSheet({
               label={
                 loading || !stats
                   ? 'Carregando…'
-                  : `${stats.confirmedLast7d} ${stats.confirmedLast7d === 1 ? 'dose confirmada' : 'doses confirmadas'}`
+                  : `${stats.confirmedLast7d} ${stats.confirmedLast7d === 1 ? 'dose tomada' : 'doses tomadas'}`
               }
               sub="Últimos 7 dias"
               muted={loading || !stats}
