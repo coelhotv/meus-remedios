@@ -5,11 +5,11 @@
 // no histórico — apenas o agendamento futuro é cancelado. Mostra stats reais via
 // useProtocolStats para dar contexto antes do confirm.
 
-import { View, Text, Modal, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Modal, Pressable, StyleSheet, Platform, StatusBar } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import {
   AlertTriangle,
   CheckCircle2,
-  Clock,
   CalendarDays,
   Info,
   Trash2,
@@ -46,14 +46,22 @@ export default function ProtocolDeleteSheet({
       transparent
       animationType="slide"
       onRequestClose={handleCancel}
+      // Android: statusBarTranslucent faz o Modal cobrir status bar + ignorar
+      // bottom tabs do parent navigator (sem isso o modal só ocupa a área do
+      // screen atual, deixando topo sem overlay e botões cortados pela tab bar).
+      statusBarTranslucent
     >
       <View style={styles.root}>
+        {/* Spacer Android: empurra o sheet abaixo da status bar translúcida */}
+        {Platform.OS === 'android' ? (
+          <View style={{ height: StatusBar.currentHeight ?? 0 }} />
+        ) : null}
         <Pressable
           style={styles.backdrop}
           onPress={handleCancel}
           accessibilityLabel="Fechar"
         />
-        <View style={styles.sheet}>
+        <SafeAreaView edges={['bottom']} style={styles.sheet}>
           <View style={styles.handle} />
 
           {/* Ícone alert soft */}
@@ -78,17 +86,6 @@ export default function ProtocolDeleteSheet({
                   : `${stats.confirmedLast7d} ${stats.confirmedLast7d === 1 ? 'dose tomada' : 'doses tomadas'}`
               }
               sub="Últimos 7 dias"
-              muted={loading || !stats}
-            />
-            <StatRow
-              icon={Clock}
-              iconColor={colors.status.warning}
-              label={
-                loading || !stats
-                  ? 'Carregando…'
-                  : `${stats.pendingNow} ${stats.pendingNow === 1 ? 'dose pendente' : 'doses pendentes'}`
-              }
-              sub="Agora"
               muted={loading || !stats}
             />
             <StatRow
@@ -150,7 +147,7 @@ export default function ProtocolDeleteSheet({
               </Text>
             </Pressable>
           </View>
-        </View>
+        </SafeAreaView>
       </View>
     </Modal>
   )
