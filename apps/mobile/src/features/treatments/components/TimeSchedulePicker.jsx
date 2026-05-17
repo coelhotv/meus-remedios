@@ -63,6 +63,9 @@ export default function TimeSchedulePicker({
       if (idx === -1) {
         if (!next.includes(newTime)) next.push(newTime)
       } else if (idx >= 0) {
+        // Editar para um horário que já existe em outro slot = no-op (evita
+        // duplicata silenciosa pós-sort). Trocar para o mesmo valor é OK.
+        if (next.includes(newTime) && next[idx] !== newTime) return
         next[idx] = newTime
       }
       next.sort()
