@@ -209,30 +209,43 @@ export default function ProtocolFormScreen() {
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return
-    // Coerce dose string→number antes do validate. handleDoseChange mantém
-    // estados intermediários como string ("0,") pra preservar digitação;
-    // no submit garantimos number final que o Zod schema espera.
-    const rawDose = form.values.dosage_per_intake
-    if (typeof rawDose === 'string' && rawDose !== '') {
-      const normalized = rawDose.replace(',', '.')
+
+    // Coerce dose string→number. handleChange é assíncrono, mas validate()
+    // lê state atual no momento da call — fora de ciclo de re-render, ainda
+    // vê valor antigo. Usar `currentDose` local garante consistência tanto
+    // no validate quanto no payload final.
+    let currentDose = form.values.dosage_per_intake
+    if (typeof currentDose === 'string' && currentDose !== '') {
+      const normalized = currentDose.replace(',', '.')
       const num = Number(normalized)
       if (Number.isFinite(num)) {
+        currentDose = num
         form.handleChange('dosage_per_intake', num)
       }
     }
+
     // Validação Zod com refinements cross-campo (AP-156)
     const ok = form.validate()
     if (!ok) {
       show('Verifique os campos destacados', { variant: 'error' })
       return
     }
+
     setSubmitting(true)
     try {
-      // Se modo inline preenchido, criar plano antes
       let planId = form.values.treatment_plan_id || null
-      if (planField.mode === 'inline' && planField.inline?.name?.trim()) {
+      // Plano inline: guard explícito por nome — visualmente o user pode ter
+      // entrado em modo inline e deixado nome vazio; sem este check o protocol
+      // seria criado sem plano + um plano órfão poderia aparecer no DB.
+      if (planField.mode === 'inline') {
+        const planName = planField.inline?.name?.trim()
+        if (!planName) {
+          show('Informe o nome do novo plano', { variant: 'error' })
+          setSubmitting(false)
+          return
+        }
         const created = await treatmentPlanService.create({
-          name: planField.inline.name.trim(),
+          name: planName,
           color: planField.inline.color,
           emoji: planField.inline.emoji,
         })
@@ -241,6 +254,7 @@ export default function ProtocolFormScreen() {
 
       const payload = {
         ...form.values,
+        dosage_per_intake: currentDose,
         treatment_plan_id: planId,
       }
 
