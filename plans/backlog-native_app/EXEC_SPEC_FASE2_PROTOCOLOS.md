@@ -206,7 +206,7 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
    - `MedicineSelectorRow` em estado vazio: card dashed border + ícone "+" no quadrado + label `"Selecionar medicamento"` + subtitle `"Escolha da biblioteca ou cadastre um novo"` + chevron right
    - Tap → abre bottom sheet `MedicineSelectorSheet` (§3.5)
 2. **`INFORMAÇÕES BÁSICAS`**:
-   - `FormInput name="name"` label `"Nome do tratamento"` required, placeholder `"Ex: SeloZok manhã/noite"`
+   - `FormInput name="name"` label `"Nome do tratamento"` required, placeholder `"Ex: Hipertensão"`
    - `FormInput name="dosage_per_intake"` label `"Dose por tomada"` required, placeholder `"0"`, `keyboardType="decimal-pad"`. **helperText fixo**: `"Quantas unidades do medicamento por tomada (aceita decimais, ex: 0,5)"`. Sem suffix dinâmico baseado em medicine.dosage_unit (padronização em "unidade(s)" — ver §3.3).
      - **Decimais (`0,5`)**: `handleDoseChange` DEVE preservar estados intermediários como STRING no form state (`"0,"`, `"."`, vazio). Conversão para number só acontece no `handleSubmit` antes do `form.validate()`. Eager parse a cada keystroke apaga a vírgula e bloqueia decimais (bug detectado em smoke 2026-05-17).
 3. **`FREQUÊNCIA`**:

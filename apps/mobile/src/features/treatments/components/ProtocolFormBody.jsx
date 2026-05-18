@@ -69,7 +69,7 @@ export default function ProtocolFormBody({
           error={form.touched.name ? form.errors.name : null}
           onChange={form.handleChange}
           onBlur={form.handleBlur}
-          placeholder="Ex: SeloZok manhã/noite"
+          placeholder="Ex: Hipertensão"
           maxLength={200}
           required
         />

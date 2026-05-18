@@ -45,7 +45,7 @@ Aplicam-se a TODA UI do app (mobile + web).
 | Termo UI (PT) | Variável código (EN) | DB | Notas |
 |---------------|---------------------|-----|-------|
 | Tratamento(s) | `protocol(s)` | `protocols` | Sempre "tratamento" em UI |
-| Nome do tratamento | `name` | string | Ex: "SeloZok manhã/noite" |
+| Nome do tratamento | `name` | string | Ex: "Hipertensão" |
 | Plano terapêutico / Organização | `treatment_plan` | `treatment_plans` | "Plano" curto OU "Organização" em forms |
 | Dose por tomada | `dosage_per_intake` | number | Em unidades farmacêuticas; render via `formatDoseUnit` |
 | Frequência / Periodicidade | `frequency` | enum (`diario`, `dias_alternados`, `semanal`, `personalizado`, `quando_necessario`) | PT-BR snake_case |

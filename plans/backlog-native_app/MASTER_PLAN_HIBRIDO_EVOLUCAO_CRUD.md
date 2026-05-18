@@ -1,8 +1,39 @@
 # Dosiq Native App — Plano Estratégico de Evolução CRUD
 
-> **Versão Final (v3)** — Todas as decisões aprovadas pelo Product Owner  
-> **Data**: 14 de maio de 2026  
-> **Autor**: Arquiteto-chefe (AI) + PO (humano)  
+> **Versão atual (v4)** — Status reconciliado pós-Fase 2 (17/05/2026)
+> **Autor**: Arquiteto-chefe (AI) + PO (humano)
+> **Status**: 🔄 Em execução — Pré-requisitos + Fase 1 + Fase 2 entregues; Fase 2.5 e Fase 3 em fila
+
+---
+
+## 🚦 Status de Execução (snapshot 2026-05-17)
+
+| Fase | Status | PRs principais | Quality Gates | Observações |
+|------|--------|----------------|---------------|-------------|
+| **Pré-requisitos** (Form Kit, useMutation, infra ANVISA) | ✅ Completa | Sprint P1.x | — | Form Kit serviu de fundação para Fases 1 e 2 sem retrabalho |
+| **Fase 1 — Medicamentos** | ✅ Completa | #555-#559 (+ distill) | G1 ✅ G2 ✅ G3 ✅ | `createMedicineRepository` em `@dosiq/core/repositories/` (ADR-045); RETRO documentada em `RETRO_FASE1_CRUD_MEDICAMENTOS.md` |
+| **Fase 2 — Tratamentos (Protocolos)** | ✅ Completa | #561 (PR-A T2.1) · #562 (T2.1 fan-out) · #563 (PR-A T2.2) · #564 (PR-B T2.2) · #565 (PR-C T2.2) · #566 (PR-A T2.3 — factory G2) · PR-B T2.3 (web G3) · PR final mãe→main | G1 ✅ G2 ✅ G3 🟡 (em PR final do PR-B T2.3) | Lições críticas: `isProtocolActiveOnDate` strict vs `isProtocolInPeriod`, `statusBarTranslucent` em todos `Modal`s mobile (AP-163), padronização "unidade(s)" |
+| **Fase 2.5 — Status de Tratamentos** | 🆕 Planejada | A definir (sprint único `feat/treatments-status`) | G1 | Origem: gap detectado no smoke da Fase 2 — flag `active` + period `end_date < hoje` (categorização ativo/pausado/finalizado já presente na web). Spec: `EXEC_SPEC_FASE2_5_STATUS_TRATAMENTOS.md` |
+| **Fase 3 — Estoque** | 🟡 Pendente | — | — | Spec inicial existe (`EXEC_SPEC_FASE3_ESTOQUE.md`); aguarda kickoff pós-Fase 2 + 2.5 |
+| **Fase 4 — Perfil completo** | ⏸️ Não iniciada | — | — | Spec não escrita |
+| **Fase 5 — Analíticas (Histórico, Aderência expandida, Ficha)** | ⏸️ Não iniciada | — | — | Spec não escrita |
+| **Fase 6 — Avançadas (Emergência, Chatbot, PDF, mobile-only)** | ⏸️ Não iniciada | — | — | Spec não escrita |
+
+### Lições aprendidas até aqui (consolidado de RETRO + spec histories)
+
+1. **Quality Gates G1→G2→G3 funcionam** — bug encontrado em mobile (G1) não chegou na web (G3) graças à ordem cópia→extract→adopt.
+2. **Cavecrew distribution (ADR-044) bom equilíbrio** — Opus arquiteta o sensível inline, Sonnet/Haiku paralelizam tasks mecânicas. Tempo de sprint caiu vs. sequencial.
+3. **Smoke PO ANTES de abrir PR** (pattern adotado pós-Fase 1) reduz churn de fixes com Gemini. Push pra EAS OK; HOLD em `gh pr create` até PO validar.
+4. **Modal Android < 8 precisa `statusBarTranslucent`** (AP-163) — bug recorrente; sweep aplicado em todos sheets Fase 1+2 (PR #566).
+5. **Spec viva** — atualizar `EXEC_SPEC_*` ao longo da execução (não só no kickoff) evita gaps de paridade voltarem como surpresa.
+
+---
+
+## ✏️ Original (v3, 14/05/2026)
+
+> **Versão Final (v3)** — Todas as decisões aprovadas pelo Product Owner
+> **Data**: 14 de maio de 2026
+> **Autor**: Arquiteto-chefe (AI) + PO (humano)
 > **Status**: ✅ Pronto para planejamento de execução
 
 ---
@@ -330,6 +361,21 @@ function MedicineFormScreen({ route }) {
 
 ---
 
+### Fase 2.5 — Status de Tratamentos (Ativo / Pausado / Finalizado) — ~1 sprint
+
+> Adicionada em 17/05/2026 após smoke da Fase 2 revelar gap de paridade com web.
+
+| Item | Detalhes |
+|------|---------|
+| TabBar Ativos/Pausados/Finalizados | Espelha `TreatmentTabBar` da web; counts por tab |
+| Helper canônico `resolveTreatmentStatus` | Em `@dosiq/core/utils/treatmentStatus.js`; web adopt no mesmo PR (G1 implícito) |
+| Botão Pausar / Retomar no detail | `protocolService.update({ active })` via `useProtocolMutation.toggleActive` |
+| Card visual por status | Pausado (opacity + chip cinza); Finalizado (bg cinza claro + badge "Finalizado em DD MMM YYYY") |
+| Smoke | iOS + Android API 24 obrigatório (cobertura dos 3 status) |
+| Spec | `EXEC_SPEC_FASE2_5_STATUS_TRATAMENTOS.md` |
+
+---
+
 ### Fase 3 — Estoque — ~2 semanas
 
 | Item | Detalhes |
@@ -376,14 +422,14 @@ function MedicineFormScreen({ route }) {
 ### Timeline Visual
 
 ```
-Semana  1  2  3   4  5  6   7  8   9 10  11 12 13  14 15 16  17 18 19 20
-        ├──────┤  ├────────┤  ├────┤  ├───┤  ├──────┤  ├─────────────────┤
-        Pré-Req   Fase 1      Fase2  Fase3  Fase 4    Fase 5      Fase 6
-        Fundação  Medicam.    Proto.  Estoq  Perfil    Analíticas  Avançadas
-                  G1→G2→G3   G1→G3  G1→G3  G1→G3
+Semana  1  2  3   4  5  6   7  8   9 10  11  12 13 14  15 16 17  18 19 20 21
+        ├──────┤  ├────────┤  ├────┤  ├──┤  ├────┤  ├──────┤  ├─────────────┤
+        Pré-Req   Fase 1     Fase2  F2.5  Fase3   Fase 4    Fase 5    Fase 6
+        Fundação  Medic. ✅  Trat. 🆕  Est.   Perfil    Analít.   Avançadas
+        ✅        G1G2G3 ✅  G1G2G3 ✅
 ```
 
-**Total estimado: 14-20 semanas** (sprints semanais)
+**Total estimado revisado: 15-21 semanas** (Fase 2.5 = +1 sprint)
 
 ---
 
