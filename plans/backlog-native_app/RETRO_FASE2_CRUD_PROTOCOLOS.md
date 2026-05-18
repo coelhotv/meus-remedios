@@ -208,7 +208,8 @@ Anteriormente C5 vinha em PR separado pós-merge. Hoje testando combinar RETRO (
 
 ### T9 — Counts atuais (validar após este PR)
 - Antes deste PR: 186 R · 166 AP · 46 ADR · 20 CON
-- Após este PR (estimativa): +2-3 R · +4 AP · +1 ADR · 0 CON
+- Após este PR: +2 R (R-236, R-237) · +3 AP (AP-168, AP-169, AP-170) · 0 ADR · 0 CON
+- Total esperado pós-merge: 188 R · 169 AP · 46 ADR · 20 CON (bate com `state.json`)
 
 ### T10 — Cobertura mobile vs web ainda assimétrica
 Mobile: jest 148 tests. Web: vitest 530 críticos. Mobile tem ~28% da cobertura web. Tendência continuará desbalanceada até feature parity completa (Fase 6). Aceitável a curto prazo, monitorar.
@@ -246,8 +247,8 @@ Mobile: jest 148 tests. Web: vitest 530 críticos. Mobile tem ~28% da cobertura 
 | Opus violações R-010 commitadas | 4 | 0 | -100% ✅ |
 | Bugs descobertos em smoke PO | ~6 | ~10 | +66% (escopo maior) |
 | Bugs descobertos pelo Gemini | 4 R-010 | 7 (race, transform, hook canônico, etc) | +75% |
-| Rules adicionadas | 9 (R-189..R-232) | 3 (R-233/234/235) + 2-3 esta retro | menor (Fase mais focada em delivery) |
-| APs adicionados | 10 (..AP-160) | 4 (AP-164/165/166/167) + 2-3 esta retro | menor |
+| Rules adicionadas | 9 (R-189..R-232) | 3 (R-233/234/235) + 2 (R-236/237 nesta retro) | menor (Fase mais focada em delivery) |
+| APs adicionados | 10 (..AP-160) | 4 (AP-164/165/166/167) + 3 (AP-168/169/170 nesta retro) | menor |
 | ADRs adicionadas | 2 (ADR-043/044) | 1 (ADR-046) | menor |
 | Tempo total | ~5 dias úteis (W19-W20) | ~3 dias úteis (W20-W21) | -40% ✅ |
 
