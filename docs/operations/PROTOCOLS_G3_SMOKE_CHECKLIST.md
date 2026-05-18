@@ -8,20 +8,26 @@
 
 ## Pré-condições
 
-- [ ] G2 mergeado em mãe (`feat/crud-protocols`)
-- [ ] PR G3 atômica: somente swap web + factory (sem refactor adicional, sem outro domínio)
-- [ ] `git diff main..HEAD --stat` reflete escopo da Fase 2 apenas
-- [ ] `rtk npm run validate:agent` web 100% green local
-- [ ] Jest mobile 100% green local (`rtk npm test --workspace @dosiq/mobile`)
-- [ ] Parity tests `createProtocolRepository.test.js` + `createTreatmentPlanRepository.test.js` passando (mocked client)
-- [ ] `rtk npm run build` web OK local
-- [ ] ADR-045 aplicado: factories em `@dosiq/core/repositories/` (não em `shared-data/`)
-- [ ] Helpers `formatDoseUnit`, `pluralizeDoseUnit`, `formatEndDate`, `formatDatePtBR` em `@dosiq/core/utils/`
-- [ ] Glossário (`docs/reference/GLOSSARY.md`) revisado para garantir consistência das strings
+- [x] G2 mergeado em mãe (`feat/crud-protocols`) — PR #566 (2026-05-17)
+- [x] PR G3 atômica: somente swap web + factory (sem refactor adicional, sem outro domínio) — branch `feat/crud-protocols-t2-3b`: 2 services + 2 vitest configs + este checklist
+- [ ] `git diff main..HEAD --stat` reflete escopo da Fase 2 apenas — verificar antes do PR final mãe→main
+- [x] `rtk npm run validate:agent` web 100% green local — 530/530 (2026-05-17 pós-swap)
+- [x] Jest mobile 100% green local (`rtk npm test --workspace @dosiq/mobile`) — 148/148 (PR-A T2.3; PR-B não toca mobile)
+- [x] Parity tests `createProtocolRepository.test.js` + `createTreatmentPlanRepository.test.js` passando (mocked client) — 36/36 (21+15)
+- [x] `rtk npm run build` web OK local — build OK; warnings de chunk size pré-existentes (não regressivos da Fase 2)
+- [x] ADR-045 aplicado: factories em `@dosiq/core/repositories/` (não em `shared-data/`)
+- [x] Helpers `formatDoseUnit`, `pluralizeDoseUnit`, `formatEndDate`, `formatDatePtBR` em `@dosiq/core/utils/`
+- [ ] Glossário (`docs/reference/GLOSSARY.md`) revisado para garantir consistência das strings — pendente PO
 
 ---
 
 ## Fluxos Críticos Mobile — iOS Simulator
+
+> **Status (2026-05-17)**: itens marcados [x] foram validados pelo PO durante smokes
+> incrementais das sprints T2.1, T2.2 (PR-A/B/C) e T2.3 PR-A — quando o mobile
+> ainda usava o service local. Pós-merge do PR-B T2.3 (web G3), o mobile
+> permanece idêntico (factory já adotada na G2). Itens [ ] restantes referem-se
+> a fluxos não exercitados pelos smokes anteriores; PO confirma agora.
 
 ### Empty state
 - [x] Login com usuário sem tratamentos → vê `TreatmentEmptyState` com ilustração + CTA "Criar primeiro tratamento"
@@ -102,6 +108,9 @@
 
 ## Fluxos Críticos Web (após swap factory G3)
 
+> **Status (2026-05-17)**: nenhum item validado ainda — smoke web é o foco principal
+> do PR-B T2.3 (`feat/crud-protocols-t2-3b`). PO valida abaixo antes do PR ser aberto.
+
 ### CRUD básico
 - [ ] Login com usuário com tratamentos
 - [ ] Lista de tratamentos web carrega
@@ -149,3 +158,4 @@
 ## Histórico
 
 - 2026-05-16 — esqueleto criado no Spike Pre-Fase-2. Itens detalhados serão refinados durante sprints T2.1-T2.3.
+- 2026-05-17 — Pré-condições atualizadas automaticamente após push do PR-B T2.3 (`feat/crud-protocols-t2-3b`): G2 mergeado (#566), atomicidade do PR confirmada, validate:agent 530/530, jest mobile 148/148, parity 36/36, build web OK, ADR-045 + helpers verificados. Aguardando: glossário review + git diff main..HEAD scope check + smoke PO web (foco do PR-B). Notas adicionadas nas seções Mobile e Web informando o estado de cada bloco.
