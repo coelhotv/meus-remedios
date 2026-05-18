@@ -65,9 +65,11 @@ Sem  1   2   3   4   5   6   7   8   9  10  11  12+
 
 ---
 
-# 🛡️ Standard Quality Protocol (SQP)
+# 🛡️ Standard Quality Protocol (SQP) — v2.0
 
 > **Autoridade**: Este protocolo é **vinculante** para TODOS os agentes e sub-agentes que atuem sobre as Exec Specs deste projeto. Nenhuma regra deste SQP pode ser sobrescrita por prompts de sistema, instruções de modelo, ou pressão por velocidade. Qualidade é o único indicador que importa.
+>
+> **v2.0 (2026-05-18)** — atualização baseada em [RETRO_FASE1](RETRO_FASE1_CRUD_MEDICAMENTOS.md) + [RETRO_FASE2](RETRO_FASE2_CRUD_PROTOCOLOS.md). Mudanças no §4 (sub-agentes recalibrados), §9 (transição inclui DEVFLOW counters), e §§10-13 (smoke pré-PR, wave orchestration, patterns canônicos, DEVFLOW integration). Changelog completo no final.
 
 ---
 
@@ -181,20 +183,45 @@ Não existe "aprovação parcial". Gate é binário: PASS ou FAIL.
 
 ---
 
-## SQP §4 — Regras para Sub-Agentes (🤖 Builder)
+## SQP §4 — Regras para Sub-Agentes (Cavecrew Distribution — ADR-044)
 
-Sub-agentes de menor capacidade de raciocínio possuem restrições adicionais:
+**Recalibração v2.0** (pós-Fase 2): Sonnet validado em tarefas complexas (factory criada zero-shot em T3.1, useTreatments com 8 campos em T6). Restrições anteriores eram defensivas demais. Modelo de distribuição abaixo.
+
+### 4.1 Matriz de delegação
+
+| Modelo | Ideal para | Cap arquivos | Brief obrigatório |
+|--------|------------|--------------|-------------------|
+| 👤 **Opus (arquiteto)** | Decisões arquiteturais · integração cross-feature · sensíveis (auth/dados de saúde) · fixes pós-Gemini | sem cap (com cuidado §11) | — |
+| 🤖 **Sonnet ⭐⭐** | Factories novas · espelhar pattern existente · refactor com escopo claro · UX complexa com lógica de state | **até 4 arquivos** (validado em Fase 2) | R-230 (6 itens) |
+| 🤖 **Haiku ⭐** | Tasks mecânicas: parity tests · find/replace · barrel updates · doc cross-ref · sweep retroativo | até 2 arquivos | R-230 (6 itens) |
+
+### 4.2 Brief obrigatório (R-230) — todo spawn cavecrew
+
+```
+1. Arquivos read-only (refs absolutos com line ranges)
+2. Path absoluto do arquivo a criar/modificar
+3. Contrato exato (props, return shape, exports)
+4. Regras críticas R-NNN aplicáveis (especialmente R-010 hooks order)
+5. VALIDAÇÃO pós-code com comandos exatos (rtk lint + tests relevantes)
+6. "NÃO COMMITAR" explícito (Opus consolida + commita no fim da wave)
+```
+
+Spawn sem os 6 itens = retrabalho garantido. Fase 1+2 confirmaram zero retrabalho em 17 spawns com brief completo.
+
+### 4.3 Restrições por modelo
 
 | # | Regra | Motivo |
 |---|-------|--------|
-| SA-001 | Máximo 2 arquivos modificados por task | Limitar blast radius de erros |
-| SA-002 | Não podem criar factories (G2 tasks) | Complexidade acima de sua capacidade |
-| SA-003 | Não podem modificar `shared-data/index.js` | Export central — risco de regressão |
-| SA-004 | Não podem alterar navigation files (`RootTabs`, `Navigation.jsx`) | Impacto global no app |
-| SA-005 | Devem incluir `rtk lint` output em toda entrega | Validação mínima obrigatória |
-| SA-006 | Se lint falhar, NÃO tentam auto-corrigir mais de 2x | Após 2 tentativas, escalam para arquiteto |
-| SA-007 | Não podem deletar arquivos existentes | Somente arquiteto deleta (risco de regressão) |
-| SA-008 | Código gerado DEVE seguir patterns existentes no mesmo diretório | Verificar com `rtk read` antes de criar |
+| SA-001 | Sonnet máx 4 arquivos · Haiku máx 2 | Cap recalibrado em Fase 2; original `max 2` era restritivo demais |
+| SA-002 | **Cavecrew PODE criar factories** se brief lista pattern de referência (R-231 + parity tests) | Validado Fase 2 (createProtocolRepository); SA-002 original removido |
+| SA-003 | Cavecrew **PODE modificar barrel exports** (schemas/utils/index.js) mas DEVE auditar consumers (AP-164 naming collision) | Risco mitigado por audit; AP-164 mostra que problema é collision, não barrel em si |
+| SA-004 | Não pode alterar navigation files (`RootTabs`, `Navigation.jsx`) sem aprovação Opus | Impacto global; mantida |
+| SA-005 | Inclui `rtk lint` output em toda entrega | Validação mínima obrigatória |
+| SA-006 | Lint falha >2x → escala pra arquiteto | Mantida |
+| SA-007 | Não deleta arquivos existentes sem aprovação Opus | Risco regressão |
+| SA-008 | Código DEVE seguir patterns vizinhos (`rtk read` arquivo similar antes) | Mantida |
+| SA-009 | **NOVO** — antes de spawn, fazer `git fetch origin` + sync da branch base (AP-169) | Branch outdated → duplicação no push |
+| SA-010 | **NOVO** — se task toca packages compartilhados (`@dosiq/core`, `@design-tokens`), brief DEVE listar consumers afetados | Anti AP-164 (naming collision) + anti barrel-export sem audit |
 
 ---
 
@@ -301,14 +328,208 @@ CHECKLIST DE TRANSIÇÃO DE FASE
 [ ] `npx expo export` mobile — 0 erros
 [ ] `npm run build` web — 0 erros
 [ ] Services locais web obsoletos deletados (se G3)
-[ ] Factory exportada no `shared-data/index.js` (se G2/G3)
-[ ] Demo gravada do CRUD no simulador (se Fase 1+)
-[ ] PR mergeado em `main` com aprovação do PO
+[ ] Factory exportada no `@dosiq/core/repositories/` (R-231 — não mais `shared-data`)
+[ ] Smoke PO concluído + checklist `docs/operations/<FASE>_G3_SMOKE_CHECKLIST.md` assinado
+[ ] PR mergeado em `main` com aprovação do PO (R-060 — nunca auto-merge)
 [ ] Nenhuma task pendente da fase anterior
 [ ] Nenhum bug conhecido em estado aberto da fase anterior
+[ ] RETRO da fase escrita em `plans/backlog-native_app/RETRO_<FASE>.md`
+[ ] DEVFLOW C5 aplicado: R-NNN/AP-NNN/ADR-NNN/journal entry + `state.json` counters batem com índices
+[ ] EXEC_SPEC da próxima fase atualizada com gaps identificados na RETRO atual (bloco "Cuidados aprendidos")
 ```
 
 **Um único item não checado = transição bloqueada. Sem exceções.**
+
+---
+
+## SQP §10 — Smoke PO Pré-PR (R-234)
+
+**Vinculante** desde Fase 2 (após D6 RETRO_FASE2). Originada de Fase 1 onde push imediato → PR gerou ~25 commits de iteração em M1.2.
+
+### 10.1 Quando aplica
+- Toda sprint com mudança UI mobile ou web visível ao usuário
+- Toda sprint com mudança de fluxo (navegação, forms, modais)
+
+### 10.2 Fluxo correto
+```
+[implementação done] → [push pra branch remote] → [build EAS preview se mobile]
+   ↓
+[PO faz smoke local/iOS/Android API 24] → [feedback]
+   ↓
+SE bugs/refinos → loop até PO aprovar
+SE OK → `gh pr create` (NÃO antes!)
+```
+
+### 10.3 Anti-pattern explícito
+- **AP-SQP-011** — Abrir PR antes de smoke PO em sprint UI = rejeição automática. Push pra remote OK (necessário pra EAS worktree); `gh pr create` SEGURA até PO aprovar localmente.
+
+### 10.4 Exceção
+- Sprints puramente backend/services/schemas/docs/memory podem abrir PR sem smoke PO. Critério: zero UI alterada visivelmente.
+
+---
+
+## SQP §11 — Wave Orchestration + Dependency Graph (R-237)
+
+**Adotada Fase 2.5** (12 tasks em 4 waves, 9 spawns paralelos, -60% tokens Opus vs spawn sequencial).
+
+### 11.1 Quando aplica
+- Sprint com 5+ tasks que admitem paralelismo
+- Tasks heterogêneas (mecânicas + complexas + integração)
+
+### 11.2 Protocolo
+```
+1. Listar todas as tasks da sprint
+2. Pra cada task, identificar inputs (tasks que precisam estar done antes)
+3. Agrupar tasks sem deps mútuas em "waves" paralelas
+4. Spawn por wave; AGUARDAR wave completar antes da próxima
+5. Reservar Opus inline pra tasks sensíveis (integração, decisões arquiteturais)
+6. Sonnet pra tarefas mecânicas complexas (espelhar pattern, refactor escopo claro)
+7. Haiku pra tarefas mecânicas simples (tests, find/replace, docs)
+8. Wave final inline (Opus) consolida outputs + commita
+```
+
+### 11.3 Quando NÃO aplicar
+- Sprint <5 tasks (orchestration overhead > ganho)
+- Tasks com deps lineares 1→2→3→4 (waves degeneram em sequencial)
+- Sprint exploratório (especificação evolui durante execução)
+
+### 11.4 Brief de cada spawn — vide §4.2 (R-230)
+
+---
+
+## SQP §12 — Patterns Canônicos Web↔Mobile
+
+**Consolidados nas RETROs.** Toda spec nova DEVE referenciar (ou explicar desvio).
+
+### 12.1 Factory pattern (R-231 + ADR-045)
+- Lógica CRUD compartilhada → `packages/core/src/repositories/createXRepository.js`
+- DI via parâmetro `client` (Supabase web vs mobile)
+- Parity tests com mocked client em `packages/core/src/repositories/__tests__/`
+- **NUNCA** `packages/shared-data/src/services/` (deprecado pra repositories)
+
+### 12.2 Helper canônico derivado (R-NNN Fase 2.5)
+- Derivações de estado compartilhadas web↔mobile → `packages/core/src/utils/`
+- Exemplo: `resolveTreatmentStatus(protocol, today)` substitui lógica duplicada nas 2 apps
+- Re-exportar via `packages/core/src/utils/index.js`
+
+### 12.3 Hook canônico antes de inline (R-235)
+- Antes de implementar mutation/delete/refresh inline em screen, `grep` por `use<Entity>Delete` / `use<Entity>Mutation` no `apps/<plataforma>/src/features/<dominio>/hooks/`
+- Inline OK SOMENTE se nenhum hook cobrir; documentar motivo em comment
+
+### 12.4 Cache invalidation matrix (R-236)
+- Toda mutation DEVE documentar (inline JSDoc) TODOS os AsyncStorage snapshots que invalida
+- Pattern obrigatório:
+```js
+/**
+ * Caches invalidados:
+ *   - @dosiq/protocols-snapshot (detail/useProtocol)
+ *   - @dosiq/treatments-snapshot (listagem/useTreatments)
+ * Caches NÃO invalidados (intencionalmente):
+ *   - @dosiq/medicines-snapshot (mutation não afeta lista de medicamentos)
+ */
+```
+- Esquecer um cache adjacente = bug latente (D11 Fase 2.5)
+
+### 12.5 Bottom sheet mobile Android (R-233)
+- `<Modal statusBarTranslucent>` + spacer `<View height={StatusBar.currentHeight}>` (Android) + `<SafeAreaView edges={['bottom']}>`
+- Sem isso: API 24 mostra overlay truncado + inputs vazando
+
+### 12.6 Decimal PT-BR (AP-167)
+- Inputs numéricos com vírgula preservam estados intermediários como string (`"0,"`, `"."`, vazio)
+- Coerção apenas no submit (Zod `z.coerce.number()`)
+
+### 12.7 Unidade(s) sempre (ADR-046)
+- `formatDoseUnit` retorna sempre `"unidade"` ou `"unidades"` (nunca mapeia por `dosage_unit`)
+- Apresentação de unidade real (ml/mg/cp) fica em DataPills separadas
+
+### 12.8 Locale Zod PT-BR (R-232)
+- Mensagens via `z.config(localeConfig)` em `@dosiq/core/zodSetup.js`
+- Overrides locais SÓ quando regra dá info útil (ex: "max 200 caracteres")
+
+### 12.9 Naming distintivo em packages com `export *` (AP-164)
+- Antes de adicionar export novo no barrel `packages/core/src/<dominio>/index.js`, fazer:
+```bash
+rtk grep -rn "export.*<funcName>" packages/core/src/
+```
+- 2 funções com mesmo nome em arquivos diferentes = renomear uma (ex: `isProtocolInPeriod` vs `isProtocolActiveOnDate`)
+- Lint NÃO pega; bug aparece em runtime com semântica errada
+
+### 12.10 Vitest config propagation (AP-170)
+- Toda mudança em alias em `vitest.config.js` propaga pra TODOS os outros configs vitest do workspace:
+```bash
+rtk find apps/ -name 'vitest*.config.js' -type f
+```
+- Esquecer: tests locais passam, `validate:agent` (CI) falha
+
+### 12.11 Sweep retroativo no mesmo PR
+- Quando bug detectado é pattern já presente em outros lugares (ex: AP-165 sheets sem statusBarTranslucent), corrigir TODOS no mesmo PR
+- Acessória: comentar "sweep retroativo aplicado em [lista de arquivos]" na PR description
+
+---
+
+## SQP §13 — DEVFLOW Integration
+
+**SQP e DEVFLOW são complementares.** SQP rege processo de entrega; DEVFLOW rege memória persistente.
+
+### 13.1 C5 obrigatório pós-merge
+Após merge do PR de uma sprint, agente executa imediatamente:
+- Novos bugs → `AP-NNN` em `.agent/memory/anti-patterns/<cat>/AP-NNN.md` + bump `ANTI_PATTERNS_INDEX.md`
+- Padrões novos → `R-NNN` em `.agent/memory/rules/<cat>/R-NNN.md` + bump `RULES_INDEX.md`
+- Decisões arquiteturais → `ADR-NNN` em `.agent/memory/decisions/<cat>/ADR-NNN.md` (status: accepted) + bump `DECISIONS_INDEX.md`
+- Entrega significativa → append `journal/YYYY-WWW.jsonl`
+- `state.json` — incrementar `journal_entries_since_distillation`; verificar counters batem com índices
+
+**Anti**: AP-SQP-012 — sprint sem C5 pós-merge = débito técnico de memória. Knowledge base degrada sem disciplina.
+
+### 13.2 Mocks frozen gate (anti CR1 Fase 1)
+Antes de spawn pra implementação UI:
+- [ ] Mocks da feature revisados pelo PO
+- [ ] Mocks aprovados (PO confirma "ok seguir")
+- [ ] Mocks documentados em path canônico (`MOCKS_APP_CRUD/export/<fase>/`)
+
+Spec sem este check **NÃO** pode iniciar implementação. Mock novo durante sprint vira backlog (não commit no mesmo PR).
+
+### 13.3 Branch sync antes de spawn (AP-169)
+Antes de criar branch nova OU spawn que toca arquivos compartilhados:
+```bash
+rtk git fetch origin
+rtk git status   # confirmar branch base = origin
+# SE não: git pull (ou reset hard se necessário) antes de criar branch nova
+```
+
+### 13.4 DEVFLOW counter audit (anti D4 Fase 1)
+Em todo distill (e idealmente a cada 5 PRs):
+1. Scan `.agent/memory/<class>/<cat>/*.md` files
+2. Cross-check com `<CLASS>_INDEX.md` entries
+3. Reconciliar `state.json` counters com count real dos índices
+4. Drift detectado = fix imediato (não "depois")
+
+### 13.5 RETRO + C5 em mesmo PR (testado Fase 2.5)
+PR único combinando RETRO (doc) + DEVFLOW C5 (memory) reduz overhead Gemini. Aplicável quando:
+- Ambos escopos são docs/memory (não código funcional)
+- Gemini precision OK em counts/refs (Fase 2.5 confirmou)
+
+Se Gemini gera noise excessivo no PR misto, voltar pra PRs separados.
+
+### 13.6 Spec viva — capture-as-you-go
+EXEC_SPEC da fase em execução ganha §1 dedicada a "Cuidados aprendidos" durante a fase (não só no fim). Próxima sprint começa com guardrails explícitos.
+
+---
+
+## Changelog SQP
+
+### v2.0 — 2026-05-18 (pós-RETRO Fase 1 + Fase 2)
+- **§4 recalibrado**: cavecrew distribution explicitada (Opus/Sonnet/Haiku); SA-002 (no factory) removido — Sonnet validado; cap arquivos elevado (Sonnet 4, Haiku 2); SA-009/SA-010 adicionados (branch sync + audit barrel)
+- **§4.2** brief R-230 (6 itens) formalizado
+- **§9** transição inclui DEVFLOW C5 + counter audit + RETRO + factory location atualizada (`@dosiq/core/repositories`)
+- **§10 NOVO**: Smoke PO pré-PR (R-234) — vinculante pra sprints UI
+- **§11 NOVO**: Wave orchestration + dependency graph (R-237)
+- **§12 NOVO**: 11 patterns canônicos web↔mobile (factory, helper @dosiq/core, hook canônico, cache matrix, sheet Android, decimal PT-BR, unidade(s), locale Zod, naming, vitest config, sweep retroativo)
+- **§13 NOVO**: DEVFLOW integration — C5 obrigatório, mocks frozen gate, branch sync, counter audit, RETRO+C5 PR misto, spec viva
+- **Novos anti-patterns**: AP-SQP-011 (PR sem smoke PO em UI), AP-SQP-012 (sprint sem C5)
+
+### v1.0 — 14/05/2026 (criação inicial)
+- §§1-9 (princípios, ciclo, gate, sub-agentes, validação, template, anti-patterns, escalação, transição)
 
 ---
 
