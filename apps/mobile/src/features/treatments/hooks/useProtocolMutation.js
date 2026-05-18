@@ -104,11 +104,12 @@ export function useProtocolMutation() {
     async (id, nextValue) => {
       try {
         const result = await protocolService.update(id, { active: nextValue })
-        await Promise.all([
-          AsyncStorage.removeItem(PROTOCOLS_CACHE_KEY),
-          AsyncStorage.removeItem(TREATMENTS_CACHE_KEY),
-          AsyncStorage.removeItem(TODAY_CACHE_KEY),
-          AsyncStorage.removeItem(STOCK_CACHE_KEY),
+        // multiRemove = 1 chamada à ponte nativa (vs N concorrentes) — atômico.
+        await AsyncStorage.multiRemove([
+          PROTOCOLS_CACHE_KEY,
+          TREATMENTS_CACHE_KEY,
+          TODAY_CACHE_KEY,
+          STOCK_CACHE_KEY,
         ]).catch(() => {})
         show(nextValue ? 'Tratamento ativo' : 'Tratamento pausado', { variant: 'success' })
         return result
