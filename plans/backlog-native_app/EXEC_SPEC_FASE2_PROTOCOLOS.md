@@ -147,6 +147,12 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 - Link "Medicamentos" no rodapé quando há tratamentos (JÁ implementado em Fase 1)
 - **`useFocusEffect(refresh)` obrigatório** — captura tratamentos/planos criados em ProtocolFormScreen (`useTreatments` cache key difere de `@dosiq/protocols-snapshot` invalidado pela mutation).
 
+> **Nota Fase 2.5 (2026-05-18)**: a listagem foi expandida para incluir tabs
+> Ativos / Pausados / Finalizados via `TreatmentTabBar` + helper canônico
+> `resolveTreatmentStatus` em `@dosiq/core/utils/treatmentStatus.js`. O comportamento
+> SIMPLE/COMPLEX descrito aqui aplica-se SOMENTE à tab Ativos; Pausados e
+> Finalizados são listas flat. Ver `EXEC_SPEC_FASE2_5_STATUS_TRATAMENTOS.md` §3.1.
+
 **Card de tratamento** (mock):
 - Ícone pill colorido (primary[500]) + ícone bg pill (primary[50])
 - Nome do medicamento + DosagePill (ex: `SeloZok 50mg`)
@@ -186,7 +192,13 @@ Implementar CRUD completo de **Tratamentos** (entidade DB: `protocols`) no mobil
 6. **Card "Observações"** (se `notes`):
    - SectionLabel: `"OBSERVAÇÕES"`
    - Body text com line-height 1.5
-7. **Botão Excluir tratamento** (fim, fora dos cards):
+7. **Card "Status"** (Fase 2.5):
+   - SectionLabel: `"STATUS"` (novo em 2026-05-18)
+   - Switch `"Tratamento ligado"` (nativo RN) com label + caption `"Pausa temporária do agendamento"` 
+   - **Estado**: otimistic update via `useProtocolMutation.toggleActive`
+   - **Oculto quando finalizado**: se `end_date < hoje`, mostrar em vez do toggle uma caption inerte cinza (`"Tratamento finalizado em DD MMM"`) com link azul claro `"Editar período"` → abre ProtocolFormScreen em edit mode
+   - Ver detalhe em `EXEC_SPEC_FASE2_5_STATUS_TRATAMENTOS.md` §3.2.
+8. **Botão Excluir tratamento** (fim, fora dos cards):
    - DosiqButton variant `dangerSoft` size lg block + ícone trash
    - Tap → abrir bottom sheet ProtocolDeleteSheet (§3.7)
 
