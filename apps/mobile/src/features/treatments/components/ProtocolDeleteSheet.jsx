@@ -22,11 +22,13 @@ export default function ProtocolDeleteSheet({
   open,
   onClose,
   onConfirm,
-  protocolId,
+  protocol,
   isDeleting = false,
 }) {
   // States (R-010 — States → Memos → Effects → Handlers)
-  const { data: stats, loading } = useProtocolStats(protocolId)
+  // Passamos o protocol completo (já carregado pelo Detail via useProtocol)
+  // pra evitar fetch redundante só por time_schedule.length.
+  const { data: stats, loading } = useProtocolStats(protocol)
 
   // Handlers
   function handleCancel() {

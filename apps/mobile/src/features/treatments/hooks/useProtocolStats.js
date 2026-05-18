@@ -1,21 +1,29 @@
 // useProtocolStats.js — estatísticas de doses para warning de delete (Fase 2 §3.7).
 // Padrão: { data, loading, error }
 //
-// v1 (Sprint T2.2): confirmedLast7d via query real; pendingNow e scheduledNext7d
-// são estimativas ingênuas baseadas em time_schedule.length. Refinar quando util
+// API: useProtocolStats(protocol) — recebe o objeto protocol já carregado por
+// outro hook (Detail tem useProtocol(id)) pra evitar fetch redundante só pra
+// obter time_schedule.length. Aceita { id, time_schedule } no mínimo.
+//
+// v1 (Sprint T2.2): confirmedLast7d via query real; scheduledNext7d é
+// estimativa ingênua baseada em time_schedule.length. Refinar quando util
 // de adherenceLogic for adaptado para mobile.
 
 import { useState, useEffect, useCallback, useMemo, startTransition } from 'react'
 import { supabase } from '../../../platform/supabase/nativeSupabaseClient'
-import { protocolService } from '../services/protocolService'
 import { getNow, addDays } from '@dosiq/core'
 import { debugLog } from '@shared/utils/debugLog'
 
-export function useProtocolStats(protocolId) {
+export function useProtocolStats(protocol) {
   // States
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  const protocolId = protocol?.id ?? null
+  const dailyDoses = Array.isArray(protocol?.time_schedule)
+    ? protocol.time_schedule.length
+    : 0
 
   // Handlers
   const load = useCallback(async () => {
@@ -28,30 +36,19 @@ export function useProtocolStats(protocolId) {
     setError(null)
     try {
       const today = getNow()
-      // addDays aceita Date direto; getNow já retorna Date (R-020 compliant)
       const sevenDaysAgo = addDays(today, -7)
 
-      const [protocol, logsResult] = await Promise.all([
-        protocolService.getById(protocolId),
-        supabase
-          .from('medicine_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('protocol_id', protocolId)
-          .gte('taken_at', sevenDaysAgo.toISOString())
-          .lte('taken_at', today.toISOString()),
-      ])
+      const logsResult = await supabase
+        .from('medicine_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('protocol_id', protocolId)
+        .gte('taken_at', sevenDaysAgo.toISOString())
+        .lte('taken_at', today.toISOString())
 
       if (logsResult.error) throw logsResult.error
 
-      const dailyDoses = Array.isArray(protocol?.time_schedule)
-        ? protocol.time_schedule.length
-        : 0
-
-      // pendingNow: placeholder v1 — cálculo real requer adherenceLogic.
-      // scheduledNext7d: estimativa ingênua (dailyDoses * 7).
       setData({
         confirmedLast7d: logsResult.count ?? 0,
-        pendingNow: 0,
         scheduledNext7d: dailyDoses * 7,
       })
     } catch (err) {
@@ -60,7 +57,7 @@ export function useProtocolStats(protocolId) {
     } finally {
       setLoading(false)
     }
-  }, [protocolId])
+  }, [protocolId, dailyDoses])
 
   // Effects
   useEffect(() => {
