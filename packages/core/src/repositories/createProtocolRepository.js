@@ -190,7 +190,9 @@ export function createProtocolRepository({
         throw new Error('Este protocolo não possui regime de titulação')
       }
 
-      const userId = await getUserId()
+      // user_id já veio em getById (que validou posse via getUserId interno).
+      // Reutilizar evita 2º await desnecessário.
+      const userId = protocol.user_id
       const currentStageIndex = protocol.current_stage_index || 0
       const nextStageIndex = currentStageIndex + 1
 

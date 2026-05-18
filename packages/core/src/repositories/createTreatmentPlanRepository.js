@@ -74,7 +74,7 @@ export function createTreatmentPlanRepository({
         .single()
 
       if (error) throw error
-      return data
+      return detailTransform(data)
     },
 
     async update(id, updates) {
@@ -88,7 +88,7 @@ export function createTreatmentPlanRepository({
         .single()
 
       if (error) throw error
-      return data
+      return detailTransform(data)
     },
 
     async delete(id) {
