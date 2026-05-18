@@ -29,10 +29,9 @@ import SectionCard from '@shared/components/ui/SectionCard'
 import LoadingState from '@shared/components/states/LoadingState'
 import ErrorState from '@shared/components/states/ErrorState'
 import { useProtocol } from '@treatments/hooks/useProtocols'
-import { protocolService } from '@treatments/services/protocolService'
+import { useProtocolDelete } from '@treatments/hooks/useProtocolDelete'
 import ProtocolDeleteSheet from '@treatments/components/ProtocolDeleteSheet'
-import { useToast } from '@shared/components/feedback/Toast'
-import { lightTap, selectionTap, successHaptic } from '@shared/utils/haptics'
+import { lightTap, selectionTap } from '@shared/utils/haptics'
 import { colors, spacing, typography } from '@shared/styles/tokens'
 import { ROUTES } from '@navigation/routes'
 
@@ -58,8 +57,7 @@ export default function ProtocolDetailScreen() {
   const route = useRoute()
   const id = route.params?.id
   const { data: protocol, loading, error, refresh } = useProtocol(id)
-  const toast = useToast?.()
-  const [isDeleting, setIsDeleting] = useState(false)
+  const { confirmDelete, isLoading: isDeleting } = useProtocolDelete(protocol)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   // Memos
@@ -108,20 +106,11 @@ export default function ProtocolDetailScreen() {
   }, [isDeleting])
 
   const handleConfirmDelete = useCallback(async () => {
-    if (isDeleting) return
-    setIsDeleting(true)
-    try {
-      await protocolService.delete(id)
-      successHaptic()
-      toast?.show?.('Tratamento excluído', { type: 'success' })
-      setDeleteOpen(false)
-      navigation.goBack()
-    } catch (err) {
-      if (__DEV__) console.error('[ProtocolDetail.delete]', err)
-      toast?.show?.(err?.message ?? 'Erro ao excluir', { type: 'error' })
-      setIsDeleting(false)
-    }
-  }, [id, isDeleting, navigation, toast])
+    // useProtocolDelete encapsula: delete + cache invalidation + toast +
+    // haptic + navigation.goBack on success. Pattern canônico mobile (T2.10).
+    const ok = await confirmDelete()
+    if (ok) setDeleteOpen(false)
+  }, [confirmDelete])
 
   const handleCloseDelete = useCallback(() => {
     if (isDeleting) return
@@ -295,7 +284,7 @@ export default function ProtocolDetailScreen() {
         open={deleteOpen}
         onClose={handleCloseDelete}
         onConfirm={handleConfirmDelete}
-        protocolId={id}
+        protocol={protocol}
         isDeleting={isDeleting}
       />
     </ScreenContainer>
