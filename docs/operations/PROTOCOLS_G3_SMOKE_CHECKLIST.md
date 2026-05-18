@@ -37,41 +37,41 @@
 - [x] Tap em "Selecionar medicamento" abre `MedicineSelectorSheet` (bottom sheet 85%)
 - [x] Buscar medicamento na biblioteca (filter funciona, NFD normalize OK)
 - [x] Selecionar medicamento → sheet fecha + `MedicineSelectorRow` mostra estado "selected" com "Trocar"
-- [ ] Tap "Trocar" reabre sheet
+- [x] Tap "Trocar" reabre sheet
 - [x] Preencher Nome do tratamento, Dose por tomada (com vírgula `1,5`), Periodicidade Diário, adicionar 2 horários (08:00, 20:00)
-- [ ] Suffix do input "Dose por tomada" muda dinamicamente baseado em `medicine.dosage_unit` (ex: "ml" vs "comprimidos" vs "gotas")
+- [x] Suffix do input "Dose por tomada" muda dinamicamente baseado em `medicine.dosage_unit` (ex: "ml" vs "comprimidos" vs "gotas")
 - [x] Tap em "Periodicidade: Semanal" mostra `WeekdaySelector` — togglar dias
 - [x] Plano terapêutico: variação A (select existente) funciona
 - [x] Plano terapêutico: variação B (criar novo inline) funciona — cor + emoji salvam
-- [ ] Adicionar Observações
+- [x] Adicionar Observações
 - [x] Submit com campos válidos → toast sucesso → volta para listagem → tratamento aparece
-- [ ] Submit com campos vazios → banner topo `"Preencha os campos obrigatórios"` + inline errors em PT-BR friendly Dona Maria
+- [x] Submit com campos vazios → banner topo `"Preencha os campos obrigatórios"` + inline errors em PT-BR friendly Dona Maria
 
 ### Detail
 - [x] Tap em tratamento da listagem abre `ProtocolDetailScreen`
 - [x] Hero card mostra ícone correto: Pill se `medicine.type='medicamento'`, PillBottle se `'suplemento'`
-- [ ] Tap no hero card navega para `MedicineDetailScreen` (Fase 1)
+- [x] Tap no hero card navega para `MedicineDetailScreen` (Fase 1)
 - [x] Badge `✓ Estável` exibido (titration_status)
 - [x] "Em uso há N dias" calculado corretamente
 - [x] Card Dosagem & Frequência: `formatDoseUnit` rende `"2 comprimidos"` / `"15 ml"` / `"3 gotas"` corretamente conforme `dosage_unit`
 - [x] Consumo diário = `dosage_per_intake × time_schedule.length`
 - [x] Card Período: `end_date` null → mostra `"Uso contínuo"` (não "Sem prazo")
-- [ ] Card Plano terapêutico aparece se há plano; mostra emoji + nome + "+ N outros tratamentos"
+- [x] Card Plano terapêutico aparece se há plano; mostra emoji + nome + "+ N outros tratamentos"
 - [x] Card Plano: se sem plano, mostra CTA "+ Adicionar a um plano"
 
 ### Edit
 - [x] Tap ícone editar no AppBar abre form em edit mode
 - [x] Campos preenchidos com valores atuais (dose convertida number→string)
-- [ ] Trocar medicamento via sheet funciona
+- [x] Trocar medicamento via sheet funciona
 - [x] Salvar alterações → toast + volta + lista reflete
 
 ### Delete (warning soft)
 - [x] Tap "Excluir tratamento" no detail abre `ProtocolDeleteSheet`
 - [x] Sheet mostra histórico: doses confirmadas / agendadas (dados de `useProtocolStats`)
 - [x] Banner amarelo `"Excluir o tratamento NÃO apaga o histórico"` visível
-- [ ] Tap Cancelar fecha sheet sem ação
+- [x] Tap Cancelar fecha sheet sem ação
 - [x] Tap Excluir confirma → toast → navigation.goBack() → listagem atualiza (tratamento sumiu)
-- [ ] Histórico de doses (Tab Hoje, Calendário, Relatórios) MANTÉM doses já registradas
+- [x] Histórico de doses (Tab Hoje, Calendário, Relatórios) MANTÉM doses já registradas
 
 ### Refresh / Cache
 - [x] Após criar/editar/excluir, voltar para listagem → cache invalidado, dados frescos
@@ -79,7 +79,7 @@
 
 ### Sem pronomes (R-201)
 - [x] Header listagem: `"Tratamentos"` (não "Meus Tratamentos")
-- [ ] Search bar em medicamento selector: `"Buscar em medicamentos..."` (não "meus")
+- [x] Search bar em medicamento selector: `"Buscar em medicamentos..."` (não "meus")
 - [x] Subtitle empty: sem pronome possessivo
 - [x] CTAs: sem pronome
 
@@ -112,42 +112,42 @@
 > do PR-B T2.3 (`feat/crud-protocols-t2-3b`). PO valida abaixo antes do PR ser aberto.
 
 ### CRUD básico
-- [ ] Login com usuário com tratamentos
-- [ ] Lista de tratamentos web carrega
-- [ ] Criar tratamento via UI web → salva e aparece
-- [ ] Editar tratamento → atualiza
-- [ ] Excluir tratamento → remove
+- [x] Login com usuário com tratamentos
+- [x] Lista de tratamentos web carrega
+- [x] Criar tratamento via UI web → salva e aparece
+- [x] Editar tratamento → atualiza
+- [x] Excluir tratamento → remove
 
 ### Joins e relacionamentos
-- [ ] Listagem mostra `medicine:medicines(*)` joined corretamente
-- [ ] Detalhe mostra `treatment_plan:treatment_plans(*)` joined
+- [x] Listagem mostra `medicine:medicines(*)` joined corretamente
+- [x] Detalhe mostra `treatment_plan:treatment_plans(*)` joined
 
 ### Cross-domain (regressão indireta)
-- [ ] Tab **Hoje** — doses do dia renderizam (dependem de protocols)
-- [ ] Tab **Calendário** — adesão calcula sem erro
-- [ ] Tab **Relatórios** — agregação por tratamento renderiza
-- [ ] **Titulação web** — `advanceTitrationStage` funciona (factory mantém método)
-- [ ] **Adherence service** — `calculateProtocolAdherence(id, period)` retorna valores
+- [x] Tab **Hoje** — doses do dia renderizam (dependem de protocols)
+- [x] Tab **Calendário** — adesão calcula sem erro
+- [x] Tab **Relatórios** — agregação por tratamento renderiza
+- [x] **Titulação web** — `advanceTitrationStage` funciona (factory mantém método)
+- [x] **Adherence service** — `calculateProtocolAdherence(id, period)` retorna valores
 
 ### Multi-tenancy / RLS
-- [ ] Usuário A → vê apenas seus tratamentos
-- [ ] Logout + login B → vê apenas dele (zero vazamento)
+- [x] Usuário A → vê apenas seus tratamentos
+- [x] Logout + login B → vê apenas dele (zero vazamento)
 
 ### Console / Network
-- [ ] Console limpo (sem erros em runtime)
-- [ ] Network: chamadas `medicines.select`, `protocols.select`, `treatment_plans.select` retornam 200
-- [ ] Payload de `create/update` matches Zod schema canônico
+- [x] Console limpo (sem erros em runtime)
+- [x] Network: chamadas `medicines.select`, `protocols.select`, `treatment_plans.select` retornam 200
+- [x] Payload de `create/update` matches Zod schema canônico
 
 ### Schema canônico
-- [ ] Refinements cross-campo (start_date ≤ end_date; weekdays required se frequency in {semanal, personalizado}) bloqueiam payload inválido
-- [ ] Mensagens de erro em PT-BR friendly Dona Maria
+- [x] Refinements cross-campo (start_date ≤ end_date; weekdays required se frequency in {semanal, personalizado}) bloqueiam payload inválido
+- [x] Mensagens de erro em PT-BR friendly Dona Maria
 
 ---
 
 ## Critério de aprovação
 
 - [ ] Todos os checks acima ✅
-- [ ] Zero regressão detectada
+- [x] Zero regressão detectada
 - [ ] Bundle size web: variação < +5% vs main pré-Fase-2 (`rtk npm run build` reporta)
 - [ ] Bundle size mobile: variação < +5% (baseline a definir no Spike Pre-Fase-2 / S10)
 
