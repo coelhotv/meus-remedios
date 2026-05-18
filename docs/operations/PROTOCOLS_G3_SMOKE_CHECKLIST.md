@@ -24,58 +24,58 @@
 ## Fluxos Críticos Mobile — iOS Simulator
 
 ### Empty state
-- [ ] Login com usuário sem tratamentos → vê `TreatmentEmptyState` com ilustração + CTA "Criar primeiro tratamento"
-- [ ] Tap no CTA abre `ProtocolFormScreen` (create mode)
+- [x] Login com usuário sem tratamentos → vê `TreatmentEmptyState` com ilustração + CTA "Criar primeiro tratamento"
+- [x] Tap no CTA abre `ProtocolFormScreen` (create mode)
 
 ### Create
-- [ ] Tap em "Selecionar medicamento" abre `MedicineSelectorSheet` (bottom sheet 85%)
-- [ ] Buscar medicamento na biblioteca (filter funciona, NFD normalize OK)
-- [ ] Selecionar medicamento → sheet fecha + `MedicineSelectorRow` mostra estado "selected" com "Trocar"
+- [x] Tap em "Selecionar medicamento" abre `MedicineSelectorSheet` (bottom sheet 85%)
+- [x] Buscar medicamento na biblioteca (filter funciona, NFD normalize OK)
+- [x] Selecionar medicamento → sheet fecha + `MedicineSelectorRow` mostra estado "selected" com "Trocar"
 - [ ] Tap "Trocar" reabre sheet
-- [ ] Preencher Nome do tratamento, Dose por tomada (com vírgula `1,5`), Periodicidade Diário, adicionar 2 horários (08:00, 20:00)
+- [x] Preencher Nome do tratamento, Dose por tomada (com vírgula `1,5`), Periodicidade Diário, adicionar 2 horários (08:00, 20:00)
 - [ ] Suffix do input "Dose por tomada" muda dinamicamente baseado em `medicine.dosage_unit` (ex: "ml" vs "comprimidos" vs "gotas")
-- [ ] Tap em "Periodicidade: Semanal" mostra `WeekdaySelector` — togglar dias
-- [ ] Plano terapêutico: variação A (select existente) funciona
-- [ ] Plano terapêutico: variação B (criar novo inline) funciona — cor + emoji salvam
+- [x] Tap em "Periodicidade: Semanal" mostra `WeekdaySelector` — togglar dias
+- [x] Plano terapêutico: variação A (select existente) funciona
+- [x] Plano terapêutico: variação B (criar novo inline) funciona — cor + emoji salvam
 - [ ] Adicionar Observações
-- [ ] Submit com campos válidos → toast sucesso → volta para listagem → tratamento aparece
+- [x] Submit com campos válidos → toast sucesso → volta para listagem → tratamento aparece
 - [ ] Submit com campos vazios → banner topo `"Preencha os campos obrigatórios"` + inline errors em PT-BR friendly Dona Maria
 
 ### Detail
-- [ ] Tap em tratamento da listagem abre `ProtocolDetailScreen`
-- [ ] Hero card mostra ícone correto: Pill se `medicine.type='medicamento'`, PillBottle se `'suplemento'`
+- [x] Tap em tratamento da listagem abre `ProtocolDetailScreen`
+- [x] Hero card mostra ícone correto: Pill se `medicine.type='medicamento'`, PillBottle se `'suplemento'`
 - [ ] Tap no hero card navega para `MedicineDetailScreen` (Fase 1)
-- [ ] Badge `✓ Estável` exibido (titration_status)
-- [ ] "Em uso há N dias" calculado corretamente
-- [ ] Card Dosagem & Frequência: `formatDoseUnit` rende `"2 comprimidos"` / `"15 ml"` / `"3 gotas"` corretamente conforme `dosage_unit`
-- [ ] Consumo diário = `dosage_per_intake × time_schedule.length`
-- [ ] Card Período: `end_date` null → mostra `"Uso contínuo"` (não "Sem prazo")
+- [x] Badge `✓ Estável` exibido (titration_status)
+- [x] "Em uso há N dias" calculado corretamente
+- [x] Card Dosagem & Frequência: `formatDoseUnit` rende `"2 comprimidos"` / `"15 ml"` / `"3 gotas"` corretamente conforme `dosage_unit`
+- [x] Consumo diário = `dosage_per_intake × time_schedule.length`
+- [x] Card Período: `end_date` null → mostra `"Uso contínuo"` (não "Sem prazo")
 - [ ] Card Plano terapêutico aparece se há plano; mostra emoji + nome + "+ N outros tratamentos"
-- [ ] Card Plano: se sem plano, mostra CTA "+ Adicionar a um plano"
+- [x] Card Plano: se sem plano, mostra CTA "+ Adicionar a um plano"
 
 ### Edit
-- [ ] Tap ícone editar no AppBar abre form em edit mode
-- [ ] Campos preenchidos com valores atuais (dose convertida number→string)
+- [x] Tap ícone editar no AppBar abre form em edit mode
+- [x] Campos preenchidos com valores atuais (dose convertida number→string)
 - [ ] Trocar medicamento via sheet funciona
-- [ ] Salvar alterações → toast + volta + lista reflete
+- [x] Salvar alterações → toast + volta + lista reflete
 
 ### Delete (warning soft)
-- [ ] Tap "Excluir tratamento" no detail abre `ProtocolDeleteSheet`
-- [ ] Sheet mostra histórico: doses confirmadas / pendentes / agendadas (dados de `useProtocolStats`)
-- [ ] Banner amarelo `"Excluir o tratamento NÃO apaga o histórico"` visível
+- [x] Tap "Excluir tratamento" no detail abre `ProtocolDeleteSheet`
+- [x] Sheet mostra histórico: doses confirmadas / agendadas (dados de `useProtocolStats`)
+- [x] Banner amarelo `"Excluir o tratamento NÃO apaga o histórico"` visível
 - [ ] Tap Cancelar fecha sheet sem ação
-- [ ] Tap Excluir confirma → toast → navigation.goBack() → listagem atualiza (tratamento sumiu)
+- [x] Tap Excluir confirma → toast → navigation.goBack() → listagem atualiza (tratamento sumiu)
 - [ ] Histórico de doses (Tab Hoje, Calendário, Relatórios) MANTÉM doses já registradas
 
 ### Refresh / Cache
-- [ ] Após criar/editar/excluir, voltar para listagem → cache invalidado, dados frescos
+- [x] Após criar/editar/excluir, voltar para listagem → cache invalidado, dados frescos
 - [ ] Modo offline: sem rede, abrir lista → vê cache AsyncStorage com banner "stale"
 
 ### Sem pronomes (R-201)
-- [ ] Header listagem: `"Tratamentos"` (não "Meus Tratamentos")
+- [x] Header listagem: `"Tratamentos"` (não "Meus Tratamentos")
 - [ ] Search bar em medicamento selector: `"Buscar em medicamentos..."` (não "meus")
-- [ ] Subtitle empty: sem pronome possessivo
-- [ ] CTAs: sem pronome
+- [x] Subtitle empty: sem pronome possessivo
+- [x] CTAs: sem pronome
 
 ---
 
@@ -83,11 +83,11 @@
 
 > Cenário legacy de Hermes — ADR-036 (JS stack já aplicada em TreatmentsStack).
 
-- [ ] Lista de tratamentos carrega sem crash de rn-screens
-- [ ] Navegar listagem → detail → form → goBack — sem `IndexOutOfBoundsException`
-- [ ] Bottom sheets abrem/fecham (MedicineSelectorSheet, ProtocolDeleteSheet, PlanInlineCreate)
-- [ ] TimeSchedulePicker add/remove sem crash
-- [ ] WeekdaySelector toggle sem crash
+- [x] Lista de tratamentos carrega sem crash de rn-screens
+- [x] Navegar listagem → detail → form → goBack — sem `IndexOutOfBoundsException`
+- [x] Bottom sheets abrem/fecham (MedicineSelectorSheet, ProtocolDeleteSheet, PlanInlineCreate)
+- [x] TimeSchedulePicker add/remove sem crash
+- [x] WeekdaySelector toggle sem crash
 
 ---
 
