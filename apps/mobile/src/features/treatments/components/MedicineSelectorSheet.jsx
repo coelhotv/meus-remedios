@@ -14,7 +14,10 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
+  Platform,
+  StatusBar,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Search, X, Pill, PillBottle, Plus } from 'lucide-react-native'
 import { useMedicines } from '../../medications/hooks/useMedicines'
 import { selectionTap, lightTap } from '@shared/utils/haptics'
@@ -140,10 +143,22 @@ export default function MedicineSelectorSheet({
   }
 
   return (
-    <Modal visible={!!open} transparent animationType="slide" onRequestClose={handleClose}>
+    <Modal
+      visible={!!open}
+      transparent
+      animationType="slide"
+      onRequestClose={handleClose}
+      // Android: statusBarTranslucent faz o Modal cobrir o stack do parent
+      // navigator inteiro (sem isso o sheet só ocupa a área do screen atual
+      // e inputs do form atrás vazam por cima do overlay no Android 7/API 24).
+      statusBarTranslucent
+    >
       <View style={styles.root}>
+        {Platform.OS === 'android' ? (
+          <View style={{ height: StatusBar.currentHeight ?? 0 }} />
+        ) : null}
         <Pressable style={styles.backdrop} onPress={handleClose} />
-        <View style={styles.sheet}>
+        <SafeAreaView edges={['bottom']} style={styles.sheet}>
           <View style={styles.handle} />
           <Text style={styles.title}>Escolher medicamento</Text>
 
@@ -200,7 +215,7 @@ export default function MedicineSelectorSheet({
             <Plus size={18} color={colors.primary[700]} />
             <Text style={styles.footerBtnText}>Cadastrar novo medicamento</Text>
           </Pressable>
-        </View>
+        </SafeAreaView>
       </View>
     </Modal>
   )
