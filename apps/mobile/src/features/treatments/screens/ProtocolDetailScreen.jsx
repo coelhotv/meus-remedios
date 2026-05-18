@@ -306,11 +306,11 @@ export default function ProtocolDetailScreen() {
           ) : (
             <View style={styles.statusRow}>
               <View style={styles.statusTextWrap}>
-                <Text style={styles.statusLabel}>Tratamento ligado</Text>
+                <Text style={styles.statusLabel}>Tratamento ativo</Text>
                 <Text style={styles.statusHelper}>
                   {effectiveActive
-                    ? 'Recebendo lembretes e contando aderência.'
-                    : 'Pausado — sem lembretes, sem impacto na aderência.'}
+                    ? 'Enviando lembretes e contando doses.'
+                    : 'Pausado — sem lembretes, sem contar doses.'}
                 </Text>
               </View>
               <Switch
