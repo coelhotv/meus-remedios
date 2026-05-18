@@ -59,7 +59,7 @@ export function useProtocolMutation() {
         const result = await protocolService.update(id, { active: nextValue })
         // Invalida snapshot local (best-effort — falha aqui não derruba a operação)
         await AsyncStorage.removeItem(PROTOCOLS_CACHE_KEY).catch(() => {})
-        show(nextValue ? 'Tratamento ativo' : 'Tratamento inativo', { variant: 'success' })
+        show(nextValue ? 'Tratamento ativo' : 'Tratamento pausado', { variant: 'success' })
         return result
       } catch (err) {
         show(err?.message ?? 'Erro ao alterar status do tratamento', { variant: 'error' })

@@ -104,7 +104,7 @@ Levar para o mobile a mesma capacidade da web de **categorizar tratamentos por s
   - **Tratamento finalizado (`end_date < hoje`)**: ocultar a row inteira do toggle (não faz sentido ligar/desligar algo já fora de período; user deve editar `end_date` se quiser reativar). Em vez disso, mostrar caption inerte: `"Tratamento finalizado em DD MMM YYYY. Edite o período para reativar."`
 
 - **Tap no toggle**: SEM confirmação modal — ação reversível e o feedback visual do switch já comunica a intenção. Apenas:
-  - Toast success: `"Tratamento ligado"` ou `"Tratamento desligado"`
+  - Toast success: `"Tratamento ativo"` ou `"Tratamento pausado"`
   - Chamada `protocolService.update(id, { active: nextValue })` em background
   - Optimistic update do toggle visual + reverte se erro + toast error
   - Invalida cache `useProtocols` + `@dosiq/protocols-snapshot` → próximo focus na listagem reagrupa por tab
