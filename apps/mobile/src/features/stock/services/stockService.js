@@ -347,7 +347,10 @@ export const stockService = {
     if (!reason) throw new Error('Motivo é obrigatório para ajuste manual')
     if (newBalance < 0) throw new Error('Saldo final não pode ser negativo')
 
-    const current = await this.getTotalQuantity(medicineId, userId)
+    // Usar stockService.* (não this.*) — adjustToBalance pode ser destructurado
+    // em hooks (ex: const { adjustToBalance } = useStockMutation()), perdendo
+    // referência a `this`.
+    const current = await stockService.getTotalQuantity(medicineId, userId)
     const delta = newBalance - current
 
     if (delta === 0) {
@@ -356,10 +359,11 @@ export const stockService = {
     }
 
     if (delta > 0) {
-      await this.increaseStock(medicineId, delta, { reason, notes }, userId)
+      await stockService.increaseStock(medicineId, delta, { reason, notes }, userId)
     } else {
       // delta negativo — ajuste manual decrementa via RPC com quantity_delta negativo
-      const { data, error } = await nativeSupabaseClient.rpc('apply_manual_stock_adjustment', {
+      // (depende de migration S2.0 pendente — ver EXEC_SPEC_FASE3 §0.8)
+      const { error } = await nativeSupabaseClient.rpc('apply_manual_stock_adjustment', {
         p_medicine_id: medicineId,
         p_quantity_delta: delta,
         p_reason: reason,
@@ -367,9 +371,9 @@ export const stockService = {
       })
       if (error) throw error
       debugLog('stockService', `adjustToBalance decrement OK medicineId=${medicineId} delta=${delta}`)
-      return data
     }
 
+    // Return padronizado nos 3 branches — API previsível
     return { delta, before: current, after: newBalance }
   },
 }
