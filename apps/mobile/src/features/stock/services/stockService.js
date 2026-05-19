@@ -1,28 +1,42 @@
-// ADR-029: thin local service — chama Supabase directamente via nativeSupabaseClient
-// R-125: validação Zod na camada de serviço (R-NNN sugerido em review PR #467)
+// stockService.js — Fase 3 CRUD Estoque mobile.
+//
+// Consolidação dos 2 services web (`stockService` + `purchaseService`) num
+// único módulo mobile. Pattern thin local (ADR-029) — chama Supabase direto
+// via nativeSupabaseClient. Validação Zod via @dosiq/core (R-125 + R-232).
+//
+// Diferenças vs web:
+// - userId é param explícito (consistente com treatmentsService.js mobile)
+// - Sem `delete` de purchase (PO-1 — escopo cortado; correção via Ajuste)
+// - getStockData (legacy MVP read-only) preservado pra não quebrar useStock atual
+//
+// Refactor pra factory createStockRepository + createPurchaseRepository em S2
+// (G2/G3). Por enquanto este service é a fonte mobile.
 
 import { z } from 'zod'
-import { getTodayLocal, isProtocolActiveOnDate } from '@dosiq/core'
+import {
+  getTodayLocal,
+  isProtocolActiveOnDate,
+  validateStockCreate,
+  validateStockDecrease,
+  validateStockIncrease,
+} from '@dosiq/core'
 import { supabase as nativeSupabaseClient } from '../../../platform/supabase/nativeSupabaseClient'
 import { debugLog, errorLog } from '@shared/utils/debugLog'
 
+// ───────────────────────────────────────────────────────────────────────────
+// LEGACY — getStockData (MVP read-only, mantido pra useStock atual)
+// ───────────────────────────────────────────────────────────────────────────
+
 /**
- * Busca a lista de medicamentos com seu estoque e protocolos ativos para cálculo de consumo.
- * 
- * @param {string} userId - UUID do usuário
+ * Busca medicamentos com estoque + protocolos ativos pra cálculo de consumo.
+ * @param {string} userId
  * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
  */
 export async function getStockData(userId) {
   try {
-    // Validação de entrada conforme R-125
     z.string().uuid().parse(userId)
+    debugLog('stockService', `getStockData: ${userId}`)
 
-    debugLog('stockService', `Buscando dados de estoque para: ${userId}`)
-
-    // Buscamos medicamentos com: 
-    // 1. Quantidade total (da view medicine_stock_summary)
-    // 2. Protocolos ativos (para calcular consumo diário)
-    // Nota: O join com medicine_stock_summary usa a relação automática baseada em medicine_id
     const { data: rawData, error } = await nativeSupabaseClient
       .from('medicines')
       .select(`
@@ -49,22 +63,313 @@ export async function getStockData(userId) {
       .order('name')
 
     if (error) {
-      errorLog('stockService', 'Erro na query', error)
+      errorLog('stockService', 'getStockData query error', error)
       return { success: false, error: 'Erro ao carregar dados de estoque' }
     }
 
-    // Filtro de validade de protocolos (Wave v0.1.5)
-    // Na fase Read-Only, só mostramos estoque do que tem tratamento "rodando" hoje.
     const today = getTodayLocal()
-    const validData = (rawData || []).filter(m => {
-      // Verifica se existe pelo menos um protocolo vinculado que seja válido para hoje
-      const hasValidProtocol = (m.protocols || []).some(p => isProtocolActiveOnDate(p, today))
-      return hasValidProtocol
-    })
+    const validData = (rawData || []).filter((m) =>
+      (m.protocols || []).some((p) => isProtocolActiveOnDate(p, today)),
+    )
 
     return { success: true, data: validData }
   } catch (err) {
-    errorLog('stockService', 'Erro inesperado', err)
+    errorLog('stockService', 'getStockData unexpected', err)
     return { success: false, error: err.message }
   }
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// FASE 3 — stockService object (CRUD completo)
+// ───────────────────────────────────────────────────────────────────────────
+
+function fmtZodErr(errors) {
+  return errors.map((e) => `${e.field}: ${e.message}`).join('; ')
+}
+
+export const stockService = {
+  // === READS ===
+
+  /**
+   * Stock entries de um medicamento (FIFO order).
+   */
+  async getByMedicine(medicineId, userId) {
+    const { data, error } = await nativeSupabaseClient
+      .from('stock')
+      .select('*')
+      .eq('medicine_id', medicineId)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  /**
+   * Summary agregado (total_quantity, entries_count, datas).
+   * Usa view medicine_stock_summary.
+   */
+  async getStockSummary(medicineId, userId) {
+    const { data, error } = await nativeSupabaseClient
+      .from('medicine_stock_summary')
+      .select('*')
+      .eq('medicine_id', medicineId)
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (error) throw error
+    return (
+      data ?? {
+        medicine_id: medicineId,
+        user_id: userId,
+        total_quantity: 0,
+        stock_entries_count: 0,
+        oldest_entry_date: null,
+        newest_entry_date: null,
+      }
+    )
+  },
+
+  /**
+   * Total quantity (com fallback manual caso view não retorne).
+   */
+  async getTotalQuantity(medicineId, userId) {
+    const { data: summary, error: summaryError } = await nativeSupabaseClient
+      .from('medicine_stock_summary')
+      .select('total_quantity')
+      .eq('medicine_id', medicineId)
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (!summaryError && summary) return summary.total_quantity
+
+    const { data, error } = await nativeSupabaseClient
+      .from('stock')
+      .select('quantity')
+      .eq('medicine_id', medicineId)
+      .eq('user_id', userId)
+
+    if (error) throw error
+    return (data || []).reduce((acc, e) => acc + (e.quantity || 0), 0)
+  },
+
+  /**
+   * Medicamentos com stock baixo. Usa RPC; fallback view direto.
+   */
+  async getLowStockMedicines(userId, threshold = 10) {
+    const { data, error } = await nativeSupabaseClient.rpc('get_low_stock_medicines', {
+      p_user_id: userId,
+      p_threshold: threshold,
+    })
+
+    if (error) {
+      const { data: fallback, error: fbErr } = await nativeSupabaseClient
+        .from('medicine_stock_summary')
+        .select('*')
+        .eq('user_id', userId)
+        .lte('total_quantity', threshold)
+        .order('total_quantity', { ascending: true })
+
+      if (fbErr) throw fbErr
+      return fallback || []
+    }
+    return data || []
+  },
+
+  // === PURCHASES (read) ===
+
+  /**
+   * Histórico de compras de um medicamento.
+   */
+  async getPurchasesByMedicine(medicineId, userId) {
+    const { data, error } = await nativeSupabaseClient
+      .from('purchases')
+      .select('*')
+      .eq('medicine_id', medicineId)
+      .eq('user_id', userId)
+      .order('purchase_date', { ascending: false })
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  /**
+   * Última compra de cada medicineId (mapa medicineId → purchase).
+   */
+  async getLatestPurchasesByMedicineIds(medicineIds, userId) {
+    if (!medicineIds || medicineIds.length === 0) return {}
+    const { data, error } = await nativeSupabaseClient
+      .from('purchases')
+      .select('*')
+      .eq('user_id', userId)
+      .in('medicine_id', medicineIds)
+      .order('purchase_date', { ascending: false })
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return (data || []).reduce((map, p) => {
+      if (!map[p.medicine_id]) map[p.medicine_id] = p
+      return map
+    }, {})
+  },
+
+  // === WRITES ===
+
+  /**
+   * Cria compra + atualiza saldo (atômico via RPC).
+   * @throws {Error} se validation Zod falhar
+   */
+  async createPurchase(input, userId) {
+    const validation = validateStockCreate(input)
+    if (!validation.success) throw new Error(`Erro de validação: ${fmtZodErr(validation.errors)}`)
+    const p = validation.data
+
+    const { data, error } = await nativeSupabaseClient.rpc('create_purchase_with_stock', {
+      p_medicine_id: p.medicine_id,
+      p_quantity: p.quantity,
+      p_unit_price: p.unit_price ?? 0,
+      p_purchase_date: p.purchase_date,
+      p_expiration_date: p.expiration_date,
+      p_pharmacy: p.pharmacy,
+      p_laboratory: p.laboratory,
+      p_notes: p.notes,
+    })
+
+    if (error) throw error
+    debugLog('stockService', `createPurchase OK medicineId=${p.medicine_id} userId=${userId}`)
+    return data
+  },
+
+  /**
+   * Edita uma purchase existente. Sem RPC dedicada na web — update direto na
+   * tabela purchases. NÃO mexe em stock (saldo é decremento via consume_stock).
+   */
+  async updatePurchase(id, input, userId) {
+    const validation = validateStockCreate(input)
+    if (!validation.success) throw new Error(`Erro de validação: ${fmtZodErr(validation.errors)}`)
+    const p = validation.data
+
+    const { data, error } = await nativeSupabaseClient
+      .from('purchases')
+      .update({
+        quantity: p.quantity,
+        unit_price: p.unit_price ?? 0,
+        purchase_date: p.purchase_date,
+        expiration_date: p.expiration_date,
+        pharmacy: p.pharmacy,
+        laboratory: p.laboratory,
+        notes: p.notes,
+      })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  /**
+   * Consumo FIFO (chamado quando dose é registrada).
+   * @throws {Error} se medicineLogId ausente ou validation falhar
+   */
+  async decreaseStock(medicineId, quantity, medicineLogId, userId) {
+    const validation = validateStockDecrease({ medicine_id: medicineId, quantity })
+    if (!validation.success) throw new Error(`Erro de validação: ${fmtZodErr(validation.errors)}`)
+    if (!medicineLogId) throw new Error('medicineLogId é obrigatório para consumo FIFO rastreável')
+
+    const { data, error } = await nativeSupabaseClient.rpc('consume_stock_fifo', {
+      p_medicine_id: medicineId,
+      p_quantity: quantity,
+      p_medicine_log_id: medicineLogId,
+    })
+
+    if (error) throw error
+    debugLog('stockService', `decreaseStock OK medicineId=${medicineId} userId=${userId}`)
+    return data
+  },
+
+  /**
+   * Estorna stock (delete de log) OU ajuste manual positivo.
+   * Se `options.medicine_log_id` presente → restore_stock_for_log RPC.
+   * Senão → apply_manual_stock_adjustment RPC.
+   */
+  async increaseStock(medicineId, quantity, options = {}, userId) {
+    const normalized =
+      typeof options === 'string'
+        ? { reason: options, quantity }
+        : { ...options, quantity }
+
+    const validation = validateStockIncrease({
+      medicine_id: medicineId,
+      quantity,
+      medicine_log_id: normalized.medicine_log_id ?? null,
+      reason: normalized.reason ?? 'Ajuste de estoque',
+      notes: normalized.notes ?? null,
+    })
+
+    if (!validation.success) throw new Error(`Erro de validação: ${fmtZodErr(validation.errors)}`)
+    const payload = validation.data
+
+    if (payload.medicine_log_id) {
+      const { data, error } = await nativeSupabaseClient.rpc('restore_stock_for_log', {
+        p_medicine_log_id: payload.medicine_log_id,
+        p_reason: payload.reason,
+      })
+      if (error) throw error
+      return data
+    }
+
+    const { data, error } = await nativeSupabaseClient.rpc('apply_manual_stock_adjustment', {
+      p_medicine_id: medicineId,
+      p_quantity_delta: quantity,
+      p_reason: payload.reason,
+      p_notes: payload.notes,
+    })
+
+    if (error) throw error
+    debugLog('stockService', `increaseStock OK medicineId=${medicineId} userId=${userId}`)
+    return data
+  },
+
+  /**
+   * Ajuste manual — modo único "Acertar saldo" (PO-6).
+   * Calcula delta = newBalance - currentTotal e dispara increase/decrease.
+   *
+   * @param {string} medicineId
+   * @param {number} newBalance - saldo final desejado (>=0)
+   * @param {string} reason - motivo (obrigatório PO-6)
+   * @param {string|null} notes
+   * @param {string} userId
+   */
+  async adjustToBalance(medicineId, newBalance, reason, notes, userId) {
+    if (!reason) throw new Error('Motivo é obrigatório para ajuste manual')
+    if (newBalance < 0) throw new Error('Saldo final não pode ser negativo')
+
+    const current = await this.getTotalQuantity(medicineId, userId)
+    const delta = newBalance - current
+
+    if (delta === 0) {
+      debugLog('stockService', `adjustToBalance: delta=0, no-op medicineId=${medicineId}`)
+      return { delta: 0, before: current, after: newBalance }
+    }
+
+    if (delta > 0) {
+      await this.increaseStock(medicineId, delta, { reason, notes }, userId)
+    } else {
+      // delta negativo — ajuste manual decrementa via RPC com quantity_delta negativo
+      const { data, error } = await nativeSupabaseClient.rpc('apply_manual_stock_adjustment', {
+        p_medicine_id: medicineId,
+        p_quantity_delta: delta,
+        p_reason: reason,
+        p_notes: notes ?? null,
+      })
+      if (error) throw error
+      debugLog('stockService', `adjustToBalance decrement OK medicineId=${medicineId} delta=${delta}`)
+      return data
+    }
+
+    return { delta, before: current, after: newBalance }
+  },
 }
