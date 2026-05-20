@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDatePtBR, formatEndDate } from '../dateFormat.js'
+import { formatDatePtBR, formatDateShortPtBR, formatEndDate } from '../dateFormat.js'
 
 describe('formatDatePtBR', () => {
   it('formata string YYYY-MM-DD para DD MMM YYYY PT-BR lowercase', () => {
@@ -27,6 +27,29 @@ describe('formatDatePtBR', () => {
     expect(formatDatePtBR(12345)).toBe('')
     expect(formatDatePtBR({})).toBe('')
     expect(formatDatePtBR(true)).toBe('')
+  })
+})
+
+describe('formatDateShortPtBR', () => {
+  it('formata string YYYY-MM-DD para DD/MMM/AA PT-BR lowercase', () => {
+    expect(formatDateShortPtBR('2026-03-12')).toBe('12/mar/26')
+    expect(formatDateShortPtBR('2026-01-01')).toBe('01/jan/26')
+    expect(formatDateShortPtBR('2026-12-31')).toBe('31/dez/26')
+  })
+
+  it('zero-pad em dias single-digit', () => {
+    expect(formatDateShortPtBR('2026-05-03')).toBe('03/mai/26')
+  })
+
+  it('retorna vazio para null/undefined/empty', () => {
+    expect(formatDateShortPtBR(null)).toBe('')
+    expect(formatDateShortPtBR(undefined)).toBe('')
+    expect(formatDateShortPtBR('')).toBe('')
+  })
+
+  it('aceita Date object', () => {
+    const d = new Date(2026, 6, 15)
+    expect(formatDateShortPtBR(d)).toBe('15/jul/26')
   })
 })
 
