@@ -51,6 +51,20 @@ export default function MedicineDemoScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        {/* Seção Fase 3 — Estoque */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Fase 3 — Estoque S3.1</Text>
+          <TouchableOpacity
+            onPress={() => {
+              lightTap()
+              navigation?.navigate(ROUTES.STOCK_PRIMITIVES_DEMO)
+            }}
+            style={styles.buttonCard}
+          >
+            <Text style={styles.buttonText}>📦 PurchaseCard + PurchaseFormScreen + PurchaseHistoryScreen</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Seção 1 — Telas Sprint M1.1 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Telas Sprint M1.1</Text>

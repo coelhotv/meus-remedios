@@ -23,6 +23,7 @@ import ResetPasswordScreen from '../screens/ResetPasswordScreen'
 import RootTabs from './RootTabs'
 import MedicineDemoScreen from '../features/_dev/screens/MedicineDemoScreen'
 import TreatmentPrimitivesDemoScreen from '../features/_dev/screens/TreatmentPrimitivesDemoScreen'
+import StockPrimitivesDemoScreen from '../features/_dev/screens/StockPrimitivesDemoScreen'
 import { supabase } from '../platform/supabase/nativeSupabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { usePushNotifications } from '../platform/notifications/usePushNotifications'
@@ -163,6 +164,10 @@ export default function Navigation() {
                 <Stack.Screen
                   name={ROUTES.TREATMENT_PRIMITIVES_DEMO}
                   component={TreatmentPrimitivesDemoScreen}
+                />
+                <Stack.Screen
+                  name={ROUTES.STOCK_PRIMITIVES_DEMO}
+                  component={StockPrimitivesDemoScreen}
                 />
               </>
             )}
