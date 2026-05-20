@@ -65,7 +65,11 @@ export default function PurchaseHistoryScreen({ route, navigation }) {
     }
   }, [medicineId, user])
 
-  useFocusEffect(fetchPurchases)
+  useFocusEffect(
+    useCallback(() => {
+      fetchPurchases()
+    }, [fetchPurchases]),
+  )
 
   // — Handlers (R-010) —
   const handlePressCard = useCallback(
