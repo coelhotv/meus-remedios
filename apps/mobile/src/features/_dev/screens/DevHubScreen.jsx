@@ -1,5 +1,4 @@
-// MedicineDemoScreen — hub DEV-only de validação.
-// Reduzido pra apenas o link de validação dos primitivos/telas de Estoque (S3.1).
+// DevHubScreen — hub DEV-only de validação. Links pras telas de smoke da fase atual.
 
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native'
 import { ChevronLeft } from 'lucide-react-native'
@@ -7,7 +6,7 @@ import { lightTap } from '@shared/utils/haptics'
 import { ROUTES } from '../../../navigation/routes'
 import { colors, spacing } from '@shared/styles/tokens'
 
-export default function MedicineDemoScreen({ navigation }) {
+export default function DevHubScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       {/* Cabeçalho */}
