@@ -3,7 +3,7 @@
 
 import { View, Text, StyleSheet, Pressable } from 'react-native'
 import { colors, spacing, borderRadius } from '@shared/styles/tokens'
-import { formatDatePtBR, computeExpiryDays, formatBRL, formatDoseUnit } from '@dosiq/core'
+import { formatDateShortPtBR, computeExpiryDays, formatBRL, formatDoseUnit } from '@dosiq/core'
 
 /**
  * @param {{
@@ -32,7 +32,7 @@ export default function PurchaseCard({ purchase, remaining = 0, isLatest = false
   const percentConsumed = purchase.quantity_bought > 0 ? (consumed / purchase.quantity_bought) * 100 : 0
   const isInUse = remaining > 0
   const expiryDays = purchase.expiration_date ? computeExpiryDays(purchase.expiration_date) : null
-  const purchaseDateFormatted = formatDatePtBR(purchase.purchase_date)
+  const purchaseDateFormatted = formatDateShortPtBR(purchase.purchase_date)
   const totalCost = purchase.unit_price * purchase.quantity_bought
   const expiryStatusColor = expiryDays === null
     ? colors.neutral[400] // sem data
@@ -64,7 +64,7 @@ export default function PurchaseCard({ purchase, remaining = 0, isLatest = false
       {/* Quantidades: "30 un. compradas · 16 restantes" */}
       <View style={styles.quantityRow}>
         <Text style={styles.quantityText}>
-          {purchase.quantity_bought} {formatDoseUnit(purchase.quantity_bought, 'un')} compradas
+          {formatDoseUnit(purchase.quantity_bought)} compradas
         </Text>
         <Text style={styles.quantityDot}> · </Text>
         <Text style={[styles.quantityText, { color: isInUse ? colors.status.success : colors.text.muted }]}>
