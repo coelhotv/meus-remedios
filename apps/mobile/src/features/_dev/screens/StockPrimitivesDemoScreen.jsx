@@ -11,7 +11,9 @@ import { ROUTES } from '../../../navigation/routes'
 import { colors, spacing, typography } from '@shared/styles/tokens'
 import PurchaseCard from '../../stock/components/PurchaseCard'
 
-const FAKE_MED = { id: 'demo-med-stock', name: 'SeloZok 50mg' }
+// Medicamento real de produção — PurchaseHistory/Form carregam dados reais
+// (user_id vem do useAuth no runtime). Trocar por outro id se necessário.
+const FAKE_MED = { id: 'b9d23ad4-b72b-4f02-96de-6c25957c6e02', name: 'Medicamento (real)' }
 
 // Datas relativas pra exercitar chips de validade (red <30d / yellow <90d / neutro)
 const todayIso = getTodayLocal()
