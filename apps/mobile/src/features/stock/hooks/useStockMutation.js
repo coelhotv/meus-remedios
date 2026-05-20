@@ -73,8 +73,11 @@ export function useStockMutation() {
 
   const createPurchase = useCallback(
     async (input, { goBack = false } = {}) => {
+      // Guard early: hook pode renderizar com auth ainda carregando.
+      // Optional chaining no service call defende contra user null adicional.
+      if (!user?.id) throw new Error('Usuário não autenticado')
       const result = await mutationCreate.mutate(() =>
-        stockService.createPurchase(input, user.id),
+        stockService.createPurchase(input, user?.id),
       )
       if (result && goBack) navigation.goBack()
       return result
@@ -84,8 +87,9 @@ export function useStockMutation() {
 
   const updatePurchase = useCallback(
     async (id, input, { goBack = false } = {}) => {
+      if (!user?.id) throw new Error('Usuário não autenticado')
       const result = await mutationUpdate.mutate(() =>
-        stockService.updatePurchase(id, input, user.id),
+        stockService.updatePurchase(id, input, user?.id),
       )
       if (result && goBack) navigation.goBack()
       return result
@@ -108,20 +112,24 @@ export function useStockMutation() {
    */
   const adjustBalance = useCallback(
     async (medicineId, newBalance, reason, notes) => {
+      if (!user?.id) throw new Error('Usuário não autenticado')
       try {
         const result = await stockService.adjustToBalance(
           medicineId,
           newBalance,
           reason,
           notes,
-          user.id,
+          user?.id,
         )
         // multiRemove = 1 chamada à ponte nativa (vs N concorrentes) — atômico.
+        // Log falha em __DEV__ pra diagnóstico (cache stale survives next refresh).
         await AsyncStorage.multiRemove([
           STOCK_CACHE_KEY,
           TREATMENTS_CACHE_KEY,
           TODAY_CACHE_KEY,
-        ]).catch(() => {})
+        ]).catch((err) => {
+          if (__DEV__) console.warn('[useStockMutation] multiRemove failed:', err)
+        })
         show('Saldo ajustado', { variant: 'success' })
         return result
       } catch (err) {
